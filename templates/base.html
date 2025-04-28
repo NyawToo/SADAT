@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SADAT</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{% static 'media_sistema/favicon.png' %}">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <!-- Font Awesome CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <!-- CSS personalizado -->
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <style>
+        /* Paleta de colores coherente */
+        :root {
+            --azul-oscuro: #1e3a8a;
+            --azul-medio: #3b82f6;
+            --azul-claro: #bfdbfe;
+            --blanco: #ffffff;
+            --gris-claro: #f1f5f9;
+        }
+
+        /* Estilos generales */
+        body {
+            background: linear-gradient(135deg, var(--azul-claro) 0%, var(--gris-claro) 100%);
+            font-family: 'Poppins', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            margin: 0;
+        }
+
+        /* Estilos de la barra de navegación */
+        .navbar {
+            background: var(--blanco) !important;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .navbar-brand {
+            font-size: 2rem;
+            font-weight: 600;
+            color: var(--azul-oscuro) !important;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            animation: resaltar-logo 1s ease-in-out;
+        }
+
+        .navbar-brand::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: var(--azul-medio);
+            transform: scaleX(0);
+            transform-origin: bottom right;
+            transition: transform 0.4s ease;
+        }
+
+        .navbar-brand:hover::after {
+            transform: scaleX(1);
+            transform-origin: bottom left;
+        }
+
+        @keyframes resaltar-logo {
+            0% {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .nav-link {
+            color: var(--azul-oscuro) !important;
+            font-weight: 400;
+            margin: 0 1rem;
+            transition: color 0.3s ease, transform 0.3s ease;
+        }
+
+        .nav-link:hover {
+            color: var(--azul-medio) !important;
+            transform: translateY(-2px);
+        }
+
+        .nav-link.btn-outline-primary {
+            border-color: var(--azul-medio);
+            color: var(--azul-medio);
+            border-radius: 50px;
+            padding: 0.5rem 1.5rem;
+            margin: 0 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link.btn-outline-primary:hover {
+            background: var(--azul-medio);
+            color: var(--blanco) !important;
+            transform: translateY(-3px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Animación para el dropdown */
+        .dropdown-menu {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+            animation: deslizar-abajo 0.3s ease forwards;
+        }
+
+        @keyframes deslizar-abajo {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .dropdown-item {
+            color: var(--azul-oscuro);
+            padding: 0.5rem 1.5rem;
+        }
+
+        .dropdown-item:hover {
+            background: var(--azul-claro);
+            color: var(--azul-oscuro);
+            transform: scale(1.02);
+            transition: all 0.2s ease;
+        }
+
+        /* Contenedor principal */
+        .container.mt-4 {
+            flex: 1;
+            padding: 2rem;
+            animation: aparecer-suave 0.5s ease-in;
+        }
+
+        @keyframes aparecer-suave {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Estilo para el título de la página */
+        h1 {
+            color: var(--azul-oscuro);
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 2rem;
+            animation: aparecer-suave 0.5s ease-in;
+        }
+
+        /* Estilo para el formulario de filtros */
+        .filtro-form {
+            background: var(--blanco);
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .filtro-form input,
+        .filtro-form select {
+            border: 1px solid var(--azul-claro);
+            border-radius: 5px;
+            padding: 0.5rem;
+            width: 100%;
+            transition: border-color 0.3s ease;
+        }
+
+        .filtro-form input:focus,
+        .filtro-form select:focus {
+            border-color: var(--azul-medio);
+            outline: none;
+            box-shadow: 0 0 5px rgba(59, 130, 246, 0.3);
+        }
+
+        .filtro-form button {
+            padding: 0.5rem 1.5rem;
+            border-radius: 5px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .filtro-form .btn-filtrar {
+            background: var(--azul-medio);
+            color: var(--blanco);
+            border: none;
+        }
+
+        .filtro-form .btn-filtrar:hover {
+            background: var(--azul-oscuro);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .filtro-form .btn-limpiar {
+            background: var(--gris-claro);
+            color: var(--azul-oscuro);
+            border: 1px solid var(--azul-claro);
+        }
+
+        .filtro-form .btn-limpiar:hover {
+            background: var(--azul-claro);
+            transform: translateY(-2px);
+        }
+
+        /* Estilo para la tabla */
+        .tabla-resultados {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--blanco);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .tabla-resultados th,
+        .tabla-resultados td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--azul-claro);
+        }
+
+        .tabla-resultados th {
+            background: var(--azul-oscuro);
+            color: var(--blanco);
+            font-weight: 500;
+        }
+
+        .tabla-resultados tr:hover {
+            background: var(--azul-claro);
+            transition: background 0.3s ease;
+        }
+
+        .tabla-resultados td {
+            color: var(--azul-oscuro);
+        }
+
+        /* Mensaje de no resultados */
+        .sin-resultados {
+            text-align: center;
+            color: var(--azul-oscuro);
+            font-style: italic;
+            margin-top: 1rem;
+        }
+
+        /* Estilos del footer */
+        .footer-custom {
+            background: linear-gradient(90deg, var(--azul-oscuro) 0%, var(--azul-medio) 100%);
+            padding: 2rem 0;
+            color: var(--blanco);
+            position: relative;
+        }
+
+        .footer-custom .row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+
+        .footer-custom a {
+            color: var(--blanco);
+            margin: 0 1rem;
+            transition: transform 0.3s ease, color 0.3s ease;
+        }
+
+        .footer-custom a:hover {
+            transform: scale(1.2);
+            color: var(--azul-claro);
+        }
+
+        .footer-custom p {
+            margin: 0;
+            font-size: 0.9rem;
+        }
+
+        /* Efecto de onda en los íconos sociales */
+        .social-icon {
+            position: relative;
+            display: inline-block;
+        }
+
+        .social-icon::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.4s ease, height 0.4s ease;
+        }
+
+        .social-icon:hover::after {
+            width: 40px;
+            height: 40px;
+        }
+
+        /* Estilo para botones centrados */
+        .center-buttons {
+            margin: 0 auto;
+            display: flex;
+            gap: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm">
+        <div class="container-fluid">
+            <a class="navbar-brand fw-bold" href="{% url 'home' %}">SADAT</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav center-buttons">
+                    {% if request.resolver_match.url_name == 'home' %}
+                        <li class="nav-item">
+                            <a class="nav-link btn btn-outline-primary" href="{% url 'registro_cliente' %}">Soy un Cliente</a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link btn btn-outline-primary dropdown-toggle" href="#" id="microempresaDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Soy una Microempresa
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="microempresaDropdown">
+                                <li><a class="dropdown-item" href="{% url 'registro_integral' %}">Microempresa Integral</a></li>
+                                <li><a class="dropdown-item" href="{% url 'registro_satelite' %}">Microempresa Satélite</a></li>
+                            </ul>
+                        </li>
+                    {% endif %}
+                </ul>
+                <ul class="navbar-nav ms-auto">
+                    {% if user.is_authenticated %}
+                        {% if user.tipo == 'cliente' and not user.is_superuser and request.resolver_match.url_name != 'dashboard' %}
+                        <li class="nav-item">
+                            <a class="nav-link btn btn-outline-primary mx-1" href="{% url 'catalogo_integrales' %}">Catálogo Integrales</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link btn btn-outline-primary mx-1" href="{% url 'catalogo_satelites' %}">Catálogo Satélites</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link btn btn-outline-primary mx-1" href="{% url 'mis_pedidos' %}">Mis Pedidos</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link btn btn-outline-primary mx-1" href="{% url 'ver_carrito' %}">Mi Carrito</a>
+                        </li>
+                        {% endif %}
+                        {% if user.tipo == 'satelite' %}
+                        <li class="nav-item">
+                            <a class="nav-link btn btn-outline-primary mx-1" href="{% url 'gestionar_solicitudes_confeccion' %}">Mis Pedidos</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link btn btn-outline-primary mx-1" href="{% url 'agregar_servicios' %}">Añadir Servicios</a>
+                        </li>
+                        {% endif %}
+                        {% if user.tipo == 'integral' %}
+                        <li class="nav-item">
+                            <a class="nav-link btn btn-outline-primary mx-1" href="{% url 'gestionar_pedidos' %}">Mis Pedidos</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link btn btn-outline-primary mx-1" href="{% url 'gestionar_productos' %}">Mis Productos</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link btn btn-outline-primary mx-1" href="{% url 'gestionar_pedidos_personalizados' %}">Pedidos Personalizados</a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link btn btn-outline-primary mx-1 dropdown-toggle" href="#" id="materiaPrimaDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Materia Prima
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="materiaPrimaDropdown">
+                                <li><a class="dropdown-item" href="{% url 'gestionar_categorias_materia_prima' %}">Categorías</a></li>
+                                <li><a class="dropdown-item" href="{% url 'gestionar_materia_prima' %}">Inventario</a></li>
+                                <li><a class="dropdown-item" href="{% url 'movimientos_materia_prima' %}">Movimientos</a></li>
+                            </ul>
+                        </li>
+                        {% endif %}
+                        {% if user.tipo == 'superusuario' or user.is_superuser %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'reporte_global' %}">Reportes Generales</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'categorias' %}">Crear Categorías</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'gestionar_usuarios' %}">Gestionar Usuarios</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'supervisar_pagos' %}">Supervisar Pagos</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'quejas' %}">Quejas</a>
+                        </li>
+                        {% endif %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'perfil' %}">Perfil</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'logout' %}">Cerrar Sesión</a>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'login' %}">Iniciar Sesión</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        {% block content %}
+            <h1>Gestión de Quejas</h1>
+            <div class="filtro-form">
+                <input type="text" placeholder="Fecha Inicio (dd/mm/aaaa)">
+                <input type="text" placeholder="Fecha Fin (dd/mm/aaaa)">
+                <select>
+                    <option>Todos</option>
+                </select>
+                <select>
+                    <option>Todos</option>
+                </select>
+                <button class="btn-filtrar">Filtrar</button>
+                <button class="btn-limpiar">Limpiar Filtros</button>
+            </div>
+            <table class="tabla-resultados">
+                <thead>
+                    <tr>
+                        <th>Usuario</th>
+                        <th>Tipo</th>
+                        <th>Descripción</th>
+                        <th>Estado</th>
+                        <th>Fecha Creación</th>
+                        <th>Fecha Resolución</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td colspan="7" class="sin-resultados">No hay quejas que coincidan con los filtros seleccionados.</td>
+                    </tr>
+                </tbody>
+            </table>
+        {% endblock %}
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer-custom">
+        <div class="container">
+            <div class="row align-items-center">
+                <!-- Iconos de redes sociales -->
+                <div class="col-md-4 text-center text-md-start mb-3 mb-md-0">
+                    <a href="https://facebook.com" class="social-icon" target="_blank">
+                        <i class="bi bi-facebook"></i>
+                    </a>
+                    <a href="https://instagram.com" class="social-icon" target="_blank">
+                        <i class="bi bi-instagram"></i>
+                    </a>
+                    <a href="https://wa.me/1234567890" class="social-icon" target="_blank">
+                        <i class="bi bi-whatsapp"></i>
+                    </a>
+                </div>
+                <!-- Enlaces -->
+                <div class="col-md-4 text-center mb-3 mb-md-0">
+                    <a href="#">Términos y condiciones</a>
+                    <a href="#">Política de cookies</a>
+                    <a href="#">Política de privacidad</a>
+                </div>
+                <!-- Derechos reservados -->
+                <div class="col-md-4 text-center text-md-end">
+                    <p>© 2025 SADAT. Todos los derechos reservados.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{% static 'js/main.js' %}"></script>
+    <script>
+        // Animación suave para el scroll
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // Efecto de resaltado al pasar el mouse por los enlaces del footer
+        document.querySelectorAll('.footer-custom a').forEach(link => {
+            link.addEventListener('mouseover', () => {
+                link.style.textDecoration = 'underline';
+            });
+            link.addEventListener('mouseout', () => {
+                link.style.textDecoration = 'none';
+            });
+        });
+
+        // Animación para el navbar al hacer scroll
+        window.addEventListener('scroll', () => {
+            const navbar = document.querySelector('.navbar');
+            if (window.scrollY > 50) {
+                navbar.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.2)';
+            } else {
+                navbar.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.1)';
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,76 @@
+@startuml
+title -DIAGRAMA DE OBJETOS SADAT-
+
+object "cliente1: Cliente" as c1 {
+  id = "1"
+  username = "juan.perez"
+  email = "juan@email.com"
+  nombre = "Juan Pérez"
+  direccion = "Av. Principal 123"
+  telefono = "+56912345678"
+}
+
+object "empresaIntegral1: EmpresaIntegral" as ei1 {
+  id = "1"
+  razonSocial = "Textiles S.A."
+  rut = "12345678-9"
+  direccion = "Calle Industrial 456"
+  telefono = "+56923456789"
+}
+
+object "empresaSatelite1: EmpresaSatelite" as es1 {
+  id = "1"
+  razonSocial = "Confecciones Express"
+  rut = "98765432-1"
+  direccion = "Calle Taller 789"
+  telefono = "+56934567890"
+}
+
+object "producto1: Producto" as p1 {
+  id = "1"
+  nombre = "Camisa Casual"
+  descripcion = "Camisa manga larga algodón"
+  precio = 29990
+  stock = 50
+  categoria = "Camisas"
+}
+
+object "pedido1: Pedido" as ped1 {
+  id = "1"
+  fecha = "2024-01-15"
+  estado = "En Producción"
+  total = 59980
+}
+
+object "pago1: Pago" as pag1 {
+  id = "1"
+  monto = 59980
+  fecha = "2024-01-15"
+  estado = "Completado"
+}
+
+object "notificacion1: Notificacion" as n1 {
+  id = "1"
+  mensaje = "Su pedido está en producción"
+  fecha = "2024-01-15"
+  tipo = "Estado Pedido"
+  leida = false
+}
+
+object "calificacion1: Calificacion" as cal1 {
+  id = "1"
+  puntuacion = 5
+  comentario = "Excelente calidad"
+  fecha = "2024-01-20"
+}
+
+c1 -- ped1 : realiza
+ped1 -- p1 : incluye
+ped1 -- pag1 : tiene
+ei1 -- p1 : ofrece
+ei1 -- es1 : asigna
+c1 -- n1 : recibe
+c1 -- cal1 : otorga
+p1 -- cal1 : recibe
+
+@enduml

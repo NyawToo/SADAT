@@ -1,0 +1,53 @@
+@startuml
+title -DIAGRAMA DE COMPONENTES SADAT-
+
+package "Frontend" {
+  [Interfaz Web] as IW
+  [Componentes React/Vue] as CR
+  [Sistema de Notificaciones UI] as SN
+}
+
+package "Backend" {
+  [API REST] as API
+  [Autenticación] as AUTH
+  [Gestión de Usuarios] as GU
+  [Gestión de Pedidos] as GP
+  [Gestión de Pagos] as GPAY
+  [Gestión de Producción] as GPROD
+  [Sistema de Notificaciones] as NOTI
+  [Generador de Reportes] as REP
+}
+
+database "Base de Datos" {
+  [PostgreSQL] as DB
+}
+
+cloud "Servicios Externos" {
+  [Pasarela de Pagos] as PP
+  [Servicio de Correo] as EMAIL
+}
+
+IW --> CR : "usa"
+CR --> SN : "usa"
+CR --> API : "HTTP/REST"
+
+API --> AUTH : "valida"
+API --> GU : "gestiona"
+API --> GP : "procesa"
+API --> GPAY : "procesa"
+API --> GPROD : "gestiona"
+API --> NOTI : "envía"
+API --> REP : "genera"
+
+GPAY --> PP : "integra"
+NOTI --> EMAIL : "envía"
+
+AUTH --> DB : "lee/escribe"
+GU --> DB : "lee/escribe"
+GP --> DB : "lee/escribe"
+GPAY --> DB : "lee/escribe"
+GPROD --> DB : "lee/escribe"
+NOTI --> DB : "lee/escribe"
+REP --> DB : "lee"
+
+@enduml

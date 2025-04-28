@@ -1,0 +1,86 @@
+@startuml
+title -DIAGRAMA DE PAQUETES SADAT-
+
+package "Frontend" {
+  package "Interfaz de Usuario" {
+    [Páginas]
+    [Componentes]
+    [Estilos]
+  }
+  
+  package "Lógica de Cliente" {
+    [Gestión de Estado]
+    [Servicios HTTP]
+    [Utilidades]
+  }
+}
+
+package "Backend" {
+  package "Core" {
+    [Autenticación]
+    [Autorización]
+    [Configuración]
+  }
+  
+  package "Usuarios" {
+    [Gestión de Usuarios]
+    [Perfiles]
+    [Roles]
+  }
+  
+  package "Empresas" {
+    [Gestión Integral]
+    [Gestión Satélite]
+    [Catálogo]
+  }
+  
+  package "Pedidos" {
+    [Gestión de Pedidos]
+    [Carrito]
+    [Seguimiento]
+  }
+  
+  package "Producción" {
+    [Control de Producción]
+    [Asignación de Trabajo]
+    [Control de Calidad]
+  }
+  
+  package "Pagos" {
+    [Procesamiento]
+    [Distribución]
+    [Reportes Financieros]
+  }
+  
+  package "Notificaciones" {
+    [Sistema de Eventos]
+    [Correo Electrónico]
+    [Notificaciones Push]
+  }
+  
+  package "Reportes" {
+    [Generación de Informes]
+    [Estadísticas]
+    [Exportación]
+  }
+}
+
+package "Base de Datos" {
+  database "PostgreSQL" {
+    [Modelos]
+    [Migraciones]
+    [Respaldos]
+  }
+}
+
+package "Servicios Externos" {
+  [Pasarela de Pagos]
+  [Servicio de Correo]
+  [Almacenamiento Cloud]
+}
+
+"Frontend" ..> "Backend" : usa
+"Backend" ..> "Base de Datos" : persiste
+"Backend" ..> "Servicios Externos" : integra
+
+@enduml

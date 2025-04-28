@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0 rounded-3">
+                <div class="card-header bg-primary text-white text-center py-3">
+                    <h3 class="h4 mb-0">Solicitud de Pedido Personalizado</h3>
+                    <p class="mb-0 mt-2">{{ empresa.nombre_empresa }}</p>
+                </div>
+                <div class="card-body p-4">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        {% if messages %}
+                            {% for message in messages %}
+                                <div class="alert alert-{{ message.tags }} rounded-2">
+                                    {{ message }}
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+
+                        <div class="mb-3">
+                            <label for="descripcion" class="form-label fw-medium">Descripción del Pedido</label>
+                            <textarea class="form-control rounded-2" id="descripcion" name="descripcion" rows="4" required placeholder="Describe los detalles de tu pedido personalizado..."></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="cantidad" class="form-label fw-medium">Cantidad</label>
+                            <input type="number" class="form-control rounded-2" id="cantidad" name="cantidad" min="1" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="fecha_entrega" class="form-label fw-medium">Fecha de Entrega Deseada</label>
+                            <input type="date" class="form-control rounded-2" id="fecha_entrega" name="fecha_entrega" required>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="imagen" class="form-label fw-medium">Imagen de Referencia (opcional)</label>
+                            <input type="file" class="form-control rounded-2" id="imagen" name="imagen" accept="image/*">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="tipo_prenda" class="form-label">Tipo de Prenda</label>
+                            <input type="text" class="form-control" id="tipo_prenda" name="tipo_prenda" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="descripcion" class="form-label">Descripción Detallada</label>
+                            <textarea class="form-control" id="descripcion" name="descripcion" rows="4" required></textarea>
+                            <small class="text-muted">Describe los detalles específicos de tu pedido, incluyendo estilo, materiales preferidos, etc.</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="talla" class="form-label">Talla</label>
+                            <select class="form-select" id="talla" name="talla" required>
+                                <option value="">Seleccione una talla</option>
+                                <option value="XS">XS</option>
+                                <option value="S">S</option>
+                                <option value="M">M</option>
+                                <option value="L">L</option>
+                                <option value="XL">XL</option>
+                                <option value="XXL">XXL</option>
+                                <option value="personalizada">Medidas Personalizadas</option>
+                            </select>
+                        </div>
+
+                        <div id="medidas_personalizadas" class="mb-3 d-none">
+                            <h5>Medidas Personalizadas</h5>
+                            <div class="row">
+                                <div class="col-md-6 mb-2">
+                                    <label for="medida_pecho" class="form-label">Pecho (cm)</label>
+                                    <input type="number" class="form-control" id="medida_pecho" name="medida_pecho">
+                                </div>
+                                <div class="col-md-6 mb-2">
+                                    <label for="medida_cintura" class="form-label">Cintura (cm)</label>
+                                    <input type="number" class="form-control" id="medida_cintura" name="medida_cintura">
+                                </div>
+                                <div class="col-md-6 mb-2">
+                                    <label for="medida_cadera" class="form-label">Cadera (cm)</label>
+                                    <input type="number" class="form-control" id="medida_cadera" name="medida_cadera">
+                                </div>
+                                <div class="col-md-6 mb-2">
+                                    <label for="medida_largo" class="form-label">Largo (cm)</label>
+                                    <input type="number" class="form-control" id="medida_largo" name="medida_largo">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="referencia_imagen" class="form-label">Imagen de Referencia</label>
+                            <input type="file" class="form-control" id="referencia_imagen" name="referencia_imagen" accept="image/*">
+                            <small class="text-muted">Sube una imagen que sirva como referencia para tu pedido (opcional)</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="fecha_deseada" class="form-label">Fecha Deseada de Entrega</label>
+                            <input type="date" class="form-control" id="fecha_deseada" name="fecha_deseada" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="presupuesto" class="form-label">Presupuesto Estimado</label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input type="number" class="form-control" id="presupuesto" name="presupuesto" required>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100">Enviar Solicitud</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('talla').addEventListener('change', function() {
+    const medidasPersonalizadas = document.getElementById('medidas_personalizadas');
+    if (this.value === 'personalizada') {
+        medidasPersonalizadas.classList.remove('d-none');
+        medidasPersonalizadas.querySelectorAll('input').forEach(input => input.required = true);
+    } else {
+        medidasPersonalizadas.classList.add('d-none');
+        medidasPersonalizadas.querySelectorAll('input').forEach(input => input.required = false);
+    }
+});
+</script>
+{% endblock %}

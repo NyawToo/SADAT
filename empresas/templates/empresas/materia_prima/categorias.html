@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>Gestión de Categorías de Materia Prima</h1>
+
+    <!-- Formulario para agregar/editar categoría -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Agregar Nueva Categoría</h5>
+            <form method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="categoria_id" id="categoria_id">
+                <div class="mb-3">
+                    <label for="nombre" class="form-label">Nombre</label>
+                    <input type="text" class="form-control" id="nombre" name="nombre" required>
+                </div>
+                <div class="mb-3">
+                    <label for="descripcion" class="form-label">Descripción</label>
+                    <textarea class="form-control" id="descripcion" name="descripcion" rows="3"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary" id="btnSubmit">Agregar Categoría</button>
+                <button type="button" class="btn btn-secondary" id="btnCancelar" style="display: none;">Cancelar</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Lista de categorías -->
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">Categorías Existentes</h5>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Descripción</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for categoria in categorias %}
+                        <tr>
+                            <td>{{ categoria.nombre }}</td>
+                            <td>{{ categoria.descripcion|default:'-' }}</td>
+                            <td>
+                                <button class="btn btn-sm btn-primary editar-categoria"
+                                        data-id="{{ categoria.id }}"
+                                        data-nombre="{{ categoria.nombre }}"
+                                        data-descripcion="{{ categoria.descripcion|default:'' }}">
+                                    <i class="bi bi-pencil"></i> Editar
+                                </button>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="3" class="text-center">No hay categorías registradas</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.querySelector('form');
+        const btnSubmit = document.getElementById('btnSubmit');
+        const btnCancelar = document.getElementById('btnCancelar');
+        const inputCategoriaId = document.getElementById('categoria_id');
+        const inputNombre = document.getElementById('nombre');
+        const inputDescripcion = document.getElementById('descripcion');
+
+        // Manejar clic en botón editar
+        document.querySelectorAll('.editar-categoria').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const id = this.dataset.id;
+                const nombre = this.dataset.nombre;
+                const descripcion = this.dataset.descripcion;
+
+                inputCategoriaId.value = id;
+                inputNombre.value = nombre;
+                inputDescripcion.value = descripcion;
+
+                btnSubmit.textContent = 'Actualizar Categoría';
+                btnCancelar.style.display = 'inline-block';
+                inputNombre.focus();
+            });
+        });
+
+        // Manejar clic en botón cancelar
+        btnCancelar.addEventListener('click', function() {
+            form.reset();
+            inputCategoriaId.value = '';
+            btnSubmit.textContent = 'Agregar Categoría';
+            btnCancelar.style.display = 'none';
+        });
+    });
+</script>
+{% endblock %}
+{% endblock %}

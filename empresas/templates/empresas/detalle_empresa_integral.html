@@ -1,0 +1,277 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<main class="container my-5">
+  <!-- Empresa Información -->
+  <section class="empresa-info mb-5">
+    <div class="card shadow-sm border-0 rounded-3">
+      <div class="card-header bg-primary text-white text-center py-3">
+        <h1 class="h3 mb-0">{{ empresa.nombre_empresa }}</h1>
+      </div>
+      <div class="card-body p-4">
+        <div class="row g-4">
+          <!-- Información General -->
+          <div class="col-md-4">
+            <div class="info-section p-3 bg-light rounded-2 h-100">
+              <h2 class="h5 fw-bold text-primary mb-3">Información General</h2>
+              <ul class="list-unstyled">
+                <li class="info-item mb-2 d-flex align-items-center">
+                  <i class="fas fa-building me-2 text-primary"></i>
+                  <span><strong>Tipo:</strong> {{ empresa.get_tipo_display }}</span>
+                </li>
+                <li class="info-item mb-2 d-flex align-items-center">
+                  <i class="fas fa-map-marker-alt me-2 text-primary"></i>
+                  <span><strong>Dirección:</strong> {{ empresa.direccion }}</span>
+                </li>
+                <li class="info-item mb-2 d-flex align-items-center">
+                  <i class="fas fa-phone me-2 text-primary"></i>
+                  <span><strong>Teléfono:</strong> {{ empresa.telefono }}</span>
+                </li>
+                <li class="info-item mb-2 d-flex align-items-center">
+                  <i class="fas fa-envelope me-2 text-primary"></i>
+                  <span><strong>Email:</strong> {{ empresa.email }}</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+          <!-- Estadísticas -->
+          <div class="col-md-4">
+            <div class="info-section p-3 bg-light rounded-2 h-100">
+              <h2 class="h5 fw-bold text-primary mb-3">Estadísticas</h2>
+              <ul class="list-unstyled">
+                <li class="info-item mb-2 d-flex align-items-center">
+                  <i class="fas fa-box me-2 text-primary"></i>
+                  <span><strong>Productos:</strong> {{ productos.count }}</span>
+                </li>
+                <li class="info-item mb-2 d-flex align-items-center">
+                  <i class="fas fa-check-circle me-2 text-primary"></i>
+                  <span><strong>Pedidos Completados:</strong> {{ pedidos_completados }}</span>
+                </li>
+                <li class="info-item mb-2 d-flex align-items-center">
+                  <i class="fas fa-star me-2 text-primary"></i>
+                  <span><strong>Calificación:</strong> {{ calificacion_promedio|default:"Sin calificaciones" }}</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+          <!-- Descripción -->
+          <div class="col-md-4">
+            <div class="info-section p-3 bg-light rounded-2 h-100">
+              <h2 class="h5 fw-bold text-primary mb-3">Descripción</h2>
+              <p class="text-muted mb-0">{{ empresa.descripcion|default:"Sin descripción disponible" }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Botón de Pedido Personalizado -->
+  <section class="text-center mb-5">
+    <a href="{% url 'solicitar_pedido_personalizado' empresa_id=empresa.id %}" class="btn btn-lg btn-primary">
+      <i class="fas fa-edit me-2"></i>Pedido Personalizado
+    </a>
+  </section>
+
+  <!-- Catálogo de Productos -->
+  <section class="catalogo-productos">
+    <div class="row g-4">
+      <!-- Filtros -->
+      <div class="col-md-3">
+        <div class="card shadow-sm border-0 rounded-3 filtros-card position-sticky" style="top: 1rem;">
+          <div class="card-header bg-primary text-white py-3">
+            <h2 class="h5 mb-0">Filtros</h2>
+          </div>
+          <div class="card-body p-4">
+            <form id="filtrosForm">
+              <div class="mb-3">
+                <label for="busqueda" class="form-label fw-medium">Buscar por nombre</label>
+                <input type="text" class="form-control rounded-2" id="busqueda" placeholder="Nombre del producto">
+              </div>
+              <div class="mb-3">
+                <label for="categoria" class="form-label fw-medium">Categoría</label>
+                <select class="form-select rounded-2" id="categoria">
+                  <option value="">Todas las categorías</option>
+                  {% for categoria in categorias %}
+                    <option value="{{ categoria }}">{{ categoria }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="mb-3">
+                <label class="form-label fw-medium">Rango de precio</label>
+                <div class="d-flex gap-2">
+                  <input type="number" class="form-control rounded-2" id="precioMin" placeholder="Mín">
+                  <input type="number" class="form-control rounded-2" id="precioMax" placeholder="Máx">
+                </div>
+              </div>
+              <button type="button" class="btn btn-primary w-100 rounded-2" onclick="aplicarFiltros()">Aplicar Filtros</button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- Lista de Productos -->
+      <div class="col-md-9">
+        <div class="card shadow-sm border-0 rounded-3">
+          <div class="card-header bg-primary text-white text-center py-3">
+            <h2 class="h4 mb-0">Productos Disponibles</h2>
+          </div>
+          <div class="card-body p-4">
+            <div class="row g-4" id="productosGrid">
+              {% for producto in productos %}
+                <div class="col-md-4">
+                  <div class="card producto-card h-100 shadow-sm border-0 rounded-3" id="producto-{{ producto.id }}">
+                    <a href="{% url 'detalle_producto' producto_id=producto.id %}" class="text-decoration-none">
+                      {% if producto.imagen %}
+                        <img src="{{ producto.imagen.url }}" class="card-img-top rounded-top-3" alt="{{ producto.nombre }}" style="height: 200px; object-fit: cover;">
+                      {% else %}
+                        <div class="card-img-top bg-light rounded-top-3 d-flex align-items-center justify-content-center" style="height: 200px;">
+                          <span class="text-muted">Sin imagen</span>
+                        </div>
+                      {% endif %}
+                      <div class="card-body p-3">
+                        <h3 class="card-title h6 fw-bold mb-2">{{ producto.nombre }}</h3>
+                        <p class="card-text text-muted small mb-2">
+                          <strong>Precio:</strong> ${{ producto.precio }}<br>
+                          <strong>Stock:</strong> <span class="stock-count">{{ producto.stock }}</span> unidades<br>
+                          <strong>Categoría:</strong> {{ producto.categoria }}
+                        </p>
+                        <p class="card-text text-muted small mb-0">{{ producto.descripcion|truncatewords:20 }}</p>
+                      </div>
+                    </a>
+                    {% if user.is_authenticated and user.tipo == 'cliente' %}
+                      <div class="card-footer bg-transparent border-0 p-3 pt-0">
+                        <div class="d-flex justify-content-between align-items-center">
+                          <input type="number" class="form-control w-50" id="cantidad-{{ producto.id }}" value="1" min="1" max="{{ producto.stock }}">
+                          <button class="btn btn-primary" onclick="agregarAlCarrito({{ producto.id }})">
+                            <i class="fas fa-shopping-cart me-2"></i>Agregar al Carrito
+                          </button>
+                        </div>
+                      </div>
+                    {% endif %}
+                  </div>
+                </div>
+              {% empty %}
+                <div class="col-12">
+                  <div class="alert alert-info rounded-2" role="alert">
+                    No hay productos disponibles en este momento.
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+{% if user.is_authenticated and user.tipo == 'cliente' %}
+{% csrf_token %}
+<script>
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+
+  function agregarAlCarrito(productoId) {
+    const csrftoken = getCookie('csrftoken');
+    const cantidad = document.getElementById(`cantidad-${productoId}`).value;
+    
+    fetch(`/pedidos/agregar-al-carrito/${productoId}/`, {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': csrftoken,
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: `cantidad=${cantidad}`
+    })
+    .then(response => {
+      if (!response.ok) {
+        // Intenta obtener texto si la respuesta no es OK, podría ser HTML de error
+        return response.text().then(text => {
+          throw new Error(`Error en la respuesta del servidor (${response.status}): ${text}`);
+        });
+      }
+      // Intenta parsear como JSON solo si la respuesta es OK
+      return response.json().catch(jsonError => {
+        // Si falla el parseo JSON, lanza un error específico
+        console.error('Error al parsear JSON:', jsonError);
+        throw new Error('La respuesta del servidor no es un JSON válido.');
+      });
+    })
+    .then(data => {
+      if (data.success) {
+        // Mostrar mensaje de éxito usando SweetAlert2 o alert normal
+        if (typeof Swal !== 'undefined') {
+          Swal.fire({
+            title: '¡Éxito!',
+            text: 'Producto agregado al carrito exitosamente',
+            icon: 'success',
+            confirmButtonText: 'Ok'
+          }).then(() => {
+            // Actualizar el contador del carrito en el navbar si existe
+            const cartCounter = document.querySelector('#cart-counter');
+            if (cartCounter) {
+              const currentCount = parseInt(cartCounter.textContent || '0');
+              cartCounter.textContent = currentCount + parseInt(cantidad);
+            }
+          });
+        } else {
+          alert('Producto agregado al carrito exitosamente');
+        }
+        
+        // Actualizar el stock mostrado en la página
+        const stockElement = document.querySelector(`#producto-${productoId} .stock-count`);
+        if (stockElement) {
+          stockElement.textContent = data.nuevo_stock;
+        }
+        // Opcional: Actualizar el atributo max del input de cantidad
+        const cantidadInput = document.getElementById(`cantidad-${productoId}`);
+        if (cantidadInput) {
+          cantidadInput.max = data.nuevo_stock;
+          // Si la cantidad actual supera el nuevo stock, ajustarla
+          if (parseInt(cantidadInput.value) > data.nuevo_stock) {
+             cantidadInput.value = data.nuevo_stock > 0 ? data.nuevo_stock : 1; 
+          }
+          if (data.nuevo_stock <= 0) {
+             cantidadInput.disabled = true; // Deshabilitar si no hay stock
+             // Considera deshabilitar también el botón de agregar
+             const addButton = cantidadInput.closest('.card-footer').querySelector('button');
+             if(addButton) addButton.disabled = true;
+          }
+        }
+
+      } else {
+        // Lanza error si data.success es false, usando el mensaje del servidor
+        throw new Error(data.error || 'Error desconocido al agregar al carrito');
+      }
+    })
+    .catch(error => {
+      console.error('Error en agregarAlCarrito:', error);
+      // Muestra el mensaje de error capturado
+      if (typeof Swal !== 'undefined') {
+        Swal.fire({
+          title: 'Error',
+          text: error.message || 'Ocurrió un error inesperado al agregar el producto al carrito.',
+          icon: 'error',
+          confirmButtonText: 'Ok'
+        });
+      } else {
+        alert(error.message || 'Error al agregar al carrito');
+      }
+    });
+  }
+</script>
+{% endif %}
+{% endblock %}

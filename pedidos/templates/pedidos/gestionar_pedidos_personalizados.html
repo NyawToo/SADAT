@@ -1,0 +1,150 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Gestionar Pedidos Personalizados</h2>
+    
+    <!-- Filtros -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="GET" class="row g-3">
+                <div class="col-md-4">
+                    <label for="estado" class="form-label">Estado</label>
+                    <select class="form-select" id="estado" name="estado">
+                        <option value="">Todos</option>
+                        {% for estado, display in ESTADOS %}
+                            <option value="{{ estado }}" {% if request.GET.estado == estado %}selected{% endif %}>
+                                {{ display }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label for="fecha" class="form-label">Fecha</label>
+                    <input type="date" class="form-control" id="fecha" name="fecha" value="{{ request.GET.fecha }}">
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary">Filtrar</button>
+                    {% if request.GET %}
+                        <a href="{% url 'gestionar_pedidos_personalizados' %}" class="btn btn-secondary ms-2">Limpiar</a>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Lista de Pedidos -->
+    <div class="card">
+        <div class="card-body">
+            {% if pedidos %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Cliente</th>
+                                <th>Descripción</th>
+                                <th>Cantidad</th>
+                                <th>Fecha Solicitud</th>
+                                <th>Fecha Entrega Est.</th>
+                                <th>Estado</th>
+                                <th>Cotización</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for pedido in pedidos %}
+                                <tr>
+                                    <td>{{ pedido.id }}</td>
+                                    <td>{{ pedido.cliente.username }}</td>
+                                    <td>{{ pedido.descripcion|truncatechars:50 }}</td>
+                                    <td>{{ pedido.cantidad }}</td>
+                                    <td>{{ pedido.fecha_solicitud|date:"d/m/Y H:i" }}</td>
+                                    <td>{{ pedido.fecha_entrega_estimada|date:"d/m/Y"|default:"--" }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ pedido.estado|lower }}-subtle text-{{ pedido.estado|lower }}">
+                                            {{ pedido.get_estado_display }}
+                                        </span>
+                                    </td>
+                                    <td>{{ pedido.cotizacion|default:"--" }}</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#detalleModal{{ pedido.id }}">
+                                            Ver Detalles
+                                        </button>
+                                    </td>
+                                </tr>
+                                
+                                <!-- Modal de Detalles -->
+                                <div class="modal fade" id="detalleModal{{ pedido.id }}" tabindex="-1">
+                                    <div class="modal-dialog modal-lg">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">Detalles del Pedido #{{ pedido.id }}</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <div class="row">
+                                                    <div class="col-md-6">
+                                                        <h6>Información del Cliente</h6>
+                                                        <p><strong>Nombre:</strong> {{ pedido.cliente.get_full_name }}</p>
+                                                        <p><strong>Email:</strong> {{ pedido.cliente.email }}</p>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <h6>Información del Pedido</h6>
+                                                        <p><strong>Cantidad:</strong> {{ pedido.cantidad }}</p>
+                                                        <p><strong>Fecha Solicitud:</strong> {{ pedido.fecha_solicitud|date:"d/m/Y H:i" }}</p>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="mt-3">
+                                                    <h6>Descripción</h6>
+                                                    <p>{{ pedido.descripcion }}</p>
+                                                </div>
+                                                
+                                                {% if pedido.referencia_imagen %}
+                                                    <div class="mt-3">
+                                                        <h6>Imagen de Referencia</h6>
+                                                        <img src="{{ pedido.referencia_imagen.url }}" class="img-fluid" style="max-height: 300px;">
+                                                    </div>
+                                                {% endif %}
+                                                
+                                                <form method="POST" action="{% url 'actualizar_pedido_personalizado' pedido.id %}" class="mt-4">
+                                                    {% csrf_token %}
+                                                    <div class="row g-3">
+                                                        <div class="col-md-6">
+                                                            <label class="form-label">Estado</label>
+                                                            <select name="estado" class="form-select" required>
+                                                                {% for estado, display in pedido.ESTADOS %}
+                                                                    <option value="{{ estado }}" {% if pedido.estado == estado %}selected{% endif %}>
+                                                                        {{ display }}
+                                                                    </option>
+                                                                {% endfor %}
+                                                            </select>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <label class="form-label">Cotización</label>
+                                                            <input type="number" name="cotizacion" class="form-control" value="{{ pedido.cotizacion|default:'' }}" step="0.01">
+                                                        </div>
+                                                    </div>
+                                                    <div class="mt-3">
+                                                        <button type="submit" class="btn btn-primary">Actualizar Pedido</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-4">
+                    <p class="mb-0">No hay pedidos personalizados para mostrar.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

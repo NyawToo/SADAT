@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <!-- Información de la Empresa -->
+        <div class="col-md-12 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="text-center">{{ empresa.nombre_empresa }}</h2>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h4>Información General</h4>
+                            <p><strong>Tipo:</strong> {{ empresa.get_tipo_display }}</p>
+                            <p><strong>Dirección:</strong> {{ empresa.direccion }}</p>
+                            <p><strong>Teléfono:</strong> {{ empresa.telefono }}</p>
+                            <p><strong>Email:</strong> {{ empresa.email }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h4>Capacidad y Recursos</h4>
+                            <p><strong>Capacidad de Producción:</strong> {{ empresa.capacidad_produccion }} unidades/día</p>
+                            <p><strong>Trabajadores:</strong> {{ empresa.numero_trabajadores }}</p>
+                            <p><strong>Estado:</strong> {% if empresa.disponible %}Disponible{% else %}No Disponible{% endif %}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Maquinaria -->
+        <div class="col-md-12 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="text-center">Maquinaria Disponible</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for maquina in maquinaria %}
+                        <div class="col-md-4 mb-4">
+                            <div class="card h-100">
+                                {% if maquina.imagen %}
+                                <img src="{{ maquina.imagen.url }}" class="card-img-top" alt="{{ maquina.nombre }}">
+                                {% endif %}
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ maquina.nombre }}</h5>
+                                    <p class="card-text">
+                                        <strong>Tipo:</strong> {{ maquina.tipo }}<br>
+                                        <strong>Estado:</strong> {{ maquina.estado }}<br>
+                                        <strong>Capacidad:</strong> {{ maquina.capacidad }}
+                                    </p>
+                                    <p class="card-text">{{ maquina.descripcion }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="col-12">
+                            <div class="alert alert-info" role="alert">
+                                No hay maquinaria registrada.
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Servicios Ofrecidos -->
+        <div class="col-md-12 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="text-center">Catálogo de Servicios</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for servicio in servicios %}
+                        <div class="col-md-4 mb-4">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ servicio.nombre }}</h5>
+                                    <p class="card-text">{{ servicio.descripcion }}</p>
+                                    <p class="card-text">
+                                        <strong>Rango de Precios:</strong><br>
+                                        ${{ servicio.precio_minimo }} - ${{ servicio.precio_maximo }}
+                                    </p>
+                                    {% if puede_solicitar %}
+                                    <a href="{% url 'solicitar_confeccion_servicio' servicio.id %}" class="btn btn-primary w-100">Solicitar Confección</a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="col-12">
+                            <div class="alert alert-info" role="alert">
+                                Esta empresa aún no ha registrado servicios.
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Historial de Trabajos -->
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="text-center">Historial de Trabajos</h3>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Trabajo</th>
+                                    <th>Cliente</th>
+                                    <th>Estado</th>
+                                    <th>Calificación</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for trabajo in historial_trabajos %}
+                                <tr>
+                                    <td>{{ trabajo.fecha|date:"d/m/Y" }}</td>
+                                    <td>{{ trabajo.descripcion }}</td>
+                                    <td>{{ trabajo.cliente }}</td>
+                                    <td>{{ trabajo.get_estado_display }}</td>
+                                    <td>{{ trabajo.calificacion|default:"Sin calificar" }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center">No hay trabajos registrados.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

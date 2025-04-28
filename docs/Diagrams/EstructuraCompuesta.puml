@@ -1,0 +1,108 @@
+@startuml
+title -DIAGRAMA DE ESTRUCTURA COMPUESTA SADAT-
+
+component "Sistema SADAT" {
+  interface "Interfaz Web" as web
+  interface "API REST" as api
+  interface "Base de Datos" as db
+  
+  component "Módulo de Usuarios" as users {
+    interface "Gestión" as gu
+    interface "Autenticación" as auth
+    
+    component "Registro" as reg
+    component "Perfiles" as perf
+    component "Roles" as roles
+    
+    reg -(0- gu
+    perf -(0- gu
+    roles -(0- auth
+  }
+  
+  component "Módulo de Empresas" as empresas {
+    interface "Gestión" as ge
+    
+    component "Integral" as integral
+    component "Satélite" as satelite
+    component "Catálogo" as catalogo
+    
+    integral -(0- ge
+    satelite -(0- ge
+    catalogo -(0- ge
+  }
+  
+  component "Módulo de Pedidos" as pedidos {
+    interface "Gestión" as gp
+    
+    component "Carrito" as cart
+    component "Órdenes" as orders
+    component "Seguimiento" as track
+    
+    cart -(0- gp
+    orders -(0- gp
+    track -(0- gp
+  }
+  
+  component "Módulo de Producción" as produccion {
+    interface "Control" as ctrl
+    
+    component "Asignación" as asign
+    component "Estados" as states
+    component "Calidad" as qc
+    
+    asign -(0- ctrl
+    states -(0- ctrl
+    qc -(0- ctrl
+  }
+  
+  component "Módulo de Pagos" as pagos {
+    interface "Transacciones" as trans
+    
+    component "Procesamiento" as proc
+    component "Distribución" as dist
+    component "Reportes" as rep
+    
+    proc -(0- trans
+    dist -(0- trans
+    rep -(0- trans
+  }
+  
+  component "Módulo de Notificaciones" as notif {
+    interface "Eventos" as events
+    
+    component "Email" as email
+    component "Sistema" as sys
+    component "Push" as push
+    
+    email -(0- events
+    sys -(0- events
+    push -(0- events
+  }
+  
+  component "Módulo de Reportes" as reportes {
+    interface "Gestión" as gr
+    
+    component "Generación" as gen
+    component "Estadísticas" as stats
+    component "Exportación" as export
+    
+    gen -(0- gr
+    stats -(0- gr
+    export -(0- gr
+  }
+}
+
+users.gu -(0- web
+pedidos.gp -(0- web
+empresas.ge -(0- web
+produccion.ctrl -(0- api
+pagos.trans -(0- api
+reportes.gr -(0- api
+notif.events -(0- db
+users.gu -(0- db
+pedidos.gp -(0- db
+empresas.ge -(0- db
+pagos.trans -(0- db
+reportes.gr -(0- db
+
+@enduml

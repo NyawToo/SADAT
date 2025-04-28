@@ -1,0 +1,200 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <!-- Formulario de Productos -->
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="text-center">{% if editing %}Editar{% else %}Agregar{% endif %} Producto</h3>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data" action="{% if editing %}{% url 'editar_producto' producto.id %}{% else %}{% url 'crear_producto' %}{% endif %}">
+                        {% csrf_token %}
+                        {% if messages %}
+                            {% for message in messages %}
+                                <div class="alert alert-{{ message.tags }}">
+                                    {{ message }}
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                        <div class="form-group mb-3">
+                            <label for="nombre">Nombre</label>
+                            <input type="text" class="form-control" id="nombre" name="nombre" value="{% if editing %}{{ producto.nombre }}{% endif %}" required>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label for="descripcion">Descripción</label>
+                            <textarea class="form-control" id="descripcion" name="descripcion" rows="3">{% if editing %}{{ producto.descripcion }}{% endif %}</textarea>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label for="precio">Precio</label>
+                            <input type="number" step="0.01" class="form-control" id="precio" name="precio" value="{% if editing %}{{ producto.precio }}{% endif %}" required>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label for="stock">Stock</label>
+                            <input type="number" class="form-control" id="stock" name="stock" value="{% if editing %}{{ producto.stock }}{% endif %}" required>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label for="categoria">Categoría</label>
+                            <select class="form-control" id="categoria" name="categoria" required>
+                                <option value="">Seleccione una categoría</option>
+                                {% for categoria in categorias %}
+                                <option value="{{ categoria.id }}" {% if editing and producto.categoria.id == categoria.id %}selected{% endif %}>{{ categoria.nombre }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label for="imagen">Imagen</label>
+                            {% if producto.imagen %}
+                            <div class="mb-2">
+                                <img src="{{ producto.imagen.url }}" alt="{{ producto.nombre }}" class="img-thumbnail" style="max-width: 200px;">
+                            </div>
+                            {% endif %}
+                            <input type="file" class="form-control" id="imagen" name="imagen" accept="image/*">
+                        </div>
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">{% if editing %}Actualizar{% else %}Agregar{% endif %}</button>
+                            {% if editing %}
+                            <a href="{% url 'gestionar_productos' %}" class="btn btn-secondary">Cancelar</a>
+                            {% endif %}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lista de Productos -->
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="text-center">Catálogo de Productos</h3>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Imagen</th>
+                                    <th>Nombre</th>
+                                    <th>Precio</th>
+                                    <th>Stock</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for producto in productos %}
+                                <tr>
+                                    <td>
+                                        {% if producto.imagen %}
+                                        <img src="{{ producto.imagen.url }}" alt="{{ producto.nombre }}" class="img-thumbnail" style="max-width: 50px;">
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ producto.nombre }}</td>
+                                    <td>${{ producto.precio }}</td>
+                                    <td>{{ producto.stock }}</td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a href="{% url 'editar_producto' producto.id %}" class="btn btn-sm btn-warning">Editar</a>
+                                            <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#eliminarModal{{ producto.id }}">Eliminar</button>
+                                        </div>
+                                        <!-- Modal de confirmación para eliminar -->
+                                        <div class="modal fade" id="eliminarModal{{ producto.id }}" tabindex="-1" aria-labelledby="eliminarModalLabel{{ producto.id }}" aria-hidden="true">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title" id="eliminarModalLabel{{ producto.id }}">Confirmar eliminación</h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        ¿Está seguro que desea eliminar el producto "{{ producto.nombre }}"?
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                                        <form method="POST" action="{% url 'eliminar_producto' producto.id %}" style="display: inline;">
+                                                            {% csrf_token %}
+                                                            <button type="submit" class="btn btn-danger">Eliminar</button>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center">No hay productos registrados.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Confirmación -->
+<div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmDeleteModalLabel">Confirmar Eliminación</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                ¿Está seguro que desea eliminar este producto?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form id="deleteForm" method="post" action="">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Eliminar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function confirmarEliminacion(id) {
+    const modal = new bootstrap.Modal(document.getElementById('confirmDeleteModal'));
+    const deleteForm = document.getElementById('deleteForm');
+    deleteForm.action = `/empresas/productos/${id}/eliminar/`;
+    modal.show();
+}
+
+// Validación del formulario antes de enviarlo
+document.querySelector('form').addEventListener('submit', function(event) {
+    const nombre = document.getElementById('nombre').value;
+    const precio = document.getElementById('precio').value;
+    const stock = document.getElementById('stock').value;
+    const categoria = document.getElementById('categoria').value;
+
+    if (!nombre) {
+        alert('El nombre es obligatorio.');
+        event.preventDefault();
+        return;
+    }
+    if (!precio || parseFloat(precio) <= 0) {
+        alert('El precio debe ser mayor que cero.');
+        event.preventDefault();
+        return;
+    }
+    if (!stock || parseInt(stock) < 0) {
+        alert('El stock no puede ser negativo.');
+        event.preventDefault();
+        return;
+    }
+    if (!categoria) {
+        alert('Debe seleccionar una categoría.');
+        event.preventDefault();
+        return;
+    }
+});
+</script>
+{% endblock %}

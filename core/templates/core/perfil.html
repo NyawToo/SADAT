@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="text-center">Mi Perfil</h2>
+                </div>
+                <div class="card-body">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }}">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="username">Nombre de usuario</label>
+                                    <input type="text" class="form-control" id="username" value="{{ user.username }}" readonly>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="tipo">Tipo de usuario</label>
+                                    <input type="text" class="form-control" id="tipo" value="{{ user.get_tipo_display }}" readonly>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label for="email">Correo electrónico</label>
+                            <input type="email" class="form-control" id="email" name="email" value="{{ user.email }}" required>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label for="telefono">Teléfono</label>
+                            <input type="tel" class="form-control" id="telefono" name="telefono" value="{{ user.telefono }}">
+                        </div>
+                        <div class="form-group mb-3">
+                            <label for="direccion">Dirección</label>
+                            <textarea class="form-control" id="direccion" name="direccion" rows="3">{{ user.direccion }}</textarea>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label>Fecha de registro</label>
+                            <input type="text" class="form-control" value="{{ user.fecha_registro|date:'d/m/Y H:i' }}" readonly>
+                        </div>
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">Actualizar Perfil</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

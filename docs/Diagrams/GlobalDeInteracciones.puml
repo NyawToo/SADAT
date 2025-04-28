@@ -1,0 +1,60 @@
+@startuml
+title -DIAGRAMA GLOBAL DE INTERACCIONES SADAT-
+
+actor Cliente as CL
+actor "Empresa Integral" as EI
+actor "Empresa Satélite" as ES
+participant "Sistema SADAT" as SYS
+participant "Gestión Pedidos" as GP
+participant "Gestión Pagos" as GPAY
+participant "Gestión Producción" as GPROD
+  
+  group Proceso de Registro y Pedido
+    CL -> SYS : registrar()
+    activate SYS
+    SYS --> CL : confirmación
+    deactivate SYS
+    
+    CL -> GP : crearPedido()
+    activate GP
+    GP -> EI : notificarPedido()
+    activate EI
+  end
+  
+  group Proceso de Producción
+    EI -> GPROD : evaluarCapacidad()
+    activate GPROD
+    
+    alt requiere satélite
+      EI -> ES : asignarTrabajo()
+      activate ES
+      ES -> GPROD : actualizarEstado()
+      GPROD --> EI : notificarAvance()
+      ES -> EI : entregarTrabajo()
+      deactivate ES
+    else producción interna
+      EI -> GPROD : producirInternamente()
+    end
+    
+    GPROD --> GP : actualizarEstadoPedido()
+    deactivate GPROD
+  end
+  
+  group Proceso de Pago
+    GP -> GPAY : solicitarPago()
+    activate GPAY
+    CL -> GPAY : realizarPago()
+    GPAY -> EI : confirmarPago()
+    GPAY -> ES : distribuirPago()
+    deactivate GPAY
+  end
+  
+  group Entrega y Calificación
+    EI -> CL : entregarProducto()
+    deactivate EI
+    CL -> SYS : calificarServicio()
+    
+    GP --> CL : confirmarEntrega()
+    deactivate GP
+  end
+@enduml

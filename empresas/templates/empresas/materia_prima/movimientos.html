@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>Movimientos de Materia Prima</h1>
+
+    <!-- Formulario para registrar movimiento -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Registrar Movimiento</h5>
+            <form method="POST">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="materia_prima" class="form-label">Materia Prima</label>
+                        <select class="form-control" id="materia_prima" name="materia_prima" required>
+                            <option value="">Seleccione una materia prima</option>
+                            {% for materia in materias_primas %}
+                            <option value="{{ materia.id }}">{{ materia.nombre }} ({{ materia.cantidad }} {{ materia.unidad_medida }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <label for="tipo" class="form-label">Tipo de Movimiento</label>
+                        <select class="form-control" id="tipo" name="tipo" required>
+                            <option value="entrada">Entrada</option>
+                            <option value="salida">Salida</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label for="cantidad" class="form-label">Cantidad</label>
+                        <input type="number" class="form-control" id="cantidad" name="cantidad" step="0.01" required>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label for="descripcion" class="form-label">Descripción</label>
+                        <input type="text" class="form-control" id="descripcion" name="descripcion" placeholder="Motivo del movimiento">
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">Registrar Movimiento</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Historial de movimientos -->
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">Historial de Movimientos</h5>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Materia Prima</th>
+                            <th>Tipo</th>
+                            <th>Cantidad</th>
+                            <th>Descripción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for movimiento in movimientos %}
+                        <tr>
+                            <td>{{ movimiento.fecha|date:"d/m/Y H:i" }}</td>
+                            <td>{{ movimiento.materia_prima.nombre }}</td>
+                            <td>
+                                {% if movimiento.tipo == 'entrada' %}
+                                <span class="badge bg-success">Entrada</span>
+                                {% else %}
+                                <span class="badge bg-warning">Salida</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ movimiento.cantidad }} {{ movimiento.materia_prima.unidad_medida }}</td>
+                            <td>{{ movimiento.descripcion|default:'-' }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center">No hay movimientos registrados</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const selectMateriaPrima = document.getElementById('materia_prima');
+        const inputCantidad = document.getElementById('cantidad');
+        const selectTipo = document.getElementById('tipo');
+        const form = document.querySelector('form');
+
+        // Validar cantidad disponible antes de enviar el formulario
+        form.addEventListener('submit', function(e) {
+            if (selectTipo.value === 'salida') {
+                const selectedOption = selectMateriaPrima.options[selectMateriaPrima.selectedIndex];
+                const stockActual = parseFloat(selectedOption.text.match(/(\d+(\.\d+)?)\s/)[1]);
+                const cantidadSalida = parseFloat(inputCantidad.value);
+
+                if (cantidadSalida > stockActual) {
+                    e.preventDefault();
+                    alert('No hay suficiente stock disponible para realizar esta salida.');
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}
+{% endblock %}

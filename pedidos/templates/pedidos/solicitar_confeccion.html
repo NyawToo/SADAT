@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="text-center">Solicitud de Confección</h3>
+                </div>
+                <div class="card-body">
+                    {% if servicio %}
+                    <div class="alert alert-info">
+                        <h5>Servicio seleccionado: {{ servicio.nombre }}</h5>
+                        <p>{{ servicio.descripcion }}</p>
+                        <p><strong>Rango de precios:</strong> ${{ servicio.precio_minimo }} - ${{ servicio.precio_maximo }}</p>
+                        <p><strong>Empresa:</strong> {{ empresa_satelite.nombre_empresa }}</p>
+                    </div>
+                    {% endif %}
+
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }}">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="descripcion" class="form-label">Descripción del Trabajo</label>
+                            <textarea class="form-control" id="descripcion" name="descripcion" rows="4" required>{{ form_data.descripcion|default_if_none:'' }}</textarea>
+                            <small class="text-muted">Describe detalladamente el trabajo que necesitas realizar</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="cantidad" class="form-label">Cantidad de prendas</label>
+                            <input type="number" class="form-control" id="cantidad" name="cantidad" min="1" value="{{ form_data.cantidad|default_if_none:'' }}" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="fecha_entrega" class="form-label">Fecha estimada de entrega</label>
+                            <input type="date" class="form-control" id="fecha_entrega" name="fecha_entrega" value="{{ form_data.fecha_entrega|default_if_none:'' }}" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="precio" class="form-label">Precio por prenda</label>
+                            <input type="number" class="form-control" id="precio" name="precio" 
+                                   min="{{ servicio.precio_minimo }}" max="{{ servicio.precio_maximo }}" step="0.01" 
+                                   value="{{ form_data.precio|default_if_none:'' }}" required>
+                            <small class="text-muted">El precio debe estar entre ${{ servicio.precio_minimo }} y ${{ servicio.precio_maximo }}</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="material_cliente" class="form-label">¿Proporcionas el material?</label>
+                            <select class="form-control" id="material_cliente" name="material_cliente" required>
+                                <option value="no" {% if form_data.material_cliente == 'no' %}selected{% endif %}>No</option>
+                                <option value="si" {% if form_data.material_cliente == 'si' %}selected{% endif %}>Sí</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3" id="detalles_material" style="display: {% if form_data.material_cliente == 'si' %}block{% else %}none{% endif %};">
+                            <label for="descripcion_material" class="form-label">Descripción del material</label>
+                            <textarea class="form-control" id="descripcion_material" name="descripcion_material" rows="4"
+                                      {% if form_data.material_cliente == 'si' %}required{% endif %}>{{ form_data.descripcion_material|default_if_none:'' }}</textarea>
+                            <small class="text-muted">Describe los detalles del material que proporcionarás</small>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100">Enviar Solicitud</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('material_cliente').addEventListener('change', function() {
+    const detallesMaterial = document.getElementById('detalles_material');
+    const descripcionMaterial = document.getElementById('descripcion_material');
+    
+    if (this.value === 'si') {
+        detallesMaterial.style.display = 'block';
+        descripcionMaterial.required = true;
+    } else {
+        detallesMaterial.style.display = 'none';
+        descripcionMaterial.required = false;
+    }
+});
+</script>
+{% endblock %}

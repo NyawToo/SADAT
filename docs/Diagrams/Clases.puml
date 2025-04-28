@@ -1,0 +1,230 @@
+@startuml
+title -DIAGRAMA DE CLASES SADAT-
+
+class Usuario {
+  -id: Integer
+  -username: String
+  -email: String
+  -password: String
+  -tipo: TipoUsuario
+  -telefono: String
+  -direccion: Text
+  -fecha_registro: DateTime
+  +registrar()
+  +autenticar()
+  +actualizarPerfil()
+}
+
+class MicroempresaIntegral {
+  -id: Integer
+  -nombre_empresa: String
+  -descripcion: Text
+  -rut_empresa: String
+  -imagen: String
+  +gestionarCatalogo()
+  +gestionarPedidos()
+  +gestionarProductos()
+}
+
+class MicroempresaSatelite {
+  -id: Integer
+  -nombre_empresa: String
+  -descripcion: Text
+  -rut_empresa: String
+  -imagen: String
+  +gestionarServicios()
+  +gestionarSolicitudes()
+}
+
+class CategoriaProducto {
+  -id: Integer
+  -nombre: String
+  -descripcion: Text
+}
+
+class ProductoTerminado {
+  -id: Integer
+  -nombre: String
+  -descripcion: Text
+  -precio: Decimal
+  -stock: Integer
+  -imagen: String
+  +actualizarStock()
+  +calcularCalificacionPromedio()
+}
+
+class ComentarioProducto {
+  -id: Integer
+  -texto: Text
+  -fecha: DateTime
+  -likes: Integer
+  -dislikes: Integer
+  +registrarLike()
+  +registrarDislike()
+}
+
+class CalificacionProducto {
+  -id: Integer
+  -puntuacion: Integer
+  -fecha: DateTime
+  +registrar()
+}
+
+class Notificacion {
+  -id: Integer
+  -titulo: String
+  -mensaje: Text
+  -fecha: DateTime
+  -tipo: TipoNotificacion
+  -leida: Boolean
+  +marcarComoLeida()
+  +enviar()
+}
+
+class Transaccion {
+  -id: Integer
+  -monto: Decimal
+  -fecha: DateTime
+  -estado: EstadoTransaccion
+  -metodo_pago: String
+  -descripcion: Text
+  +procesarPago()
+  +actualizarEstado()
+  +generarComprobante()
+}
+
+class Reporte {
+  -id: Integer
+  -titulo: String
+  -contenido: Text
+  -fecha_generacion: DateTime
+  -tipo: TipoReporte
+  +generarReporte()
+  +exportarPDF()
+}
+
+class Queja {
+  -id: Integer
+  -asunto: String
+  -descripcion: Text
+  -fecha: DateTime
+  -estado: EstadoQueja
+  +actualizarEstado()
+  +responder()
+}
+
+class Servicio {
+  -id: Integer
+  -nombre: String
+  -descripcion: Text
+  -precio_minimo: Decimal
+  -precio_maximo: Decimal
+  -fecha_creacion: DateTime
+  +cotizar()
+}
+
+class Carrito {
+  -id: Integer
+  -fecha_creacion: DateTime
+  -fecha_actualizacion: DateTime
+  +agregarItem()
+  +eliminarItem()
+  +calcularTotal()
+}
+
+class ItemCarrito {
+  -id: Integer
+  -cantidad: Integer
+  -fecha_agregado: DateTime
+  +actualizarCantidad()
+  +calcularSubtotal()
+}
+
+class Pedido {
+  -id: Integer
+  -cantidad: Integer
+  -fecha_pedido: DateTime
+  -fecha_entrega: Date
+  -estado: EstadoPedido
+  -total: Decimal
+  +calcularTotal()
+  +actualizarEstado()
+}
+
+class DetallePedido {
+  -id: Integer
+  -cantidad: Integer
+  -precio_unitario: Decimal
+  -subtotal: Decimal
+  +calcularSubtotal()
+}
+
+class PedidoPersonalizado {
+  -id: Integer
+  -descripcion: Text
+  -cantidad: Integer
+  -fecha_solicitud: DateTime
+  -estado: EstadoPedido
+  -cotizacion: Decimal
+  -fecha_entrega_estimada: Date
+  -referencia_imagen: String
+  +actualizarEstado()
+  +registrarCotizacion()
+}
+
+class SolicitudConfeccion {
+  -id: Integer
+  -descripcion: Text
+  -cantidad: Integer
+  -fecha_solicitud: DateTime
+  -estado: EstadoSolicitud
+  -material_cliente: Boolean
+  -detalles_material: Text
+  +actualizarEstado()
+  +registrarCotizacion()
+}
+
+Usuario "1" -- "1" MicroempresaIntegral
+Usuario "1" -- "1" MicroempresaSatelite
+Usuario "1" -- "1" Carrito
+
+MicroempresaIntegral "1" -- "*" ProductoTerminado
+MicroempresaSatelite "1" -- "*" Servicio
+
+ProductoTerminado "*" -- "1" CategoriaProducto
+ProductoTerminado "1" -- "*" ComentarioProducto
+ProductoTerminado "1" -- "*" CalificacionProducto
+
+Carrito "1" -- "*" ItemCarrito
+ItemCarrito "*" -- "1" ProductoTerminado
+
+Usuario "1" -- "*" Pedido
+Pedido "1" -- "*" DetallePedido
+DetallePedido "*" -- "1" ProductoTerminado
+
+Usuario "1" -- "*" PedidoPersonalizado
+PedidoPersonalizado "*" -- "1" MicroempresaIntegral
+
+Usuario "1" -- "*" SolicitudConfeccion
+SolicitudConfeccion "*" -- "1" MicroempresaSatelite
+SolicitudConfeccion "*" -- "0..1" MicroempresaIntegral
+
+ComentarioProducto "*" -- "1" Usuario
+CalificacionProducto "*" -- "1" Usuario
+
+Usuario "1" -- "*" Notificacion
+Notificacion "*" -- "*" Pedido
+Notificacion "*" -- "*" SolicitudConfeccion
+
+Pedido "1" -- "*" Transaccion
+PedidoPersonalizado "1" -- "*" Transaccion
+SolicitudConfeccion "1" -- "*" Transaccion
+
+Usuario "1" -- "*" Queja
+Queja "*" -- "0..1" Pedido
+Queja "*" -- "0..1" SolicitudConfeccion
+
+MicroempresaIntegral "1" -- "*" Reporte
+MicroempresaSatelite "1" -- "*" Reporte
+
+@enduml

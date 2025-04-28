@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card">
+        <div class="card-header">
+            <h2 class="text-center">Catálogo de Empresas</h2>
+        </div>
+        <div class="card-body">
+            <div class="row justify-content-center">
+                <div class="col-md-6 mb-4">
+                    <a href="{% url 'catalogo_integrales' %}" class="btn btn-primary btn-lg btn-block">
+                        <h4 class="mb-0">Microempresas Integrales</h4>
+                    </a>
+                </div>
+                <div class="col-md-6 mb-4">
+                    <a href="{% url 'catalogo_satelites' %}" class="btn btn-primary btn-lg btn-block">
+                        <h4 class="mb-0">Microempresas Satélites</h4>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.getElementById('aplicarFiltros').addEventListener('click', function() {
+        const tipo = document.getElementById('tipo').value;
+        const ubicacion = document.getElementById('ubicacion').value;
+        
+        // Aquí se implementará la lógica de filtrado
+        // Se puede usar AJAX para actualizar la lista sin recargar la página
+    });
+</script>
+{% endblock %}

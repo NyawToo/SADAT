@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0 rounded-3">
+                <div class="card-header bg-primary text-white py-3">
+                    <h3 class="h4 mb-0">Confirmar Pago</h3>
+                </div>
+                <div class="card-body p-4">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} rounded-2">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <div class="mb-4">
+                        <h4 class="mb-3">Resumen del Pedido</h4>
+                        <div class="table-responsive">
+                            <table class="table">
+                                <tbody>
+                                    <tr>
+                                        <td>Número de Pedido:</td>
+                                        <td class="text-end">#{{ transaccion.pedido.id }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Producto:</td>
+                                        <td class="text-end">{{ transaccion.pedido.producto.nombre }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Cantidad:</td>
+                                        <td class="text-end">{{ transaccion.pedido.cantidad }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Total a Pagar:</td>
+                                        <td class="text-end fw-bold">${{ transaccion.monto }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <h4 class="mb-3">Método de Pago</h4>
+                        <p class="mb-2">Has seleccionado: <strong>{{ transaccion.get_metodo_pago_display }}</strong></p>
+                        
+                        {% if transaccion.metodo_pago == 'transfer' %}
+                            <div class="alert alert-info">
+                                <h5 class="alert-heading">Instrucciones para Transferencia Bancaria</h5>
+                                <p>Por favor, realiza la transferencia a la siguiente cuenta:</p>
+                                <ul class="mb-0">
+                                    <li>Banco: Banco Ejemplo</li>
+                                    <li>Cuenta: 1234-5678-9012</li>
+                                    <li>Beneficiario: SADAT</li>
+                                    <li>Monto: ${{ transaccion.monto }}</li>
+                                </ul>
+                            </div>
+                        {% elif transaccion.metodo_pago == 'card' and transaccion.stripe_payment_intent_id %}
+                            <div class="alert alert-info">
+                                <h5 class="alert-heading">Pago con Tarjeta</h5>
+                                <p>Tu pago está siendo procesado por Stripe.</p>
+                                <p>ID de Transacción: {{ transaccion.stripe_payment_intent_id }}</p>
+                                <p>Estado: {{ transaccion.get_estado_display }}</p>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                Confirmar Pago
+                            </button>
+                            <a href="{% url 'mis_pedidos' %}" class="btn btn-outline-secondary">
+                                Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

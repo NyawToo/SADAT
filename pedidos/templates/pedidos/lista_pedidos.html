@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Lista de Pedidos</h2>
+    
+    <!-- Filtros y Ordenamiento -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-4">
+                    <label for="estado" class="form-label">Estado</label>
+                    <select name="estado" id="estado" class="form-select">
+                        <option value="">Todos</option>
+                        <option value="pendiente">Pendiente</option>
+                        <option value="en_proceso">En Proceso</option>
+                        <option value="completado">Completado</option>
+                        <option value="cancelado">Cancelado</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label for="orden" class="form-label">Ordenar por</label>
+                    <select name="orden" id="orden" class="form-select">
+                        <option value="fecha_desc">Fecha (más reciente)</option>
+                        <option value="fecha_asc">Fecha (más antiguo)</option>
+                        <option value="estado">Estado</option>
+                    </select>
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary">Aplicar Filtros</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Lista de Pedidos -->
+    {% if pedidos %}
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead class="table-light">
+                <tr>
+                    <th>Nº Pedido</th>
+                    <th>Fecha</th>
+                    <th>Producto/Servicio</th>
+                    <th>Estado</th>
+                    <th>Total</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for pedido in pedidos %}
+                <tr>
+                    <td>#{{ pedido.id }}</td>
+                    <td>{{ pedido.fecha_creacion|date:"d/m/Y H:i" }}</td>
+                    <td>
+                        {% if pedido.producto %}
+                            {{ pedido.producto.nombre }}
+                        {% elif pedido.servicio %}
+                            {{ pedido.servicio.nombre }}
+                        {% else %}
+                            Pedido Personalizado
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="badge {% if pedido.estado == 'pendiente' %}bg-warning
+                                     {% elif pedido.estado == 'en_proceso' %}bg-info
+                                     {% elif pedido.estado == 'completado' %}bg-success
+                                     {% else %}bg-danger{% endif %}">
+                            {{ pedido.get_estado_display }}
+                        </span>
+                    </td>
+                    <td>${{ pedido.total|floatformat:2 }}</td>
+                    <td>
+                        <a href="{% url 'detalle_pedido' pedido.id %}" class="btn btn-sm btn-info">
+                            <i class="fas fa-eye"></i> Ver Detalles
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Paginación -->
+    {% if is_paginated %}
+    <nav aria-label="Navegación de páginas" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}">&laquo; Anterior</a>
+            </li>
+            {% endif %}
+
+            {% for num in page_obj.paginator.page_range %}
+            <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+            </li>
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}">Siguiente &raquo;</a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+
+    {% else %}
+    <div class="alert alert-info" role="alert">
+        No hay pedidos para mostrar.
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

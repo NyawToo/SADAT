@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<div class="container-fluid px-0">
+    <!-- Contenedor 1: Sobre la empresa -->
+    <section class="info-section section-about">
+        <div class="container py-5">
+            <div class="row align-items-center">
+                <div class="col-lg-6 mb-4 mb-lg-0">
+                    <h2 class="section-title">Sobre Nosotros</h2>
+                    <p class="section-text">
+                        Somos una plataforma dedicada a conectar microempresas de costura con clientes, facilitando la creación y entrega de productos textiles de alta calidad. Nuestro objetivo es apoyar a las microempresas integrales y satélite en su crecimiento, mientras ofrecemos a los clientes una experiencia sencilla y confiable para adquirir prendas personalizadas o listas para usar.
+                    </p>
+                </div>
+                <div class="col-lg-6">
+                    <img src="{% static 'media_sistema/sobrenosotros.png' %}" alt="Sobre la empresa" class="img-fluid rounded">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contenedor 2: Microempresas Integrales y Satélite -->
+    <section class="info-section section-empresas">
+        <div class="container py-5">
+            <h2 class="section-title text-center mb-5">Nuestras Microempresas</h2>
+            <div class="row">
+                <div class="col-md-6 mb-4">
+                    <h3 class="subsection-title">Microempresas Integrales</h3>
+                    <p class="section-text">
+                        Las microempresas integrales manejan todo el proceso de producción, desde la compra de materia prima hasta la venta de productos terminados. En nuestra plataforma, pueden gestionar sus inventarios, recibir pedidos personalizados y conectar con clientes que buscan productos únicos.
+                    </p>
+                </div>
+                <div class="col-md-6 mb-4">
+                    <h3 class="subsection-title">Microempresas Satélite</h3>
+                    <p class="section-text">
+                        Las microempresas satélite se especializan en la confección de prendas a partir de cortes recibidos. Aquí pueden mostrar su capacidad de producción, recibir solicitudes de confección y colaborar con clientes o microempresas integrales para cumplir con pedidos específicos.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contenedor 3: Qué encontrarás -->
+    <section class="info-section section-features">
+        <div class="container py-5">
+            <h2 class="section-title text-center mb-5">¿Qué Encontrarás?</h2>
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <div class="feature-card">
+                        <h4>Explora y Compra</h4>
+                        <p>Descubre un catálogo de productos y microempresas, filtra por tipo o ubicación, y realiza pedidos personalizados o estándar.</p>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="feature-card">
+                        <h4>Gestiona tu Negocio</h4>
+                        <p>Si eres una microempresa, administra tus inventarios, pedidos y solicitudes de confección de manera eficiente.</p>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="feature-card">
+                        <h4>Pagos Seguros</h4>
+                        <p>Realiza y recibe pagos de forma segura a través de nuestra pasarela integrada, con notificaciones automáticas.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sección para usuarios autenticados -->
+    <div class="container mt-5">
+        <div class="text-center py-5">
+            {% if user.is_authenticated %}
+                {% if user.tipo == 'integral' %}
+                    <div class="row justify-content-center">
+                        <div class="col-md-4 col-sm-6 mb-4">
+                            <div class="card h-100 shadow-sm">
+                                <div class="card-body d-flex flex-column">
+                                    <h5 class="card-title">Gestión de Productos</h5>
+                                    <p class="card-text flex-grow-1">Administra tu catálogo de productos y materias primas.</p>
+                                    <a href="{% url 'gestionar_productos' %}" class="btn btn-primary mt-auto">Ir a Productos</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 col-sm-6 mb-4">
+                            <div class="card h-100 shadow-sm">
+                                <div class="card-body d-flex flex-column">
+                                    <h5 class="card-title">Pedidos</h5>
+                                    <p class="card-text flex-grow-1">Gestiona los pedidos de tus clientes.</p>
+                                    <a href="{% url 'gestionar_pedidos' %}" class="btn btn-primary mt-auto">Ver Pedidos</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 col-sm-6 mb-4">
+                            <div class="card h-100 shadow-sm">
+                                <div class="card-body d-flex flex-column">
+                                    <h5 class="card-title">Satélites</h5>
+                                    <p class="card-text flex-grow-1">Administra tus conexiones con empresas satélite.</p>
+                                    <a href="#" class="btn btn-primary mt-auto">Gestionar Satélites</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% elif user.tipo == 'satelite' %}
+                    <div class="row justify-content-center">
+                        <div class="col-md-6 col-sm-6 mb-4">
+                            <div class="card h-100 shadow-sm">
+                                <div class="card-body d-flex flex-column">
+                                    <h5 class="card-title">Solicitudes de Confección</h5>
+                                    <p class="card-text flex-grow-1">Revisa y gestiona las solicitudes de confección.</p>
+                                    <a href="{% url 'gestionar_solicitudes_confeccion' %}" class="btn btn-primary mt-auto">Ver Solicitudes</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-sm-6 mb-4">
+                            <div class="card h-100 shadow-sm">
+                                <div class="card-body d-flex flex-column">
+                                    <h5 class="card-title">Mi Capacidad</h5>
+                                    <p class="card-text flex-grow-1">Administra tu capacidad de producción y maquinaria.</p>
+                                    <a href="{% url 'editar_perfil_satelite' %}" class="btn btn-primary mt-auto">Gestionar Capacidad</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="row justify-content-center">
+                        <div class="col-md-6 col-sm-6 mb-4">
+                            <div class="card h-100 shadow-sm">
+                                <div class="card-body d-flex flex-column">
+                                    <h5 class="card-title">Catálogo</h5>
+                                    <p class="card-text flex-grow-1">Explora nuestro catálogo de productos.</p>
+                                    <a href="{% url 'catalogo_empresas' %}" class="btn btn-primary mt-auto">Ver Catálogo</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-sm-6 mb-4">
+                            <div class="card h-100 shadow-sm">
+                                <div class="card-body d-flex flex-column">
+                                    <h5 class="card-title">Mis Pedidos</h5>
+                                    <p class="card-text flex-grow-1">Revisa el estado de tus pedidos.</p>
+                                    <a href="{% url 'mis_pedidos' %}" class="btn btn-primary mt-auto">Ver Mis Pedidos</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

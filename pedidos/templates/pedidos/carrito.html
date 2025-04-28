@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<main class="container my-5">
+  <div class="row g-4">
+    <!-- Carrito de Compras -->
+    <div class="col-lg-8 col-md-12">
+      <div class="card shadow-sm border-0 rounded-3">
+        <div class="card-header bg-primary text-white py-3 d-flex justify-content-between align-items-center">
+          <h2 class="h4 mb-0">Carro ({{ items_carrito|length }} producto{{ items_carrito|length|pluralize }})</h2>
+          <div class="dropdown">
+            <button class="btn btn-link text-white p-0" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+              <i class="fas fa-ellipsis-v fa-lg"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
+              <li>
+                <a class="dropdown-item" href="#" onclick="toggleCheckboxes(); return false;" id="toggle-selection">
+                  <i class="fas fa-check-square me-2"></i>
+                  <span id="toggle-text">Seleccionar</span>
+                </a>
+              </li>
+              <li>
+                <a class="dropdown-item text-danger d-none" href="#" onclick="eliminarDelCarrito(); return false;" id="delete-selected">
+                  <i class="fas fa-trash me-2"></i>
+                  <span>Borrar seleccionados</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div class="card-body p-4">
+          {% if items_carrito %}
+            <div class="table-responsive">
+              <table class="table table-hover align-middle">
+                <thead>
+                  <tr>
+                    <th scope="col" class="checkbox-column d-none"></th>
+                    <th scope="col">Producto</th>
+                    <th scope="col" class="text-center">Detalles</th>
+                    <th scope="col" class="text-end">Subtotal</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for item in items_carrito %}
+                    <tr data-item-id="{{ item.id }}">
+                      <td class="checkbox-column d-none">
+                        <input type="checkbox" class="item-checkbox" id="checkbox-{{ item.id }}">
+                      </td>
+                      <td>
+                        <div class="d-flex align-items-center gap-3">
+                          {% if item.producto.imagen %}
+                            <img src="{{ item.producto.imagen.url }}" alt="{{ item.producto.nombre }}" class="rounded-2" style="width: 80px; height: 80px; object-fit: cover;">
+                          {% else %}
+                            <div class="bg-light rounded-2 d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                              <span class="text-muted small">Sin imagen</span>
+                            </div>
+                          {% endif %}
+                          <div>
+                            <h3 class="h6 mb-1">{{ item.producto.nombre }}</h3>
+                            <p class="text-muted small mb-0">{{ item.producto.empresa.nombre }}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td class="text-center">
+                        <p class="mb-1">Precio unitario: <span class="precio">${{ item.producto.precio|floatformat:2 }}</span></p>
+                        <p class="text-muted small mb-0">Cantidad: <span class="cantidad">{{ item.cantidad }}</span></p>
+                      </td>
+                      <td class="text-end">
+                        <span class="text-primary fw-bold">${{ item.subtotal|floatformat:2 }}</span>
+                      </td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          {% else %}
+            <div class="alert alert-info rounded-2" role="alert">
+              Tu carrito está vacío. <a href="{% url 'lista_productos' %}" class="alert-link">¡Comienza a comprar!</a>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Resumen de Compra -->
+    <div class="col-lg-4 col-md-12">
+      <div class="card shadow-sm border-0 rounded-3">
+        <div class="card-header bg-primary text-white py-3">
+          <h2 class="h4 mb-0">Resumen de la orden</h2>
+        </div>
+        <div class="card-body p-4">
+          <div class="d-flex justify-content-between mb-3">
+            <span>Subtotal:</span>
+            <span id="subtotal">${{ subtotal|floatformat:2 }}</span>
+          </div>
+          <div class="d-flex justify-content-between mb-3">
+            <span>IVA (19%):</span>
+            <span id="iva">${{ iva|floatformat:2 }}</span>
+          </div>
+          <hr class="my-3">
+          <div class="d-flex justify-content-between mb-3">
+            <span class="fw-bold">Total a pagar:</span>
+            <span id="total" class="text-primary fw-bold">${{ total|floatformat:2 }}</span>
+          </div>
+          {% if items_carrito %}
+            <a href="{% url 'ejecucion_pago' %}" class="btn btn-primary w-100 rounded-2">Continuar compra</a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+{% endblock %}

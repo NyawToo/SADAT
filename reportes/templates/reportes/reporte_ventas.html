@@ -1,0 +1,191 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <h2>Reporte de Ventas</h2>
+
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Total Ventas</h5>
+                    <h3 class="text-primary">${{ estadisticas.total_ventas }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Pedidos Completados</h5>
+                    <h3 class="text-success">{{ estadisticas.pedidos_completados }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Productos Vendidos</h5>
+                    <h3 class="text-info">{{ estadisticas.productos_vendidos }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Promedio por Venta</h5>
+                    <h3 class="text-warning">${{ estadisticas.promedio_venta }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Ventas por Período</h5>
+                    <canvas id="graficoVentas"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Productos Más Vendidos</h5>
+                    <canvas id="graficoProductos"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label for="fecha_inicio" class="form-label">Fecha Inicio</label>
+                    <input type="date" class="form-control" id="fecha_inicio" name="fecha_inicio" value="{{ filtros.fecha_inicio }}">
+                </div>
+                <div class="col-md-3">
+                    <label for="fecha_fin" class="form-label">Fecha Fin</label>
+                    <input type="date" class="form-control" id="fecha_fin" name="fecha_fin" value="{{ filtros.fecha_fin }}">
+                </div>
+                <div class="col-md-3">
+                    <label for="categoria" class="form-label">Categoría</label>
+                    <select class="form-select" id="categoria" name="categoria">
+                        <option value="">Todas</option>
+                        {% for categoria in categorias %}
+                        <option value="{{ categoria.id }}" {% if filtros.categoria == categoria.id %}selected{% endif %}>{{ categoria.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="ordenar_por" class="form-label">Ordenar Por</label>
+                    <select class="form-select" id="ordenar_por" name="ordenar_por">
+                        <option value="fecha" {% if filtros.ordenar_por == 'fecha' %}selected{% endif %}>Fecha</option>
+                        <option value="monto" {% if filtros.ordenar_por == 'monto' %}selected{% endif %}>Monto</option>
+                        <option value="cantidad" {% if filtros.ordenar_por == 'cantidad' %}selected{% endif %}>Cantidad</option>
+                    </select>
+                </div>
+                <div class="col-12">
+                    <button type="submit" class="btn btn-primary">Aplicar Filtros</button>
+                    <a href="{% url 'reporte_ventas' %}" class="btn btn-secondary">Limpiar Filtros</a>
+                    <button type="button" class="btn btn-success" onclick="exportarReporte()">Exportar Reporte</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Producto</th>
+                    <th>Cantidad</th>
+                    <th>Precio Unitario</th>
+                    <th>Total</th>
+                    <th>Cliente</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for venta in ventas %}
+                <tr>
+                    <td>{{ venta.fecha }}</td>
+                    <td>{{ venta.producto.nombre }}</td>
+                    <td>{{ venta.cantidad }}</td>
+                    <td>${{ venta.precio_unitario }}</td>
+                    <td>${{ venta.total }}</td>
+                    <td>{{ venta.cliente.nombre }}</td>
+                    <td>
+                        <span class="badge {% if venta.estado == 'completado' %}bg-success{% elif venta.estado == 'pendiente' %}bg-warning{% else %}bg-danger{% endif %}">
+                            {{ venta.estado }}
+                        </span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Configuración del gráfico de ventas
+const ctxVentas = document.getElementById('graficoVentas').getContext('2d');
+const graficoVentas = new Chart(ctxVentas, {
+    type: 'line',
+    data: {
+        labels: {{ labels_ventas|safe }},
+        datasets: [{
+            label: 'Ventas',
+            data: {{ datos_ventas }},
+            borderColor: 'rgb(75, 192, 192)',
+            tension: 0.1
+        }]
+    },
+    options: {
+        responsive: true,
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+
+// Configuración del gráfico de productos
+const ctxProductos = document.getElementById('graficoProductos').getContext('2d');
+const graficoProductos = new Chart(ctxProductos, {
+    type: 'doughnut',
+    data: {
+        labels: {{ labels_productos|safe }},
+        datasets: [{
+            data: {{ datos_productos }},
+            backgroundColor: [
+                'rgb(255, 99, 132)',
+                'rgb(54, 162, 235)',
+                'rgb(255, 205, 86)',
+                'rgb(75, 192, 192)',
+                'rgb(153, 102, 255)'
+            ]
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'right'
+            }
+        }
+    }
+});
+
+function exportarReporte() {
+    // Implementar lógica de exportación
+    alert('Exportando reporte...');
+}
+</script>
+{% endblock %}
+{% endblock %}
