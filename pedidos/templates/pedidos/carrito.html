@@ -74,8 +74,14 @@
               </table>
             </div>
           {% else %}
-            <div class="alert alert-info rounded-2" role="alert">
-              Tu carrito está vacío. <a href="{% url 'lista_productos' %}" class="alert-link">¡Comienza a comprar!</a>
+            <div  role="alert" style="display: block; opacity: 1;">
+              <div class="d-flex align-items-center">
+                <i class="fas fa-shopping-cart me-2"></i>
+                <div>
+                  <strong>Tu carrito está vacío</strong><br>
+                  <a href="{% url 'home' %}" class="alert-link">¡Comienza a comprar!</a>
+                </div>
+              </div>
             </div>
           {% endif %}
         </div>
