@@ -39,3 +39,66 @@ class Usuario(AbstractUser):
     
     def __str__(self):
         return f'{self.username} ({self.get_tipo_display()})'
+    
+    def save(self, *args, **kwargs):
+        # Validar y sincronizar tipo de usuario con permisos
+        if self.is_superuser:
+            self.tipo = 'superusuario'
+            self.is_staff = True
+        elif self.tipo == 'superusuario' and not self.is_superuser:
+            self.tipo = 'cliente'
+            self.is_staff = False
+        
+        # Asegurar que usuarios empresariales tengan is_staff
+        if self.tipo in ['integral', 'satelite']:
+            self.is_staff = True
+        
+        # Validar existencia de empresa antes de guardar
+        if not self._state.adding:  # Si no es una nueva instancia
+            from empresas.models import MicroempresaIntegral, MicroempresaSatelite
+            
+            if self.tipo == 'integral':
+                try:
+                    MicroempresaIntegral.objects.get(usuario=self)
+                except MicroempresaIntegral.DoesNotExist:
+                    self.tipo = 'cliente'
+            
+            elif self.tipo == 'satelite':
+                try:
+                    MicroempresaSatelite.objects.get(usuario=self)
+                except MicroempresaSatelite.DoesNotExist:
+                    self.tipo = 'cliente'
+        
+        super().save(*args, **kwargs)
+    
+    def delete(self, *args, **kwargs):
+        # Eliminar registros relacionados en orden específico para evitar errores de FK
+        from empresas.models import MicroempresaIntegral, MicroempresaSatelite
+        from pedidos.models import Pedido, PedidoPersonalizado, Carrito
+        from pagos.models import Transaccion
+        
+        # Eliminar carrito y sus items
+        Carrito.objects.filter(usuario=self).delete()
+        
+        # Eliminar transacciones
+        Transaccion.objects.filter(usuario=self).delete()
+        
+        # Eliminar pedidos y pedidos personalizados
+        Pedido.objects.filter(cliente=self).delete()
+        PedidoPersonalizado.objects.filter(cliente=self).delete()
+        
+        # Eliminar microempresas asociadas
+        try:
+            if hasattr(self, 'microempresaintegral'):
+                self.microempresaintegral.delete()
+        except MicroempresaIntegral.DoesNotExist:
+            pass
+            
+        try:
+            if hasattr(self, 'microempresasatelite'):
+                self.microempresasatelite.delete()
+        except MicroempresaSatelite.DoesNotExist:
+            pass
+        
+        # Finalmente eliminar el usuario
+        super().delete(*args, **kwargs)
