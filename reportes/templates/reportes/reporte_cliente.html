@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <h2>Mis Reportes de Compras del Mes</h2>
+
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Empresas Más Frecuentes en Mis Compras</h5>
+            <div class="btn-group">
+                <button type="button" class="btn btn-light btn-sm" onclick="exportarReporte('excel')"><i class="fas fa-file-excel me-1"></i>Excel</button>
+                <button type="button" class="btn btn-light btn-sm" onclick="exportarReporte('pdf')"><i class="fas fa-file-pdf me-1"></i>PDF</button>
+                <button type="button" class="btn btn-light btn-sm" onclick="exportarReporte('png')"><i class="fas fa-file-image me-1"></i>PNG</button>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row mb-4">
+                <div class="col-md-8">
+                    <canvas id="graficoComprasEmpresas"></canvas>
+                </div>
+                <div class="col-md-4">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Empresa</th>
+                                    <th>Cantidad de Pedidos</th>
+                                    <th>Productos Diferentes</th>
+                                    <th>Monto Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for empresa in empresas_mas_compradas %}
+                                <tr>
+                                    <td>{{ empresa.empresa_integral__nombre }}</td>
+                                    <td>{{ empresa.total_compras }}</td>
+                                    <td>{{ empresa.productos_comprados }}</td>
+                                    <td>${{ empresa.monto_total|floatformat:2 }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-12">
+                    <h5>Detalles de Compras por Empresa</h5>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Empresa</th>
+                                    <th>Tipo</th>
+                                    <th>Productos Comprados</th>
+                                    <th>Total Pedidos</th>
+                                    <th>Última Compra</th>
+                                    <th>Estado Último Pedido</th>
+                                    <th>Monto Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for detalle in detalles_compras %}
+                                <tr>
+                                    <td>{{ detalle.empresa }}</td>
+                                    <td>{{ detalle.tipo }}</td>
+                                    <td>{{ detalle.productos_comprados }}</td>
+                                    <td>{{ detalle.total_pedidos }}</td>
+                                    <td>{{ detalle.ultima_compra|date:"d/m/Y" }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ detalle.estado_color }}">{{ detalle.estado_ultimo_pedido }}</span>
+                                    </td>
+                                    <td>${{ detalle.monto_total|floatformat:2 }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Configuración del gráfico de compras por empresas
+    const ctx = document.getElementById('graficoComprasEmpresas').getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: {{ empresas_labels|safe }},
+            datasets: [{
+                label: 'Monto Total de Compras',
+                data: {{ montos_totales|safe }},
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return '$' + value;
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // Función para exportar el reporte
+    function exportarReporte(formato) {
+        window.location.href = `{% url 'exportar_reporte_cliente' %}?formato=${formato}`;
+    }
+</script>
+{% endblock %}
+{% endblock %}

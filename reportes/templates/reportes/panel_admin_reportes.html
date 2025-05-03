@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <h2>Panel de Reportes de Empresas</h2>
+
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Listado de Empresas</h5>
+        </div>
+        <div class="card-body">
+            <ul class="nav nav-tabs mb-4" id="empresasTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="integrales-tab" data-bs-toggle="tab" data-bs-target="#integrales" type="button" role="tab" aria-controls="integrales" aria-selected="true">
+                        Empresas Integrales
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="satelites-tab" data-bs-toggle="tab" data-bs-target="#satelites" type="button" role="tab" aria-controls="satelites" aria-selected="false">
+                        Empresas Satélites
+                    </button>
+                </li>
+            </ul>
+
+            <div class="tab-content" id="empresasTabContent">
+                <!-- Empresas Integrales -->
+                <div class="tab-pane fade show active" id="integrales" role="tabpanel" aria-labelledby="integrales-tab">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Empresa</th>
+                                    <th>Total Ventas Año</th>
+                                    <th>Productos Activos</th>
+                                    <th>Pedidos Pendientes</th>
+                                    <th>Última Actualización</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for empresa in empresas_integrales %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            {% if empresa.imagen %}
+                                            <img src="{{ empresa.imagen.url }}" alt="{{ empresa.nombre }}" class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;">
+                                            {% endif %}
+                                            <div>
+                                                <h6 class="mb-0">{{ empresa.nombre }}</h6>
+                                                <small class="text-muted">{{ empresa.ciudad }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>${{ empresa.total_ventas_anual|floatformat:2 }}</td>
+                                    <td>{{ empresa.productos_activos }}</td>
+                                    <td>{{ empresa.pedidos_pendientes }}</td>
+                                    <td>{{ empresa.ultima_actualizacion|date:"d/m/Y H:i" }}</td>
+                                    <td>
+                                        <a href="{% url 'reporte_empresa' empresa.id %}" class="btn btn-primary btn-sm">
+                                            <i class="fas fa-chart-bar me-1"></i>Ver Reportes
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Empresas Satélites -->
+                <div class="tab-pane fade" id="satelites" role="tabpanel" aria-labelledby="satelites-tab">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Empresa</th>
+                                    <th>Total Pedidos Año</th>
+                                    <th>Pedidos en Proceso</th>
+                                    <th>Pedidos Completados</th>
+                                    <th>Última Actualización</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for empresa in empresas_satelites %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            {% if empresa.imagen %}
+                                            <img src="{{ empresa.imagen.url }}" alt="{{ empresa.nombre }}" class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;">
+                                            {% endif %}
+                                            <div>
+                                                <h6 class="mb-0">{{ empresa.nombre }}</h6>
+                                                <small class="text-muted">{{ empresa.ciudad }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>{{ empresa.total_pedidos_anual }}</td>
+                                    <td>{{ empresa.pedidos_en_proceso }}</td>
+                                    <td>{{ empresa.pedidos_completados }}</td>
+                                    <td>{{ empresa.ultima_actualizacion|date:"d/m/Y H:i" }}</td>
+                                    <td>
+                                        <a href="{% url 'reporte_empresa' empresa.id %}" class="btn btn-primary btn-sm">
+                                            <i class="fas fa-chart-bar me-1"></i>Ver Reportes
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
