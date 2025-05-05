@@ -68,21 +68,21 @@ class MicroempresaSatelite(models.Model):
     descripcion = models.TextField()
     rut_empresa = models.CharField(max_length=20, unique=True)
     imagen = models.ImageField(upload_to='logos_satelite/', null=True, blank=True)
+
+class Maquina(models.Model):
+    empresa = models.ForeignKey(MicroempresaSatelite, on_delete=models.CASCADE)
+    tipo = models.CharField(max_length=50)
+    marca = models.CharField(max_length=50)
+    modelo = models.CharField(max_length=50)
+    estado = models.CharField(max_length=20, choices=[
+        ('activa', 'Activa'),
+        ('mantenimiento', 'En Mantenimiento'),
+        ('inactiva', 'Inactiva')
+    ])
     
-    class Maquina(models.Model):
-        empresa = models.ForeignKey('MicroempresaSatelite', on_delete=models.CASCADE)
-        tipo = models.CharField(max_length=50)
-        marca = models.CharField(max_length=50)
-        modelo = models.CharField(max_length=50)
-        estado = models.CharField(max_length=20, choices=[
-            ('activa', 'Activa'),
-            ('mantenimiento', 'En Mantenimiento'),
-            ('inactiva', 'Inactiva')
-        ])
-        
-        class Meta:
-            verbose_name = 'Máquina'
-            verbose_name_plural = 'Máquinas'
+    class Meta:
+        verbose_name = 'Máquina'
+        verbose_name_plural = 'Máquinas'
 
 class Servicio(models.Model):
     empresa = models.ForeignKey(MicroempresaSatelite, on_delete=models.CASCADE, related_name='servicios')
