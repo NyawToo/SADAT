@@ -4,7 +4,6 @@ pip install -r requirements.txt
 python manage.py collectstatic --noinput
 python manage.py makemigrations
 python manage.py migrate
-python -m pip install --upgrade pip
 
 # Crear superusuario automáticamente
 echo "Creando superusuario..."

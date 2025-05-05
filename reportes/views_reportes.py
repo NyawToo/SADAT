@@ -4,6 +4,7 @@ from django.http import HttpResponse
 from django.db.models import Count, Sum, F
 from django.utils import timezone
 from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
 from core.decorators import role_required
 from empresas.models import MicroempresaIntegral, MicroempresaSatelite, ProductoTerminado
 from pedidos.models import Pedido, DetallePedido
@@ -89,8 +90,8 @@ def reporte_empresa(request, empresa_id=None):
     
     # Obtener el primer y último día del año actual
     año_actual = timezone.now().year
-    primer_dia_año = datetime(año_actual, 1, 1, tzinfo=timezone.utc)
-    ultimo_dia_año = datetime(año_actual, 12, 31, 23, 59, 59, tzinfo=timezone.utc)
+    primer_dia_año = datetime(año_actual, 1, 1, tzinfo=ZoneInfo("UTC"))
+    ultimo_dia_año = datetime(año_actual, 12, 31, 23, 59, 59, tzinfo=ZoneInfo("UTC"))
 
     # Productos más vendidos
     if es_integral:
@@ -169,8 +170,8 @@ def panel_admin_reportes(request):
     
     # Obtener el primer y último día del año actual
     año_actual = timezone.now().year
-    primer_dia_año = datetime(año_actual, 1, 1, tzinfo=timezone.utc)
-    ultimo_dia_año = datetime(año_actual, 12, 31, 23, 59, 59, tzinfo=timezone.utc)
+    primer_dia_año = datetime(año_actual, 1, 1, tzinfo=ZoneInfo("UTC"))
+    ultimo_dia_año = datetime(año_actual, 12, 31, 23, 59, 59, tzinfo=ZoneInfo("UTC"))
     
     # Empresas Integrales
     empresas_integrales = MicroempresaIntegral.objects.all().annotate(
