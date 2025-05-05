@@ -8,6 +8,7 @@ crispy-bootstrap5
 dj-database-url
 Django
 django-crispy-forms
+crispy-bootstrap4
 django-filter
 django-storages
 google-api-core
