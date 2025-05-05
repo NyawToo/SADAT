@@ -35,7 +35,7 @@ pyasn1_modules
 pyparsing
 python-dateutil
 python-dotenv
-reportlab
+reportlab>=4.4.0
 requests
 requests-oauthlib
 rsa
