@@ -388,9 +388,11 @@
                             <a class="nav-link btn btn-outline-primary mx-1" href="{% url 'agregar_servicios' %}">Añadir Servicios</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link btn btn-outline-primary mx-1" href="{% url 'reporte_empresa' user.empresa_satelite.id %}">
-                                <i class="fas fa-chart-line me-1"></i>Mis Reportes
-                            </a>
+                            {% if user.empresa_satelite %}
+                                <a class="nav-link btn btn-outline-primary mx-1" href="{% url 'reporte_empresa' user.empresa_satelite.id %}">
+                                    <i class="fas fa-chart-line me-1"></i>Mis Reportes
+                                </a>
+                            {% endif %}
                         </li>
                         {% endif %}
                         {% if user.tipo == 'integral' %}
@@ -404,9 +406,11 @@
                             <a class="nav-link btn btn-outline-primary mx-1" href="{% url 'gestionar_pedidos_personalizados' %}">Pedidos Personalizados</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link btn btn-outline-primary mx-1" href="{% url 'reporte_empresa' user.empresa_integral.id %}">
-                                <i class="fas fa-chart-line me-1"></i>Mis Reportes
-                            </a>
+                            {% if user.empresa_integral %}
+                                <a class="nav-link btn btn-outline-primary mx-1" href="{% url 'reporte_empresa' user.empresa_integral.id %}">
+                                    <i class="fas fa-chart-line me-1"></i>Mis Reportes
+                                </a>
+                            {% endif %}
                         </li>
                         <li class="nav-item dropdown">
                             <a class="nav-link btn btn-outline-primary mx-1 dropdown-toggle" href="#" id="materiaPrimaDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">

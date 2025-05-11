@@ -189,7 +189,7 @@
 
     // Función para exportar el reporte
     function exportarReporte(formato) {
-        window.location.href = `{% url 'exportar_reporte_empresa' empresa.id %}?formato=${formato}`;
+        window.location.href = `/reportes/exportar/empresa/${empresa.id}/${formato}/`;
     }
 </script>
 {% endblock %}
