@@ -25,38 +25,38 @@ def reporte_cliente(request):
     # Obtener compras del mes actual agrupadas por empresa
     compras_mes = Pedido.objects.filter(
         cliente=request.user,
-        fecha_creacion__gte=primer_dia_mes
+        fecha_pedido__gte=primer_dia_mes
     ).values(
-        'empresa_integral__nombre',
-        'empresa_integral__id'
+        'empresa__nombre_empresa',
+        'empresa__id'
     ).annotate(
         total_compras=Count('id'),
         monto_total=Sum('total'),
-        productos_comprados=Count('itempedido__producto', distinct=True)
+        productos_comprados=Count('producto', distinct=True)
     ).order_by('-total_compras')  # Ordenar por cantidad de compras
 
     # Preparar datos para el gráfico
-    empresas_labels = [compra['empresa_integral__nombre'] for compra in compras_mes]
-    montos_totales = [float(compra['monto_total']) for compra in compras_mes]
+    empresas_labels = [compra['empresa_integral__nombre_empresa'] for compra in compras_mes]
+    montos_totales = [float(compra['monto_total'] or 0) for compra in compras_mes]
 
     # Obtener detalles de todas las compras
     detalles_compras = []
     for compra in compras_mes:
         ultimo_pedido = Pedido.objects.filter(
             cliente=request.user,
-            empresa_integral_id=compra['empresa_integral__id']
-        ).order_by('-fecha_creacion').first()
+            empresa_id=compra['empresa__id']
+        ).order_by('-fecha_pedido').first()
 
         detalles_compras.append({
-            'empresa': compra['empresa_integral__nombre'],
+            'empresa': compra['empresa_integral__nombre_empresa'],
             'tipo': 'Integral',
-            'productos_comprados': DetallePedido.objects.filter(
-                pedido__cliente=request.user,
-                pedido__empresa_integral_id=compra['empresa_integral__id'],
-                pedido__fecha_creacion__gte=primer_dia_mes
+            'productos_comprados': Pedido.objects.filter(
+                cliente=request.user,
+                empresa_id=compra['empresa__id'],
+                fecha_pedido__gte=primer_dia_mes
             ).count(),
             'total_pedidos': compra['total_compras'],
-            'ultima_compra': ultimo_pedido.fecha_creacion if ultimo_pedido else None,
+            'ultima_compra': ultimo_pedido.fecha_pedido if ultimo_pedido else None,
             'estado_ultimo_pedido': ultimo_pedido.get_estado_display() if ultimo_pedido else 'N/A',
             'estado_color': 'success' if ultimo_pedido and ultimo_pedido.estado == 'completado' else 'warning',
             'monto_total': compra['monto_total']
@@ -96,8 +96,8 @@ def reporte_empresa(request, empresa_id=None):
     # Productos más vendidos
     if es_integral:
         productos_vendidos = DetallePedido.objects.filter(
-            pedido__empresa_integral=empresa,
-            pedido__fecha_creacion__gte=primer_dia_mes
+            pedido__empresa=empresa,
+            pedido__fecha_pedido__gte=primer_dia_mes
         ).values(
             'producto__nombre'
         ).annotate(
@@ -112,12 +112,12 @@ def reporte_empresa(request, empresa_id=None):
             'estado'
         ).annotate(
             cantidad=Count('id')
-        )
+        ).order_by('-cantidad')
 
     # Estados de pedidos
     estados_pedidos = Pedido.objects.filter(
-        **{'empresa_integral' if es_integral else 'empresa_satelite': empresa},
-        fecha_creacion__gte=primer_dia_mes
+        **{'empresa' if es_integral else 'empresa_satelite': empresa},
+        fecha_pedido__gte=primer_dia_mes
     ).values('estado').annotate(cantidad=Count('id'))
 
     total_pedidos = sum(estado['cantidad'] for estado in estados_pedidos)
@@ -137,9 +137,9 @@ def reporte_empresa(request, empresa_id=None):
 
     # Obtener pedidos recientes
     pedidos = Pedido.objects.filter(
-        **{'empresa_integral' if es_integral else 'empresa_satelite': empresa},
-        fecha_creacion__gte=primer_dia_mes
-    ).order_by('-fecha_creacion')[:10]
+        **{'empresa' if es_integral else 'empresa_satelite': empresa},
+        fecha_pedido__gte=primer_dia_mes
+    ).order_by('-fecha_pedido')[:10]
 
     pedidos_data = [{
         'id': pedido.id,
@@ -219,10 +219,49 @@ def exportar_reporte(request, tipo_reporte, formato, **kwargs):
         empresa_id = kwargs.get('empresa_id')
         empresa = get_object_or_404(MicroempresaIntegral, id=empresa_id)
         es_integral = isinstance(empresa, MicroempresaIntegral)
+        
+        # Obtener el primer día del mes actual
+        primer_dia_mes = timezone.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        
+        # Productos más vendidos
+        if es_integral:
+            productos_vendidos = DetallePedido.objects.filter(
+                pedido__empresa=empresa,
+                pedido__fecha_pedido__gte=primer_dia_mes
+            ).values(
+                'producto__nombre'
+            ).annotate(
+                cantidad_vendida=Sum('cantidad'),
+                ingresos=Sum(F('cantidad') * F('precio_unitario'))
+            ).order_by('-cantidad_vendida')
+        else:
+            productos_vendidos = []
+
+        # Estados de pedidos
+        estados_pedidos = Pedido.objects.filter(
+            **{'empresa' if es_integral else 'empresa_satelite': empresa},
+            fecha_pedido__gte=primer_dia_mes
+        ).values('estado').annotate(cantidad=Count('id'))
+
+        # Obtener pedidos recientes
+        pedidos = Pedido.objects.filter(
+            **{'empresa' if es_integral else 'empresa_satelite': empresa},
+            fecha_pedido__gte=primer_dia_mes
+        ).order_by('-fecha_pedido')[:10]
+
+        pedidos_data = [{
+            'id': pedido.id,
+            'cliente': pedido.cliente.get_full_name(),
+            'productos': ', '.join([f"{item.cantidad}x {item.producto.nombre}" for item in pedido.itempedido_set.all()]),
+            'fecha': pedido.fecha_creacion,
+            'estado': pedido.get_estado_display(),
+            'total': pedido.total
+        } for pedido in pedidos]
+
         data = {
             'productos_vendidos': pd.DataFrame(list(productos_vendidos)) if es_integral else pd.DataFrame(),
             'estados_pedidos': pd.DataFrame(list(estados_pedidos)),
-            'pedidos': pd.DataFrame(list(pedidos_data))
+            'pedidos': pd.DataFrame(pedidos_data)
         }
     else:
         return HttpResponse('Tipo de reporte no válido', status=400)
