@@ -1,0 +1,109 @@
+@startuml
+title -DIAGRAMA DE ACTIVIDADES SADAT-
+
+|Cliente|
+start
+:Registrarse en el sistema;
+
+|Sistema|
+:Validar registro;
+
+|Cliente|
+if (¿Tipo de pedido?) then (Catálogo)
+  :Explorar catálogo de productos;
+  :Agregar productos al carrito;
+  if (¿Finalizar compra?) then (sí)
+    :Revisar carrito;
+    :Confirmar pedido;
+    
+    |Sistema|
+    :Validar stock;
+    :Calcular total;
+    :Procesar pago;
+    :Generar transacción;
+    :Enviar notificación de pago;
+    
+    |Empresa Integral|
+    :Recibir pedido;
+    :Preparar productos;
+    :Actualizar estado;
+    :Generar reporte de venta;
+    :Enviar notificación de estado;
+    
+    |Cliente|
+    :Recibir productos;
+    :Calificar productos;
+    :Comentar productos;
+    if (¿Tiene problemas?) then (sí)
+      :Generar queja;
+      |Sistema|
+      :Procesar queja;
+      :Notificar a empresa;
+    else (no)
+      :Finalizar proceso;
+    endif;
+  else (no)
+    :Continuar comprando;
+  endif
+
+else (Personalizado)
+  if (¿Tipo solicitud?) then (Confección)
+    :Crear solicitud de confección;
+    :Especificar detalles;
+    
+    |Empresa Satélite|
+    :Recibir solicitud;
+    :Evaluar solicitud;
+    :Enviar cotización;
+    
+    |Cliente|
+    if (¿Aceptar cotización?) then (sí)
+      :Confirmar solicitud;
+      
+      |Empresa Satélite|
+      :Iniciar confección;
+      :Actualizar estado;
+      :Generar reporte de producción;
+      :Enviar notificación de avance;
+      :Entregar trabajo;
+      
+      |Cliente|
+      :Recibir trabajo;
+      :Realizar pago;
+      :Calificar servicio;
+    else (no)
+      :Rechazar cotización;
+    endif
+    
+  else (Producto)
+    :Crear pedido personalizado;
+    :Adjuntar referencia;
+    
+    |Empresa Integral|
+    :Evaluar pedido;
+    :Enviar cotización;
+    
+    |Cliente|
+    if (¿Aceptar cotización?) then (sí)
+      :Confirmar pedido;
+      
+      |Empresa Integral|
+      :Iniciar producción;
+      :Actualizar estado;
+      :Generar reporte de producción;
+      :Enviar notificación de avance;
+      :Entregar producto;
+      
+      |Cliente|
+      :Recibir producto;
+      :Realizar pago;
+      :Calificar servicio;
+    else (no)
+      :Rechazar cotización;
+    endif
+  endif
+endif
+
+stop
+
+@enduml

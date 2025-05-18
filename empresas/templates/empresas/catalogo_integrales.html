@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card">
+        <div class="card-header">
+            <h2 class="text-center">Catálogo de Microempresas Integrales</h2>
+        </div>
+        <div class="card-body">
+            <div class="row" id="listaEmpresas">
+                {% for empresa in empresas %}
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100">
+                        {% if empresa.imagen %}
+                        <img src="{{ empresa.imagen.url }}" class="card-img-top" alt="Logo de {{ empresa.nombre }}" style="height: 200px; object-fit: contain; padding: 15px;">
+                        {% endif %}
+                        <div class="card-body">
+                            <h5 class="card-title">{{ empresa.nombre_empresa }}</h5>
+                            <p class="card-text">
+                                {{ empresa.descripcion }}<br>
+                                <strong>RUT:</strong> {{ empresa.rut_empresa }}
+                            </p>
+                            <a href="{% url 'detalle_empresa_integral' empresa.id %}" class="btn btn-primary">Ver Detalles</a>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-12">
+                    <div class="alert alert-info" role="alert">
+                        No hay microempresas integrales registradas en el sistema.
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

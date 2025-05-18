@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="text-center">Iniciar Sesión</h2>
+                </div>
+                <div class="card-body">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }}">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="form-group mb-3">
+                            <label for="username">Nombre de usuario</label>
+                            <input type="text" class="form-control" id="username" name="username" required>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label for="password">Contraseña</label>
+                            <input type="password" class="form-control" id="password" name="password" required>
+                        </div>
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">Iniciar Sesión</button>
+                        </div>
+                    </form>
+                    <div class="text-center mt-3">
+                        <p>¿No tienes una cuenta?</p>
+                        <div class="d-grid gap-2">
+                            <a href="{% url 'registro_cliente' %}" class="btn btn-outline-primary">Soy un Cliente</a>
+                            <div class="dropdown">
+                                <button class="btn btn-outline-secondary dropdown-toggle w-100" type="button" id="microempresaDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Soy una Microempresa
+                                </button>
+                                <ul class="dropdown-menu w-100" aria-labelledby="microempresaDropdown">
+                                    <li><a class="dropdown-item" href="{% url 'registro_integral' %}">Microempresa Integral</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'registro_satelite' %}">Microempresa Satélite</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

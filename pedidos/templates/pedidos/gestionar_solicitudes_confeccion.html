@@ -1,0 +1,264 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_js %}
+<script src="{% static 'js/solicitudes.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3>Gestión de Solicitudes de Confección</h3>
+                    <div class="d-flex gap-2">
+                        <select class="form-select" id="filtroEstado" name="estado">
+                            <option value="">Todos los estados</option>
+                            <option value="pendiente" {% if estado_filtro == 'pendiente' %}selected{% endif %}>Pendientes</option>
+                            <option value="cotizado" {% if estado_filtro == 'cotizado' %}selected{% endif %}>Cotizados</option>
+                            <option value="aceptado" {% if estado_filtro == 'aceptado' %}selected{% endif %}>Aceptados</option>
+                            <option value="en_proceso" {% if estado_filtro == 'en_proceso' %}selected{% endif %}>En Proceso</option>
+                            <option value="completado" {% if estado_filtro == 'completado' %}selected{% endif %}>Completados</option>
+                            <option value="rechazado" {% if estado_filtro == 'rechazado' %}selected{% endif %}>Rechazados</option>
+                        </select>
+                        <input type="date" class="form-control" id="filtroFecha" name="fecha" value="{{ fecha_filtro|default:'' }}">
+
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Nº Solicitud</th>
+                                    <th>Cliente</th>
+                                    <th>Tipo de Servicio</th>
+                                    <th>Cantidad</th>
+                                    <th>Fecha Deseada</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for solicitud in solicitudes %}
+                                <tr>
+                                    <td>{{ solicitud.numero_solicitud }}</td>
+                                    <td>{{ solicitud.cliente.nombre }}</td>
+                                    <td>{{ solicitud.get_tipo_servicio_display }}</td>
+                                    <td>{{ solicitud.cantidad_prendas }}</td>
+                                    <td>{{ solicitud.fecha_deseada }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ solicitud.get_estado_color }}">{{ solicitud.get_estado_display }}</span>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#detallesSolicitud{{ solicitud.id }}">
+                                            <i class="fas fa-eye"></i> Ver
+                                        </button>
+                                        {% if solicitud.estado == 'pendiente' %}
+                                        <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#cotizarSolicitud{{ solicitud.id }}">
+                                            <i class="fas fa-dollar-sign"></i> Cotizar
+                                        </button>
+                                        {% elif solicitud.estado == 'aceptado' %}
+                                        <button class="btn btn-sm btn-primary" onclick="actualizarEstado({{ solicitud.id }}, 'en_proceso')">
+                                            <i class="fas fa-play"></i> Iniciar
+                                        </button>
+                                        {% elif solicitud.estado == 'en_proceso' %}
+                                        <button class="btn btn-sm btn-success" onclick="actualizarEstado({{ solicitud.id }}, 'completado')">
+                                            <i class="fas fa-check"></i> Completar
+                                        </button>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+
+                                <!-- Modal Detalles Solicitud -->
+                                <div class="modal fade" id="detallesSolicitud{{ solicitud.id }}" tabindex="-1">
+                                    <div class="modal-dialog modal-lg">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">Detalles de la Solicitud #{{ solicitud.numero_solicitud }}</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <div class="row mb-4">
+                                                    <div class="col-md-6">
+                                                        <h6>Información del Cliente</h6>
+                                                        <p><strong>Nombre:</strong> {{ solicitud.cliente.nombre }}</p>
+                                                        <p><strong>Email:</strong> {{ solicitud.cliente.email }}</p>
+                                                        <p><strong>Teléfono:</strong> {{ solicitud.cliente.telefono }}</p>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <h6>Detalles de la Solicitud</h6>
+                                                        <p><strong>Tipo de Servicio:</strong> {{ solicitud.get_tipo_servicio_display }}</p>
+                                                        <p><strong>Cantidad de Prendas:</strong> {{ solicitud.cantidad_prendas }}</p>
+                                                        <p><strong>Fecha de Entrega Material:</strong> {{ solicitud.fecha_entrega_material }}</p>
+                                                        <p><strong>Fecha Deseada:</strong> {{ solicitud.fecha_deseada }}</p>
+                                                    </div>
+                                                </div>
+
+                                                <div class="mb-4">
+                                                    <h6>Descripción del Trabajo</h6>
+                                                    <p>{{ solicitud.descripcion }}</p>
+                                                </div>
+
+                                                <div class="mb-4">
+                                                    <h6>Material</h6>
+                                                    <p><strong>Proporcionado por:</strong> {% if solicitud.material_cliente %}Cliente{% else %}Empresa{% endif %}</p>
+                                                    {% if solicitud.descripcion_material %}
+                                                    <p><strong>Detalles del Material:</strong> {{ solicitud.descripcion_material }}</p>
+                                                    {% endif %}
+                                                </div>
+
+                                                {% if solicitud.instrucciones_especiales %}
+                                                <div class="mb-4">
+                                                    <h6>Instrucciones Especiales</h6>
+                                                    <p>{{ solicitud.instrucciones_especiales }}</p>
+                                                </div>
+                                                {% endif %}
+
+                                                <div class="mt-4">
+                                                    <h6>Historial de Estados</h6>
+                                                    <ul class="list-group">
+                                                        {% for estado in solicitud.historial_estados.all %}
+                                                        <li class="list-group-item">
+                                                            <span class="badge bg-{{ estado.get_estado_color }} me-2">{{ estado.get_estado_display }}</span>
+                                                            {{ estado.fecha }} - {{ estado.comentario|default:"Sin comentarios" }}
+                                                        </li>
+                                                        {% endfor %}
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                                                {% if solicitud.estado != 'completado' and solicitud.estado != 'rechazado' %}
+                                                <button type="button" class="btn btn-danger" onclick="actualizarEstado({{ solicitud.id }}, 'rechazado')">
+                                                    Rechazar Solicitud
+                                                </button>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Modal Cotizar Solicitud -->
+                                <div class="modal fade" id="cotizarSolicitud{{ solicitud.id }}" tabindex="-1">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">Cotizar Solicitud #{{ solicitud.numero_solicitud }}</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <form id="formCotizar{{ solicitud.id }}">
+                                                    <div class="mb-3">
+                                                        <label for="precio{{ solicitud.id }}" class="form-label">Precio por Prenda</label>
+                                                        <div class="input-group">
+                                                            <span class="input-group-text">$</span>
+                                                            <input type="number" class="form-control" id="precio{{ solicitud.id }}" required>
+                                                        </div>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label for="tiempo{{ solicitud.id }}" class="form-label">Tiempo Estimado (días)</label>
+                                                        <input type="number" class="form-control" id="tiempo{{ solicitud.id }}" required>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label for="comentarios{{ solicitud.id }}" class="form-label">Comentarios</label>
+                                                        <textarea class="form-control" id="comentarios{{ solicitud.id }}" rows="3"></textarea>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                                <button type="button" class="btn btn-primary" onclick="enviarCotizacion({{ solicitud.id }})">
+                                                    Enviar Cotización
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% csrf_token %}
+<script>
+function actualizarEstado(solicitudId, nuevoEstado) {
+    if (confirm('¿Estás seguro de que deseas cambiar el estado de la solicitud?')) {
+        fetch(`/pedidos/confeccion/actualizar-estado/${solicitudId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({
+                estado: nuevoEstado
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error al actualizar el estado de la solicitud');
+            }
+        });
+    }
+}
+
+function enviarCotizacion(solicitudId) {
+    const precio = document.getElementById(`precio${solicitudId}`).value;
+    const tiempo = document.getElementById(`tiempo${solicitudId}`).value;
+    const comentarios = document.getElementById(`comentarios${solicitudId}`).value;
+
+    fetch(`/pedidos/confeccion/cotizar/${solicitudId}/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        },
+        body: JSON.stringify({
+            precio_por_prenda: precio,
+            tiempo_estimado: tiempo,
+            comentarios: comentarios
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Error al enviar la cotización');
+        }
+    });
+}
+
+document.getElementById('filtroEstado').addEventListener('change', aplicarFiltros);
+document.getElementById('filtroFecha').addEventListener('change', aplicarFiltros);
+
+function aplicarFiltros() {
+    const estado = document.getElementById('filtroEstado').value;
+    const fecha = document.getElementById('filtroFecha').value;
+    let url = new URL(window.location.href);
+    
+    if (estado) {
+        url.searchParams.set('estado', estado);
+    } else {
+        url.searchParams.delete('estado');
+    }
+    
+    if (fecha) {
+        url.searchParams.set('fecha_deseada', fecha);
+    } else {
+        url.searchParams.delete('fecha_deseada');
+    }
+    
+    window.location.href = url.toString();
+}
+</script>
+{% endblock %}

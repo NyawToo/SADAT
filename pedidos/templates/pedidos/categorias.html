@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container">
+    <h2 class="mb-4">Gestión de Categorías</h2>
+    
+    <!-- Formulario para crear nueva categoría -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h4>Crear Nueva Categoría</h4>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="nombre" class="form-label">Nombre de la Categoría</label>
+                    <input type="text" class="form-control" id="nombre" name="nombre" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Crear Categoría</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Lista de categorías existentes -->
+    <div class="card">
+        <div class="card-header">
+            <h4>Categorías Existentes</h4>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for categoria in categorias %}
+                        <tr>
+                            <td>{{ categoria.nombre }}</td>
+                            <td>
+                                <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editarCategoria{{ categoria.id }}">
+                                    <i class="bi bi-pencil"></i> Editar
+                                </button>
+                                <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#eliminarCategoria{{ categoria.id }}">
+                                    <i class="bi bi-trash"></i> Eliminar
+                                </button>
+                            </td>
+                        </tr>
+
+                        <!-- Modal Editar -->
+                        <div class="modal fade" id="editarCategoria{{ categoria.id }}" tabindex="-1">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Editar Categoría</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <form method="post" action="{% url 'editar_categoria' categoria.id %}">
+                                        {% csrf_token %}
+                                        <div class="modal-body">
+                                            <div class="mb-3">
+                                                <label for="nombre{{ categoria.id }}" class="form-label">Nombre</label>
+                                                <input type="text" class="form-control" id="nombre{{ categoria.id }}" name="nombre" value="{{ categoria.nombre }}" required>
+                                            </div>
+
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                            <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Modal Eliminar -->
+                        <div class="modal fade" id="eliminarCategoria{{ categoria.id }}" tabindex="-1">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Confirmar Eliminación</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <p>¿Está seguro que desea eliminar la categoría "{{ categoria.nombre }}"?</p>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                        <form method="post" action="{% url 'eliminar_categoria' categoria.id %}" style="display: inline;">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-danger">Eliminar</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <tr>
+                            <td colspan="3" class="text-center">No hay categorías registradas</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

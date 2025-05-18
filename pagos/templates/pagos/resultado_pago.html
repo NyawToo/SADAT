@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0 rounded-3">
+                <div class="card-header {% if transaccion.estado == 'completado' %}bg-success{% else %}bg-danger{% endif %} text-white py-3">
+                    <h3 class="h4 mb-0">
+                        {% if transaccion.estado == 'completado' %}
+                            ¡Pago Exitoso!
+                        {% else %}
+                            Error en el Pago
+                        {% endif %}
+                    </h3>
+                </div>
+                <div class="card-body p-4">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} rounded-2">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <div class="text-center mb-4">
+                        {% if transaccion.estado == 'completado' %}
+                            <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
+                            <h4 class="mt-3">¡Gracias por tu compra!</h4>
+                            <p class="lead">Tu pago ha sido procesado exitosamente.</p>
+                        {% else %}
+                            <i class="bi bi-x-circle-fill text-danger" style="font-size: 4rem;"></i>
+                            <h4 class="mt-3">Lo sentimos</h4>
+                            <p class="lead">Hubo un problema al procesar tu pago.</p>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-4">
+                        <h5 class="mb-3">Detalles de la Transacción</h5>
+                        <div class="table-responsive">
+                            <table class="table">
+                                <tbody>
+                                    <tr>
+                                        <td>Número de Pedido:</td>
+                                        <td class="text-end">#{{ transaccion.pedido.id }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Fecha:</td>
+                                        <td class="text-end">{{ transaccion.fecha|date:"d/m/Y H:i" }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Monto:</td>
+                                        <td class="text-end">${{ transaccion.monto }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Estado:</td>
+                                        <td class="text-end">
+                                            <span class="badge {% if transaccion.estado == 'completado' %}bg-success{% else %}bg-danger{% endif %}">
+                                                {{ transaccion.get_estado_display }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        {% if transaccion.estado == 'completado' %}
+                            <a href="{% url 'ver_pedidos' %}" class="btn btn-primary">
+                                Ver Mis Pedidos
+                            </a>
+                        {% else %}
+                            <a href="{% url 'ejecucion_pago' %}" class="btn btn-primary">
+                                Intentar Nuevamente
+                            </a>
+                        {% endif %}
+                        <a href="{% url 'inicio' %}" class="btn btn-outline-secondary">
+                            Volver al Inicio
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

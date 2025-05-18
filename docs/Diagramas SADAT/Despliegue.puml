@@ -1,0 +1,53 @@
+@startuml
+title -DIAGRAMA DE DESPLIEGUE SADAT-
+
+node "Cliente" as cliente {
+  [Navegador Web] as browser
+}
+
+cloud "Internet" as internet
+
+node "Servidor Web" as webserver {
+  [Servidor NGINX] as nginx
+  [Aplicación Django] as django
+  [Servidor de Archivos] as files
+}
+
+node "Servidor de Base de Datos" as dbserver {
+  database "PostgreSQL" as postgres {
+    [Datos de Usuario]
+    [Datos de Pedidos]
+    [Datos de Producción]
+    [Datos de Pagos]
+  }
+}
+
+node "Servidor de Correo" as mailserver {
+  [Servidor SMTP] as smtp
+}
+
+cloud "Servicios de Pago" as payment {
+  [Pasarela de Pagos] as gateway
+}
+
+client "1..n" -- internet
+internet -- webserver
+
+webserver -- dbserver : "TCP/IP"
+webserver -- mailserver : "SMTP"
+webserver -- payment : "HTTPS"
+
+nginx -- django
+django -- files
+
+note right of webserver
+  Alta disponibilidad y
+  balanceo de carga
+end note
+
+note right of dbserver
+  Replicación y
+  backups automáticos
+end note
+
+@enduml

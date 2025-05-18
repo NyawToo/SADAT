@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Confirmación de Pago - Pedido #{{ pedido.id }}</h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert {% if pago.estado == 'completado' %}alert-success{% else %}alert-info{% endif %} mb-4">
+                        <h5 class="alert-heading">Estado del Pago: {{ pago.estado|title }}</h5>
+                        <p class="mb-0">{{ pago.get_estado_display }}</p>
+                    </div>
+
+                    <div class="mb-4">
+                        <h5>Detalles del Pedido</h5>
+                        {% if pedido.es_personalizado %}
+                            <p><strong>Tipo:</strong> Pedido Personalizado</p>
+                            <p><strong>Monto Cotizado:</strong> ${{ pedido.cotizacion|floatformat:2 }}</p>
+                            <p><strong>Detalles de Cotización:</strong> {{ pedido.descripcion }}</p>
+                        {% else %}
+                            <p><strong>Tipo:</strong> Pedido Estándar</p>
+                            <p><strong>Producto:</strong> {{ pedido.producto.nombre }}</p>
+                            <p><strong>Cantidad:</strong> {{ pedido.cantidad }}</p>
+                            <p><strong>Total:</strong> ${{ pedido.total|floatformat:2 }}</p>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-4">
+                        <h5>Detalles del Pago</h5>
+                        <p><strong>Método de Pago:</strong> {{ pago.get_metodo_pago_display }}</p>
+                        <p><strong>Fecha:</strong> {{ pago.fecha|date:"d/m/Y H:i" }}</p>
+                        {% if pago.estado == 'completado' %}
+                            <p><strong>Referencia:</strong> {{ pago.referencia }}</p>
+                        {% endif %}
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        {% if pago.estado == 'completado' %}
+                            <a href="{% url 'mis_pedidos' %}" class="btn btn-primary">Ver Mis Pedidos</a>
+                        {% else %}
+                            <a href="{% url 'ejecucion_pago' pedido.id %}" class="btn btn-primary">Reintentar Pago</a>
+                        {% endif %}
+                        <a href="{% url 'home' %}" class="btn btn-outline-secondary">Volver al Inicio</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,256 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container">
+    <h2 class="mb-4">Gestión de Usuarios</h2>
+
+    <!-- Botón para crear superadmin -->
+    <div class="mb-4">
+        <a class="nav-link btn btn-outline-primary mx-1" href="{% url 'crear_superadmin' %}">Crear Usuario</a>
+    </div>
+
+    <!-- Pestañas para diferentes tipos de usuarios -->
+    <ul class="nav nav-tabs mb-4" id="userTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="clientes-tab" data-bs-toggle="tab" data-bs-target="#clientes" type="button" role="tab">Clientes</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="integrales-tab" data-bs-toggle="tab" data-bs-target="#integrales" type="button" role="tab">Microempresas Integrales</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="satelites-tab" data-bs-toggle="tab" data-bs-target="#satelites" type="button" role="tab">Microempresas Satélites</button>
+        </li>
+    </ul>
+
+    <!-- Contenido de las pestañas -->
+    <div class="tab-content" id="userTabsContent">
+        <!-- Pestaña de Clientes -->
+        <div class="tab-pane fade show active" id="clientes" role="tabpanel">
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Usuario</th>
+                            <th>Email</th>
+                            <th>Teléfono</th>
+                            <th>Dirección</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for usuario in clientes %}
+                        <tr>
+                            <td>{{ usuario.username }}</td>
+                            <td>{{ usuario.email }}</td>
+                            <td>{{ usuario.telefono }}</td>
+                            <td>{{ usuario.direccion }}</td>
+                            <td>
+                                <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editarUsuario{{ usuario.id }}">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#eliminarUsuario{{ usuario.id }}">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Pestaña de Microempresas Integrales -->
+        <div class="tab-pane fade" id="integrales" role="tabpanel">
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Empresa</th>
+                            <th>Usuario</th>
+                            <th>Email</th>
+                            <th>Teléfono</th>
+                            <th>RUT</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for empresa in empresas_integrales %}
+                        <tr>
+                            <td>{{ empresa.nombre_empresa }}</td>
+                            <td>{{ empresa.usuario.username }}</td>
+                            <td>{{ empresa.usuario.email }}</td>
+                            <td>{{ empresa.usuario.telefono }}</td>
+                            <td>{{ empresa.rut_empresa }}</td>
+                            <td>
+                                <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editarEmpresa{{ empresa.id }}">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#eliminarEmpresa{{ empresa.id }}">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Pestaña de Microempresas Satélites -->
+        <div class="tab-pane fade" id="satelites" role="tabpanel">
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Empresa</th>
+                            <th>Usuario</th>
+                            <th>Email</th>
+                            <th>Teléfono</th>
+                            <th>RUT</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for empresa in empresas_satelites %}
+                        <tr>
+                            <td>{{ empresa.nombre_empresa }}</td>
+                            <td>{{ empresa.usuario.username }}</td>
+                            <td>{{ empresa.usuario.email }}</td>
+                            <td>{{ empresa.usuario.telefono }}</td>
+                            <td>{{ empresa.rut_empresa }}</td>
+                            <td>
+                                <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editarEmpresa{{ empresa.id }}">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#eliminarEmpresa{{ empresa.id }}">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para crear superadmin -->
+    <div class="modal fade" id="crearSuperadminModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Crear Superadministrador</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form method="post" action="{% url 'crear_superadmin' %}">
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Nombre de Usuario</label>
+                            <input type="text" class="form-control" id="username" name="username" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" name="email" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="password1" class="form-label">Contraseña</label>
+                            <input type="password" class="form-control" id="password1" name="password1" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="password2" class="form-label">Confirmar Contraseña</label>
+                            <input type="password" class="form-control" id="password2" name="password2" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Crear Superadmin</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modales para editar y eliminar usuarios (se generarán dinámicamente) -->
+    {% for usuario in clientes %}
+    <!-- Modal Eliminar Usuario -->
+    <div class="modal fade" id="eliminarUsuario{{ usuario.id }}" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirmar Eliminación</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>¿Estás seguro de que deseas eliminar al usuario {{ usuario.username }}?</p>
+                    <p class="text-danger">Esta acción no se puede deshacer.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <form method="post" action="{% url 'eliminar_usuario' usuario.id %}" style="display: inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">Eliminar</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Editar Usuario -->
+    <div class="modal fade" id="editarUsuario{{ usuario.id }}" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Editar Usuario</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form method="post" action="{% url 'editar_usuario' usuario.id %}">
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="email{{ usuario.id }}" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email{{ usuario.id }}" name="email" value="{{ usuario.email }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="telefono{{ usuario.id }}" class="form-label">Teléfono</label>
+                            <input type="text" class="form-control" id="telefono{{ usuario.id }}" name="telefono" value="{{ usuario.telefono }}">
+                        </div>
+                        <div class="mb-3">
+                            <label for="direccion{{ usuario.id }}" class="form-label">Dirección</label>
+                            <textarea class="form-control" id="direccion{{ usuario.id }}" name="direccion">{{ usuario.direccion }}</textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Eliminar Usuario -->
+    <div class="modal fade" id="eliminarUsuario{{ usuario.id }}" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirmar Eliminación</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>¿Está seguro que desea eliminar al usuario "{{ usuario.username }}"?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <form method="post" action="{% url 'eliminar_usuario' usuario.id %}" style="display: inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">Eliminar</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

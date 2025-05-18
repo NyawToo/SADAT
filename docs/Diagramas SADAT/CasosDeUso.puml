@@ -1,0 +1,164 @@
+@startuml
+title -DIAGRAMA DE CASOS DE USO SADAT-
+
+skinparam linetype ortho
+left to right direction
+
+actor "Cliente" as cliente
+actor "Microempresa Integral" as empresaIntegral
+actor "Microempresa Satélite" as empresaSatelite
+actor "Administrador" as admin
+
+rectangle "Sistema SADAT" {
+
+together {
+  ' Casos de uso base
+  usecase "Autenticación" as UCBase1
+  usecase "Gestión de Usuario" as UCBase2
+  usecase "Gestión de Notificaciones" as UCBase3
+}
+
+together {
+  ' Casos de uso para Cliente
+  usecase "Registrarse" as UC1
+  usecase "Iniciar Sesión" as UC2
+  usecase "Gestionar Perfil" as UC3
+  usecase "Ver Notificaciones" as UC12
+}
+
+together {
+  usecase "Explorar Catálogo" as UC4
+  usecase "Buscar Productos" as UC13
+  usecase "Filtrar Catálogo" as UC14
+}
+
+together {
+  usecase "Gestionar Carrito" as UC5
+  usecase "Realizar Pedido" as UC6
+  usecase "Realizar Pago" as UC7
+}
+
+together {
+  usecase "Calificar Producto" as UC8
+  usecase "Comentar Producto" as UC9
+  usecase "Solicitar Confección" as UC10
+  usecase "Generar Queja" as UC11
+}
+
+together {
+  ' Casos de uso para Microempresa Integral
+  usecase "Gestionar Catálogo" as UC15
+  usecase "Gestionar Productos" as UC16
+  usecase "Gestionar Stock" as UC17
+}
+
+together {
+  usecase "Procesar Pedidos" as UC18
+  usecase "Generar Reportes" as UC19
+  usecase "Responder Quejas" as UC20
+}
+
+together {
+  usecase "Cotizar Pedido Personalizado" as UC21
+  usecase "Gestionar Confecciones" as UC22
+  usecase "Asignar Trabajo" as UC23
+}
+
+together {
+  ' Casos de uso para Microempresa Satélite
+  usecase "Gestionar Servicios" as UC24
+  usecase "Procesar Solicitudes" as UC25
+  usecase "Cotizar Confección" as UC26
+  usecase "Actualizar Estado Confección" as UC27
+}
+
+together {
+  ' Casos de uso para Administrador
+  usecase "Gestionar Usuarios" as UC28
+  usecase "Gestionar Empresas" as UC29
+  usecase "Monitorear Sistema" as UC30
+  usecase "Gestionar Categorías" as UC31
+  usecase "Gestionar Permisos" as UC32
+}
+  ' Los casos de uso están agrupados arriba usando 'together'
+  ' para mejorar la organización visual
+
+  ' Relaciones base y herencia de actores
+  empresaIntegral --|> cliente
+  empresaSatelite --|> cliente
+  admin --|> cliente
+
+  ' Relaciones con casos de uso base
+  cliente --> UCBase1
+  cliente --> UCBase2
+  cliente --> UCBase3
+
+  ' Relaciones para Cliente
+  cliente --> UC1
+  UC2 ..> UCBase1 : <<include>>
+  UC3 ..> UCBase2 : <<include>>
+  UC12 ..> UCBase3 : <<include>>
+  
+  ' Relaciones de exploración y compra
+  cliente --> UC4
+  UC13 ..> UC4 : <<extend>>
+  UC14 ..> UC4 : <<extend>>
+  cliente --> UC5
+  UC5 ..> UC6 : <<extend>>
+  UC6 ..> UC7 : <<include>>
+  
+  ' Relaciones de interacción con productos
+  cliente --> UC8
+  cliente --> UC9
+  UC8 ..> UC4 : <<include>>
+  UC9 ..> UC4 : <<include>>
+  
+  ' Relaciones de confección y quejas
+  cliente --> UC10
+  UC10 ..> UC7 : <<include>>
+  cliente --> UC11
+
+  ' Relaciones para Microempresa Integral
+  empresaIntegral --> UC15
+  UC15 ..> UC16 : <<include>>
+  UC16 ..> UC17 : <<include>>
+  empresaIntegral --> UC18
+  UC18 ..> UC19 : <<include>>
+  empresaIntegral --> UC20
+  empresaIntegral --> UC21
+  UC21 ..> UC22 : <<include>>
+  empresaIntegral --> UC22
+  UC22 ..> UC23 : <<extend>>
+  UC23 ..> UC25 : <<include>>
+
+  ' Relaciones para Microempresa Satélite
+  empresaSatelite --> UC24
+  UC24 ..> UC25 : <<extend>>
+  empresaSatelite --> UC25
+  UC25 ..> UC26 : <<include>>
+  empresaSatelite --> UC26
+  UC26 ..> UC27 : <<include>>
+  empresaSatelite --> UC27
+  UC27 ..> UC19 : <<include>>
+
+  ' Relaciones para Administrador
+  admin --> UC28
+  UC28 ..> UC32 : <<include>>
+  admin --> UC29
+  UC29 ..> UC32 : <<include>>
+  admin --> UC30
+  UC30 ..> UC19 : <<include>>
+  admin --> UC31
+  admin --> UC32
+
+  ' Relaciones de extensión y inclusión
+  UC6 ..> UC7 : <<include>>
+  UC10 ..> UC7 : <<include>>
+  UC13 ..> UC14 : <<include>>
+  UC14 ..> UC15 : <<include>>
+  UC16 ..> UC17 : <<include>>
+  UC22 ..> UC23 : <<include>>
+  UC22 ..> UC24 : <<include>>
+}
+
+@enduml

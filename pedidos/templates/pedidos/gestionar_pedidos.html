@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <!-- Filtros -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">Filtros</h5>
+        </div>
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-4">
+                    <label for="estado" class="form-label">Estado del Pedido</label>
+                    <select name="estado" id="estado" class="form-select">
+                        <option value="">Todos</option>
+                        <option value="pendiente" {% if request.GET.estado == 'pendiente' %}selected{% endif %}>Pendiente</option>
+                        <option value="en_produccion" {% if request.GET.estado == 'en_produccion' %}selected{% endif %}>En Producción</option>
+                        <option value="terminado" {% if request.GET.estado == 'terminado' %}selected{% endif %}>Terminado</option>
+                        <option value="enviado" {% if request.GET.estado == 'enviado' %}selected{% endif %}>Enviado</option>
+                        <option value="entregado" {% if request.GET.estado == 'entregado' %}selected{% endif %}>Entregado</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label for="fecha" class="form-label">Fecha</label>
+                    <input type="date" class="form-control" id="fecha" name="fecha" value="{{ request.GET.fecha }}">
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary me-2">Filtrar</button>
+                    <a href="{% url 'gestionar_pedidos' %}" class="btn btn-secondary">Limpiar</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Lista de Pedidos -->
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Mis Pedidos</h5>
+        </div>
+        <div class="card-body">
+            {% if pedidos %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Cliente</th>
+                            <th>Productos</th>
+                            <th>Total</th>
+                            <th>Estado</th>
+                            <th>Fecha</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for pedido in pedidos %}
+                        <tr>
+                            <td>#{{ pedido.id }}</td>
+                            <td>{{ pedido.cliente.get_full_name }}</td>
+                            <td>
+                                <ul class="list-unstyled mb-0">
+                                    {% for item in pedido.items.all %}
+                                    <li>{{ item.producto.nombre }} (x{{ item.cantidad }})</li>
+                                    {% endfor %}
+                                </ul>
+                            </td>
+                            <td>${{ pedido.total }}</td>
+                            <td>
+                                <form method="post" action="{% url 'actualizar_estado_pedido' pedido.id %}" class="d-flex align-items-center">
+                                    {% csrf_token %}
+                                    <select name="estado" class="form-select form-select-sm me-2" style="width: auto;">
+                                        <option value="pendiente" {% if pedido.estado == 'pendiente' %}selected{% endif %}>Pendiente</option>
+                                        <option value="en_produccion" {% if pedido.estado == 'en_produccion' %}selected{% endif %}>En Producción</option>
+                                        <option value="terminado" {% if pedido.estado == 'terminado' %}selected{% endif %}>Terminado</option>
+                                        <option value="enviado" {% if pedido.estado == 'enviado' %}selected{% endif %}>Enviado</option>
+                                        <option value="entregado" {% if pedido.estado == 'entregado' %}selected{% endif %}>Entregado</option>
+                                    </select>
+                                    <button type="submit" class="btn btn-sm btn-primary">Actualizar</button>
+                                </form>
+                            </td>
+                            <td>{{ pedido.fecha_pedido|date:"d/m/Y H:i" }}</td>
+                            <td>
+                                <a href="{% url 'detalle_pedido' pedido.id %}" class="btn btn-sm btn-info">Ver Detalles</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-4">
+                <p class="text-muted mb-0">No hay pedidos disponibles</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Notificaciones -->
+    <div class="card mt-4">
+        <div class="card-header">
+            <h5 class="mb-0">Historial de Notificaciones</h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="list-group list-group-flush">
+                {% if notificaciones %}
+                    {% for notificacion in notificaciones %}
+                    <div class="list-group-item">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">{{ notificacion.titulo }}</h6>
+                            <small class="text-muted">{{ notificacion.fecha_creacion|timesince }} atrás</small>
+                        </div>
+                        <p class="mb-1">{{ notificacion.mensaje }}</p>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="list-group-item text-center text-muted">
+                        No hay notificaciones disponibles
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3>Resumen del Pedido</h3>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Producto</th>
+                                    <th>Cantidad</th>
+                                    <th>Precio Unitario</th>
+                                    <th>Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in items_carrito %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            {% if item.producto.imagen %}
+                                            <img src="{{ item.producto.imagen.url }}" alt="{{ item.producto.nombre }}" style="width: 50px; height: 50px; object-fit: cover;" class="me-2">
+                                            {% endif %}
+                                            <div>
+                                                <h6 class="mb-0">{{ item.producto.nombre }}</h6>
+                                                <small class="text-muted">{{ item.producto.empresa.nombre }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>{{ item.cantidad }}</td>
+                                    <td>${{ item.producto.precio }}</td>
+                                    <td>${{ item.subtotal }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3>Información de Envío</h3>
+                </div>
+                <div class="card-body">
+                    <form method="post" id="pedidoForm">
+                        {% csrf_token %}
+                        {% if messages %}
+                            {% for message in messages %}
+                                <div class="alert alert-{{ message.tags }}">
+                                    {{ message }}
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                        <div class="mb-3">
+                            <label for="direccion_envio" class="form-label">Dirección de Envío</label>
+                            <input type="text" class="form-control" id="direccion_envio" name="direccion_envio" value="{{ direccion_usuario }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="telefono_contacto" class="form-label">Teléfono de Contacto</label>
+                            <input type="tel" class="form-control" id="telefono_contacto" name="telefono_contacto" value="{{ telefono_usuario }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="instrucciones_especiales" class="form-label">Instrucciones Especiales (opcional)</label>
+                            <textarea class="form-control" id="instrucciones_especiales" name="instrucciones_especiales" rows="3"></textarea>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Resumen de Pago</h4>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-3">
+                        <span>Subtotal:</span>
+                        <span>${{ subtotal }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-3">
+                        <span>IVA (19%):</span>
+                        <span>${{ iva }}</span>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between mb-3">
+                        <strong>Total:</strong>
+                        <strong>${{ total }}</strong>
+                    </div>
+                    <div class="mb-3">
+                        <label for="metodo_pago" class="form-label">Método de Pago</label>
+                        <select class="form-select" id="metodo_pago" name="metodo_pago" form="pedidoForm" required>
+                            <option value="">Seleccione un método de pago</option>
+                            <option value="card">Tarjeta de Crédito/Débito</option>
+                            <option value="transfer">Transferencia Bancaria</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100" form="pedidoForm">Confirmar Pedido</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

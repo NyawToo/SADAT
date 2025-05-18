@@ -1,0 +1,220 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <h2>Reporte Global</h2>
+
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Total Empresas</h5>
+                    <h3>{{ estadisticas.total_empresas }}</h3>
+                    <p class="mb-0">Activas: {{ estadisticas.empresas_activas }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Ventas Totales</h5>
+                    <h3>${{ estadisticas.ventas_totales }}</h3>
+                    <p class="mb-0">Este mes: ${{ estadisticas.ventas_mes }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Pedidos Totales</h5>
+                    <h3>{{ estadisticas.pedidos_totales }}</h3>
+                    <p class="mb-0">Completados: {{ estadisticas.pedidos_completados }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-dark">
+                <div class="card-body">
+                    <h5 class="card-title">Usuarios Activos</h5>
+                    <h3>{{ estadisticas.usuarios_activos }}</h3>
+                    <p class="mb-0">Nuevos este mes: {{ estadisticas.usuarios_nuevos }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Tendencia de Ventas</h5>
+                    <canvas id="graficoTendenciaVentas"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Distribución por Tipo de Empresa</h5>
+                    <canvas id="graficoDistribucionEmpresas"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Ranking de Empresas</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Posición</th>
+                                    <th>Empresa</th>
+                                    <th>Tipo</th>
+                                    <th>Ventas Totales</th>
+                                    <th>Pedidos Completados</th>
+                                    <th>Valoración</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for empresa in ranking_empresas %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>{{ empresa.nombre }}</td>
+                                    <td>{{ empresa.tipo }}</td>
+                                    <td>${{ empresa.ventas_totales }}</td>
+                                    <td>{{ empresa.pedidos_completados }}</td>
+                                    <td>
+                                        <div class="progress">
+                                            <div class="progress-bar bg-success" role="progressbar" 
+                                                 style="width: {{ empresa.valoracion }}%" 
+                                                 aria-valuenow="{{ empresa.valoracion }}" 
+                                                 aria-valuemin="0" 
+                                                 aria-valuemax="100">
+                                                {{ empresa.valoracion }}%
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Métricas de Rendimiento</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <tbody>
+                                <tr>
+                                    <td>Tiempo promedio de entrega</td>
+                                    <td>{{ metricas.tiempo_promedio_entrega }} días</td>
+                                </tr>
+                                <tr>
+                                    <td>Tasa de satisfacción</td>
+                                    <td>{{ metricas.tasa_satisfaccion }}%</td>
+                                </tr>
+                                <tr>
+                                    <td>Tasa de conversión</td>
+                                    <td>{{ metricas.tasa_conversion }}%</td>
+                                </tr>
+                                <tr>
+                                    <td>Ticket promedio</td>
+                                    <td>${{ metricas.ticket_promedio }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Alertas y Notificaciones</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        {% for alerta in alertas %}
+                        <div class="list-group-item list-group-item-action flex-column align-items-start {% if alerta.tipo == 'urgente' %}list-group-item-danger{% endif %}">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">{{ alerta.titulo }}</h6>
+                                <small>{{ alerta.fecha }}</small>
+                            </div>
+                            <p class="mb-1">{{ alerta.mensaje }}</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Gráfico de tendencia de ventas
+const ctxVentas = document.getElementById('graficoTendenciaVentas').getContext('2d');
+const graficoVentas = new Chart(ctxVentas, {
+    type: 'line',
+    data: {
+        labels: {{ labels_ventas|safe }},
+        datasets: [{
+            label: 'Ventas Mensuales',
+            data: {{ datos_ventas }},
+            borderColor: 'rgb(75, 192, 192)',
+            tension: 0.1
+        }]
+    },
+    options: {
+        responsive: true,
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+
+// Gráfico de distribución de empresas
+const ctxEmpresas = document.getElementById('graficoDistribucionEmpresas').getContext('2d');
+const graficoEmpresas = new Chart(ctxEmpresas, {
+    type: 'pie',
+    data: {
+        labels: {{ labels_empresas|safe }},
+        datasets: [{
+            data: {{ datos_empresas }},
+            backgroundColor: [
+                'rgb(255, 99, 132)',
+                'rgb(54, 162, 235)',
+                'rgb(255, 205, 86)'
+            ]
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'right'
+            }
+        }
+    }
+});
+</script>
+{% endblock %}
+{% endblock %}

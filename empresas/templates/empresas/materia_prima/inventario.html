@@ -1,0 +1,175 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Gestión de Inventario de Materia Prima</h1>
+        <a href="{% url 'dashboard_materia_prima' %}" class="btn btn-info">
+            <i class="bi bi-graph-up"></i> Ver Dashboard
+        </a>
+    </div>
+
+    <!-- Formulario para agregar/editar materia prima -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Agregar Nueva Materia Prima</h5>
+            <form method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="materia_prima_id" id="materia_prima_id">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="nombre" class="form-label">Nombre</label>
+                        <input type="text" class="form-control" id="nombre" name="nombre" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="categoria" class="form-label">Categoría</label>
+                        <select class="form-control" id="categoria" name="categoria" required>
+                            <option value="">Seleccione una categoría</option>
+                            {% for categoria in categorias %}
+                            <option value="{{ categoria.id }}">{{ categoria.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="descripcion" class="form-label">Descripción</label>
+                    <textarea class="form-control" id="descripcion" name="descripcion" rows="2"></textarea>
+                </div>
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <label for="cantidad" class="form-label">Cantidad</label>
+                        <input type="number" class="form-control" id="cantidad" name="cantidad" step="0.01" required>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label for="unidad_medida" class="form-label">Unidad de Medida</label>
+                        <input type="text" class="form-control" id="unidad_medida" name="unidad_medida" required>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label for="precio_unitario" class="form-label">Precio Unitario</label>
+                        <input type="number" class="form-control" id="precio_unitario" name="precio_unitario" step="0.01" required>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label for="stock_minimo" class="form-label">Stock Mínimo</label>
+                        <input type="number" class="form-control" id="stock_minimo" name="stock_minimo" step="0.01" required>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary" id="btnSubmit">Agregar Materia Prima</button>
+                <button type="button" class="btn btn-secondary" id="btnCancelar" style="display: none;">Cancelar</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Lista de materias primas -->
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">Inventario Actual</h5>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Categoría</th>
+                            <th>Cantidad</th>
+                            <th>Unidad</th>
+                            <th>Precio Unit.</th>
+                            <th>Stock Mín.</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for materia in materias_primas %}
+                        <tr>
+                            <td>{{ materia.nombre }}</td>
+                            <td>{{ materia.categoria.nombre }}</td>
+                            <td>{{ materia.cantidad }}</td>
+                            <td>{{ materia.unidad_medida }}</td>
+                            <td>${{ materia.precio_unitario }}</td>
+                            <td>{{ materia.stock_minimo }}</td>
+                            <td>
+                                {% if materia.cantidad <= materia.stock_minimo %}
+                                <span class="badge bg-danger">Stock Bajo</span>
+                                {% else %}
+                                <span class="badge bg-success">Stock OK</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group">
+                                    <button class="btn btn-sm btn-primary editar-materia"
+                                            data-id="{{ materia.id }}"
+                                            data-nombre="{{ materia.nombre }}"
+                                            data-categoria="{{ materia.categoria.id }}"
+                                            data-descripcion="{{ materia.descripcion|default:'' }}"
+                                            data-cantidad="{{ materia.cantidad }}"
+                                            data-unidad="{{ materia.unidad_medida }}"
+                                            data-precio="{{ materia.precio_unitario }}"
+                                            data-stock-min="{{ materia.stock_minimo }}">
+                                        <i class="bi bi-pencil"></i> Editar
+                                    </button>
+                                    <a href="{% url 'eliminar_materia_prima' materia.id %}" class="btn btn-sm btn-danger" onclick="return confirm('¿Está seguro de que desea eliminar esta materia prima?')">
+                                        <i class="bi bi-trash"></i> Eliminar
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8" class="text-center">No hay materias primas registradas</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.querySelector('form');
+        const btnSubmit = document.getElementById('btnSubmit');
+        const btnCancelar = document.getElementById('btnCancelar');
+        const inputs = {
+            id: document.getElementById('materia_prima_id'),
+            nombre: document.getElementById('nombre'),
+            categoria: document.getElementById('categoria'),
+            descripcion: document.getElementById('descripcion'),
+            cantidad: document.getElementById('cantidad'),
+            unidad_medida: document.getElementById('unidad_medida'),
+            precio_unitario: document.getElementById('precio_unitario'),
+            stock_minimo: document.getElementById('stock_minimo')
+        };
+
+        // Manejar clic en botón editar
+        document.querySelectorAll('.editar-materia').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const data = this.dataset;
+                
+                inputs.id.value = data.id;
+                inputs.nombre.value = data.nombre;
+                inputs.categoria.value = data.categoria;
+                inputs.descripcion.value = data.descripcion;
+                inputs.cantidad.value = data.cantidad;
+                inputs.unidad_medida.value = data.unidad;
+                inputs.precio_unitario.value = data.precio;
+                inputs.stock_minimo.value = data.stockMin;
+
+                btnSubmit.textContent = 'Actualizar Materia Prima';
+                btnCancelar.style.display = 'inline-block';
+                inputs.nombre.focus();
+            });
+        });
+
+        // Manejar clic en botón cancelar
+        btnCancelar.addEventListener('click', function() {
+            form.reset();
+            inputs.id.value = '';
+            btnSubmit.textContent = 'Agregar Materia Prima';
+            btnCancelar.style.display = 'none';
+        });
+    });
+</script>
+{% endblock %}
+{% endblock %}

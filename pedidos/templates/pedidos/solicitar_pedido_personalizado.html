@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Solicitar Pedido Personalizado a {{ empresa.nombre }}</h2>
+    
+    {% if messages %}
+    <div class="messages mb-4">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}" role="alert">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    <div class="card">
+        <div class="card-body">
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                <div class="mb-3">
+                    <label for="descripcion" class="form-label">Descripción detallada del pedido</label>
+                    <textarea class="form-control" id="descripcion" name="descripcion" rows="4" required></textarea>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="referencia_imagen" class="form-label">Imagen de referencia (opcional)</label>
+                    <input type="file" class="form-control" id="referencia_imagen" name="referencia_imagen" accept="image/*">
+                </div>
+                
+                <div class="mb-3">
+                    <label for="cantidad" class="form-label">Cantidad de prendas</label>
+                    <input type="number" class="form-control" id="cantidad" name="cantidad" min="1" required>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="fecha_entrega_estimada" class="form-label">Fecha de entrega deseada</label>
+                    <input type="date" class="form-control" id="fecha_entrega_estimada" name="fecha_entrega_estimada" required>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">Enviar Solicitud</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <!-- Filtros y Búsqueda -->
+        <div class="col-md-3 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Filtros</h4>
+                </div>
+                <div class="card-body">
+                    <form method="get">
+                        <div class="mb-3">
+                            <label for="categoria" class="form-label">Categoría</label>
+                            <select class="form-select" id="categoria" name="categoria">
+                                <option value="">Todas</option>
+                                {% for categoria in categorias %}
+                                <option value="{{ categoria.id }}" {% if categoria.id == selected_categoria %}selected{% endif %}>
+                                    {{ categoria.nombre }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="precio_min" class="form-label">Precio Mínimo</label>
+                            <input type="number" class="form-control" id="precio_min" name="precio_min" value="{{ precio_min }}">
+                        </div>
+                        <div class="mb-3">
+                            <label for="precio_max" class="form-label">Precio Máximo</label>
+                            <input type="number" class="form-control" id="precio_max" name="precio_max" value="{{ precio_max }}">
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Aplicar Filtros</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lista de Productos -->
+        <div class="col-md-9">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3>Productos Disponibles</h3>
+                    <div class="form-group d-flex">
+                        <input type="text" class="form-control me-2" id="busqueda" placeholder="Buscar productos...">
+                        <button class="btn btn-outline-primary" onclick="buscarProductos()">Buscar</button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row" id="productos-container">
+                        {% for producto in productos %}
+                        <div class="col-md-4 mb-4">
+                            <div class="card h-100">
+                                {% if producto.imagen %}
+                                <img src="{{ producto.imagen.url }}" class="card-img-top" alt="{{ producto.nombre }}">
+                                {% endif %}
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ producto.nombre }}</h5>
+                                    <p class="card-text">
+                                        <strong>Precio:</strong> ${{ producto.precio }}<br>
+                                        <strong>Stock:</strong> {{ producto.stock }} unidades<br>
+                                        <strong>Empresa:</strong> {{ producto.empresa.nombre }}<br>
+                                        <strong>Categoría:</strong> {{ producto.categoria }}
+                                    </p>
+                                    <p class="card-text">{{ producto.descripcion|truncatechars:100 }}</p>
+                                </div>
+                                <div class="card-footer">
+                                    {% if user.is_authenticated and user.tipo == 'cliente' %}
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <input type="number" class="form-control w-50" id="cantidad-{{ producto.id }}" value="1" min="1" max="{{ producto.stock }}">
+                                        <button class="btn btn-primary" onclick="agregarAlCarrito({{ producto.id }})">Agregar al Carrito</button>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="col-12">
+                            <div class="alert alert-info" role="alert">
+                                No hay productos disponibles que coincidan con los criterios de búsqueda.
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if user.is_authenticated and user.tipo == 'cliente' %}
+<script>
+function agregarAlCarrito(productoId) {
+    const cantidad = document.getElementById(`cantidad-${productoId}`).value;
+    fetch('/pedidos/carrito/agregar/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        },
+        body: JSON.stringify({
+            producto_id: productoId,
+            cantidad: cantidad
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Producto agregado al carrito exitosamente');
+        } else {
+            alert('Error al agregar el producto al carrito');
+        }
+    });
+}
+
+function buscarProductos() {
+    const busqueda = document.getElementById('busqueda').value;
+    window.location.href = `?busqueda=${encodeURIComponent(busqueda)}`;
+}
+</script>
+{% endif %}
+{% endblock %}

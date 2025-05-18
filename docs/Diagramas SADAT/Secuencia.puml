@@ -1,0 +1,100 @@
+@startuml
+title -DIAGRAMA DE SECUENCIA SADAT-
+
+actor Cliente as CL
+actor "Empresa Integral" as EI
+actor "Empresa Satélite" as ES
+participant "Sistema SADAT" as SYS
+participant "Gestión Pedidos" as GP
+participant "Gestión Pagos" as GPAY
+participant "Gestión Producción" as GPROD
+database "Base de Datos" as DB
+
+autonumber
+
+== Registro y Exploración ==
+CL -> SYS: Registrar cuenta
+activate SYS
+SYS -> DB: Guardar datos
+DB --> SYS: Confirmar registro
+SYS --> CL: Cuenta creada
+deactivate SYS
+
+CL -> SYS: Explorar catálogo
+activate SYS
+SYS -> DB: Consultar productos
+DB --> SYS: Lista de productos
+SYS --> CL: Mostrar catálogo
+deactivate SYS
+
+== Proceso de Pedido ==
+CL -> GP: Crear pedido
+activate GP
+GP -> DB: Registrar pedido
+DB --> GP: Confirmar registro
+GP -> EI: Notificar nuevo pedido
+activate EI
+
+== Evaluación y Asignación ==
+EI -> GPROD: Evaluar capacidad
+activate GPROD
+GPROD -> DB: Consultar disponibilidad
+DB --> GPROD: Estado actual
+GPROD --> EI: Informe capacidad
+
+alt Requiere satélite
+    EI -> ES: Asignar trabajo
+    activate ES
+    ES -> GPROD: Confirmar recepción
+    GPROD -> DB: Actualizar estado
+    DB --> GPROD: Confirmar actualización
+    GPROD --> EI: Notificar asignación
+    
+    loop Mientras producción
+        ES -> GPROD: Actualizar avance
+        GPROD -> DB: Registrar avance
+        DB --> GPROD: Confirmar registro
+        GPROD --> EI: Notificar progreso
+    end
+    
+    ES -> EI: Entregar trabajo
+    deactivate ES
+else Producción interna
+    EI -> GPROD: Iniciar producción
+    GPROD -> DB: Registrar inicio
+    DB --> GPROD: Confirmar registro
+end
+
+== Control de Calidad ==
+EI -> GPROD: Verificar calidad
+GPROD -> DB: Registrar resultado
+DB --> GPROD: Confirmar registro
+GPROD --> EI: Informe calidad
+deactivate GPROD
+
+== Proceso de Pago ==
+EI -> GP: Confirmar producto listo
+GP -> GPAY: Solicitar pago
+activate GPAY
+GPAY -> CL: Solicitar pago
+CL -> GPAY: Realizar pago
+GPAY -> DB: Registrar pago
+DB --> GPAY: Confirmar registro
+GPAY -> EI: Confirmar pago
+GPAY -> ES: Distribuir pago
+deactivate GPAY
+
+== Entrega y Calificación ==
+EI -> CL: Entregar producto
+deactivate EI
+CL -> SYS: Calificar servicio
+activate SYS
+SYS -> DB: Guardar calificación
+DB --> SYS: Confirmar registro
+SYS --> CL: Confirmar calificación
+deactivate SYS
+
+GP --> CL: Cerrar pedido
+deactivate GP
+
+@enduml

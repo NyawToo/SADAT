@@ -1,0 +1,277 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4">
+                    <img src="{{ producto.imagen.url }}" alt="{{ producto.nombre }}" class="img-fluid rounded">
+                </div>
+                <div class="col-md-4">
+                    <h2>{{ producto.nombre }}</h2>
+                    <p class="text-muted">{{ producto.descripcion }}</p>
+                    <p class="h4 mb-3">${{ producto.precio }}</p>
+                    <p>Stock disponible: <span id="stock-disponible">{{ producto.stock }}</span></p>
+                </div>
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <form id="form-agregar-carrito" method="POST" action="{% url 'agregar_al_carrito' producto.id %}">
+                                {% csrf_token %}
+                                <div class="d-flex align-items-center justify-content-center mb-3">
+                                    <button type="button" class="btn btn-outline-secondary" onclick="decrementarCantidad()">-</button>
+                                    <input type="number" id="cantidad" name="cantidad" class="form-control mx-2 text-center" value="1" min="1" max="{{ producto.stock }}" style="width: 80px;">
+                                    <button type="button" class="btn btn-outline-secondary" onclick="incrementarCantidad()">+</button>
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100">Agregar al Carrito</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h4>Comentarios</h4>
+                </div>
+                <div class="card-body">
+                    {% if user.is_authenticated and user.tipo == 'cliente' %}
+                    <form id="form-comentario" method="POST" action="{% url 'agregar_comentario' producto.id %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <textarea class="form-control" name="texto" rows="3" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Enviar Comentario</button>
+                    </form>
+                    <hr>
+                    {% endif %}
+                    
+                    <div id="lista-comentarios">
+                        {% for comentario in producto.comentarios.all %}
+                        <div class="comentario mb-3">
+                            <div class="d-flex justify-content-between">
+                                <h6>{{ comentario.usuario.username }}</h6>
+                                <small class="text-muted">{{ comentario.fecha|date:"d/m/Y H:i" }}</small>
+                            </div>
+                            <p>{{ comentario.texto }}</p>
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-sm btn-outline-primary" onclick="darLike({{ comentario.id }})">
+                                    👍 <span id="likes-{{ comentario.id }}">{{ comentario.likes }}</span>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger" onclick="darDislike({{ comentario.id }})">
+                                    👎 <span id="dislikes-{{ comentario.id }}">{{ comentario.dislikes }}</span>
+                                </button>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <p class="text-muted">No hay comentarios aún.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h4>Calificación</h4>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        <h2 class="mb-0">{{ calificacion_promedio|default:"0" }}/5</h2>
+                        <div class="stars-container">
+                            {% for i in "12345"|make_list %}
+                            <span class="star {% if i|add:"0" <= calificacion_promedio %}active{% endif %}">★</span>
+                            {% endfor %}
+                        </div>
+                        <p class="mt-2">
+                            {% if calificacion_promedio >= 4 %}
+                                <span class="badge bg-success">Muy Recomendable</span>
+                            {% elif calificacion_promedio >= 3 %}
+                                <span class="badge bg-warning text-dark">Recomendable</span>
+                            {% else %}
+                                <span class="badge bg-danger">No Recomendable</span>
+                            {% endif %}
+                        </p>
+                        <p class="text-muted">Basado en {{ producto.calificaciones.count }} calificaciones</p>
+                    </div>
+
+                    {% if user.is_authenticated and user.tipo == 'cliente' %}
+                    <form id="form-calificacion" method="POST" action="{% url 'calificar_producto' producto.id %}">
+                        {% csrf_token %}
+                        <div class="rating">
+                            {% for i in "54321"|make_list %}
+                            <input type="radio" name="puntuacion" value="{{ i }}" id="star{{ i }}">
+                            <label for="star{{ i }}">★</label>
+                            {% endfor %}
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 mt-3">Calificar</button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.stars-container {
+    font-size: 24px;
+    color: #ddd;
+}
+
+.stars-container .star.active {
+    color: #ffd700;
+}
+
+.rating {
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: center;
+    gap: 5px;
+}
+
+.rating input {
+    display: none;
+}
+
+.rating label {
+    font-size: 30px;
+    color: #ddd;
+    cursor: pointer;
+}
+
+.rating label:hover,
+.rating label:hover ~ label,
+.rating input:checked ~ label {
+    color: #ffd700;
+}
+
+.comentario {
+    border-bottom: 1px solid #eee;
+    padding-bottom: 1rem;
+}
+
+.comentario:last-child {
+    border-bottom: none;
+}
+</style>
+
+<script>
+function decrementarCantidad() {
+    const input = document.getElementById('cantidad');
+    const valor = parseInt(input.value);
+    if (valor > 1) {
+        input.value = valor - 1;
+    }
+}
+
+function incrementarCantidad() {
+    const input = document.getElementById('cantidad');
+    const stockDisponible = parseInt(document.getElementById('stock-disponible').textContent);
+    const valor = parseInt(input.value);
+    if (valor < stockDisponible) {
+        input.value = valor + 1;
+    }
+}
+
+function darLike(comentarioId) {
+    fetch(`/dar-like/${comentarioId}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById(`likes-${comentarioId}`).textContent = data.likes;
+        }
+    });
+}
+
+function darDislike(comentarioId) {
+    fetch(`/dar-dislike/${comentarioId}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById(`dislikes-${comentarioId}`).textContent = data.dislikes;
+        }
+    });
+}
+
+document.getElementById('form-agregar-carrito').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    
+    fetch(this.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById('stock-disponible').textContent = data.nuevo_stock;
+            alert('Producto agregado al carrito exitosamente');
+        } else {
+            alert(data.error || 'Error al agregar al carrito');
+        }
+    });
+});
+
+document.getElementById('form-comentario')?.addEventListener('submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    
+    fetch(this.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert(data.error || 'Error al agregar el comentario');
+        }
+    });
+});
+
+document.getElementById('form-calificacion')?.addEventListener('submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    
+    fetch(this.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert(data.error || 'Error al calificar el producto');
+        }
+    });
+});
+</script>
+{% endblock %}

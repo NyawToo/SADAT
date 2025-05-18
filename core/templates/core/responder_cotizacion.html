@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Responder Cotización - Pedido #{{ pedido.id }}</h4>
+                </div>
+                <div class="card-body">
+                    <div class="mb-4">
+                        <h5>Detalles del Pedido</h5>
+                        <p><strong>Cliente:</strong> {{ pedido.cliente.username }}</p>
+                        <p><strong>Descripción:</strong> {{ pedido.descripcion }}</p>
+                        <p><strong>Cantidad:</strong> {{ pedido.cantidad }}</p>
+                        {% if pedido.referencia_imagen %}
+                        <p><strong>Imagen de Referencia:</strong></p>
+                        <img src="{{ pedido.referencia_imagen.url }}" alt="Referencia" class="img-fluid mb-3" style="max-width: 300px;">
+                        {% endif %}
+                    </div>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="id_monto" class="form-label">{{ form.monto.label }}</label>
+                            {{ form.monto }}
+                            {% if form.monto.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.monto.errors }}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="id_detalles" class="form-label">{{ form.detalles.label }}</label>
+                            {{ form.detalles }}
+                            {% if form.detalles.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.detalles.errors }}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="id_tiempo_estimado" class="form-label">{{ form.tiempo_estimado.label }}</label>
+                            {{ form.tiempo_estimado }}
+                            {% if form.tiempo_estimado.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.tiempo_estimado.errors }}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">Enviar Cotización</button>
+                            <a href="{% url 'gestionar_pedidos_personalizados' %}" class="btn btn-outline-secondary">Cancelar</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

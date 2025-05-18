@@ -1,0 +1,175 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container">
+    <h2 class="mb-4">Gestión de Quejas</h2>
+
+    <!-- Filtros -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label for="estado" class="form-label">Estado</label>
+                    <select class="form-select" id="estado" name="estado">
+                        <option value="">Todos</option>
+                        <option value="pendiente">Pendiente</option>
+                        <option value="en_proceso">En Proceso</option>
+                        <option value="resuelto">Resuelto</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="tipo" class="form-label">Tipo de Queja</label>
+                    <select class="form-select" id="tipo" name="tipo">
+                        <option value="">Todos</option>
+                        <option value="producto">Producto</option>
+                        <option value="servicio">Servicio</option>
+                        <option value="pago">Pago</option>
+                        <option value="otro">Otro</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="fecha" class="form-label">Fecha</label>
+                    <input type="date" class="form-control" id="fecha" name="fecha">
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">Filtrar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Lista de Quejas -->
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Fecha</th>
+                            <th>Usuario</th>
+                            <th>Tipo</th>
+                            <th>Asunto</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for queja in quejas %}
+                        <tr>
+                            <td>{{ queja.id }}</td>
+                            <td>{{ queja.fecha_creacion }}</td>
+                            <td>{{ queja.usuario.username }}</td>
+                            <td>{{ queja.tipo }}</td>
+                            <td>{{ queja.asunto }}</td>
+                            <td>
+                                <span class="badge {% if queja.estado == 'resuelto' %}bg-success{% elif queja.estado == 'en_proceso' %}bg-warning{% else %}bg-danger{% endif %}">
+                                    {{ queja.estado }}
+                                </span>
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#detallesQueja{{ queja.id }}">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                                <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#responderQueja{{ queja.id }}">
+                                    <i class="bi bi-reply"></i>
+                                </button>
+                            </td>
+                        </tr>
+
+                        <!-- Modal Detalles -->
+                        <div class="modal fade" id="detallesQueja{{ queja.id }}" tabindex="-1">
+                            <div class="modal-dialog modal-lg">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Detalles de la Queja #{{ queja.id }}</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="row mb-3">
+                                            <div class="col-md-6">
+                                                <h6>Información del Usuario</h6>
+                                                <p><strong>Nombre:</strong> {{ queja.usuario.username }}</p>
+                                                <p><strong>Email:</strong> {{ queja.usuario.email }}</p>
+                                                <p><strong>Teléfono:</strong> {{ queja.usuario.telefono }}</p>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <h6>Detalles de la Queja</h6>
+                                                <p><strong>Tipo:</strong> {{ queja.tipo }}</p>
+                                                <p><strong>Estado:</strong> {{ queja.estado }}</p>
+                                                <p><strong>Fecha:</strong> {{ queja.fecha_creacion }}</p>
+                                            </div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <h6>Asunto</h6>
+                                            <p>{{ queja.asunto }}</p>
+                                        </div>
+                                        <div class="mb-3">
+                                            <h6>Descripción</h6>
+                                            <p>{{ queja.descripcion }}</p>
+                                        </div>
+                                        {% if queja.respuestas.all %}
+                                        <div class="mb-3">
+                                            <h6>Respuestas</h6>
+                                            {% for respuesta in queja.respuestas.all %}
+                                            <div class="card mb-2">
+                                                <div class="card-body">
+                                                    <p class="mb-1"><strong>{{ respuesta.admin.username }}</strong> - {{ respuesta.fecha_creacion }}</p>
+                                                    <p class="mb-0">{{ respuesta.contenido }}</p>
+                                                </div>
+                                            </div>
+                                            {% endfor %}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Modal Responder -->
+                        <div class="modal fade" id="responderQueja{{ queja.id }}" tabindex="-1">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Responder Queja #{{ queja.id }}</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <form method="post" action="{% url 'responder_queja' queja.id %}">
+                                        {% csrf_token %}
+                                        <div class="modal-body">
+                                            <div class="mb-3">
+                                                <label for="estado" class="form-label">Actualizar Estado</label>
+                                                <select class="form-select" id="estado" name="estado" required>
+                                                    <option value="en_proceso">En Proceso</option>
+                                                    <option value="resuelto">Resuelto</option>
+                                                </select>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="respuesta" class="form-label">Respuesta</label>
+                                                <textarea class="form-control" id="respuesta" name="respuesta" rows="4" required></textarea>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                            <button type="submit" class="btn btn-primary">Enviar Respuesta</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center">No hay quejas registradas</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

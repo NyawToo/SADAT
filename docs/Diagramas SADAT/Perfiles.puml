@@ -1,0 +1,72 @@
+@startuml
+title -DIAGRAMA DE PERFILES SADAT-
+
+class Usuario <<profile>> {
+  +id: Integer
+  +username: String
+  +email: String
+  +password: String
+  +tipo: TipoUsuario
+}
+
+class Administrador <<profile>> {
+  +acceso_total: Boolean
+  +nivel_privilegios: Integer
+  {method} gestionar_sistema()
+  {method} supervisar_operaciones()
+  {method} generar_reportes()
+}
+
+class Cliente <<profile>> {
+  +nombre: String
+  +direccion: String
+  +telefono: String
+  {method} realizar_pedidos()
+  {method} realizar_pagos()
+  {method} calificar_servicios()
+}
+
+class EmpresaIntegral <<profile>> {
+  +razon_social: String
+  +rut: String
+  +direccion_comercial: String
+  +capacidad_produccion: Integer
+  {method} gestionar_catalogo()
+  {method} asignar_trabajos()
+  {method} controlar_calidad()
+}
+
+class EmpresaSatelite <<profile>> {
+  +razon_social: String
+  +rut: String
+  +especialidad: String
+  +capacidad_diaria: Integer
+  {method} gestionar_produccion()
+  {method} actualizar_estados()
+  {method} reportar_avances()
+}
+
+class SistemaNotificaciones <<profile>> {
+  +tipo_notificacion: String
+  +prioridad: Integer
+  {method} enviar_notificaciones()
+  {method} gestionar_eventos()
+}
+
+class SistemaPagos <<profile>> {
+  +metodo_pago: String
+  +estado_transaccion: String
+  {method} procesar_pagos()
+  {method} distribuir_fondos()
+}
+
+Usuario <|-- Administrador
+Usuario <|-- Cliente
+Usuario <|-- EmpresaIntegral
+Usuario <|-- EmpresaSatelite
+
+EmpresaIntegral -- SistemaNotificaciones
+EmpresaSatelite -- SistemaNotificaciones
+Cliente -- SistemaPagos
+
+@enduml

@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Iniciar Pago</h2>
+    <div class="card">
+        <div class="card-body">
+            <form method="post" action="">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="monto" class="form-label">Monto a Pagar</label>
+                    <input type="number" class="form-control" id="monto" name="monto" required>
+                </div>
+                <div class="mb-3">
+                    <label for="descripcion" class="form-label">Descripción</label>
+                    <textarea class="form-control" id="descripcion" name="descripcion" rows="3"></textarea>
+                </div>
+                <div class="mb-3">
+                    <label for="metodo_pago" class="form-label">Método de Pago</label>
+                    <select class="form-select" id="metodo_pago" name="metodo_pago" required>
+                        <option value="stripe">Tarjeta de Crédito (Stripe)</option>
+                        <option value="paypal">PayPal</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">Proceder al Pago</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

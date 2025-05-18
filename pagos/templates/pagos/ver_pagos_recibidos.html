@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Pagos Recibidos</h2>
+    
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-4">
+                    <label for="fecha_inicio" class="form-label">Fecha Inicio</label>
+                    <input type="date" class="form-control" id="fecha_inicio" name="fecha_inicio" value="{{ filtros.fecha_inicio }}">
+                </div>
+                <div class="col-md-4">
+                    <label for="fecha_fin" class="form-label">Fecha Fin</label>
+                    <input type="date" class="form-control" id="fecha_fin" name="fecha_fin" value="{{ filtros.fecha_fin }}">
+                </div>
+                <div class="col-md-4">
+                    <label for="estado" class="form-label">Estado</label>
+                    <select class="form-select" id="estado" name="estado">
+                        <option value="">Todos</option>
+                        <option value="completado" {% if filtros.estado == 'completado' %}selected{% endif %}>Completado</option>
+                        <option value="pendiente" {% if filtros.estado == 'pendiente' %}selected{% endif %}>Pendiente</option>
+                        <option value="cancelado" {% if filtros.estado == 'cancelado' %}selected{% endif %}>Cancelado</option>
+                    </select>
+                </div>
+                <div class="col-12">
+                    <button type="submit" class="btn btn-primary">Filtrar</button>
+                    <a href="{% url 'ver_pagos_recibidos' %}" class="btn btn-secondary">Limpiar Filtros</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Fecha</th>
+                    <th>Monto</th>
+                    <th>Estado</th>
+                    <th>Método de Pago</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for pago in pagos %}
+                <tr>
+                    <td>{{ pago.id }}</td>
+                    <td>{{ pago.fecha }}</td>
+                    <td>${{ pago.monto }}</td>
+                    <td>
+                        <span class="badge {% if pago.estado == 'completado' %}bg-success{% elif pago.estado == 'pendiente' %}bg-warning{% else %}bg-danger{% endif %}">
+                            {{ pago.estado }}
+                        </span>
+                    </td>
+                    <td>{{ pago.metodo_pago }}</td>
+                    <td>
+                        <button type="button" class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#detalleModal{{ pago.id }}">
+                            Ver Detalles
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% for pago in pagos %}
+    <div class="modal fade" id="detalleModal{{ pago.id }}" tabindex="-1" aria-labelledby="detalleModalLabel{{ pago.id }}" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="detalleModalLabel{{ pago.id }}">Detalles del Pago #{{ pago.id }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <dl class="row">
+                        <dt class="col-sm-4">ID Transacción</dt>
+                        <dd class="col-sm-8">{{ pago.id }}</dd>
+                        
+                        <dt class="col-sm-4">Fecha</dt>
+                        <dd class="col-sm-8">{{ pago.fecha }}</dd>
+                        
+                        <dt class="col-sm-4">Monto</dt>
+                        <dd class="col-sm-8">${{ pago.monto }}</dd>
+                        
+                        <dt class="col-sm-4">Estado</dt>
+                        <dd class="col-sm-8">{{ pago.estado }}</dd>
+                        
+                        <dt class="col-sm-4">Método de Pago</dt>
+                        <dd class="col-sm-8">{{ pago.metodo_pago }}</dd>
+                        
+                        <dt class="col-sm-4">Descripción</dt>
+                        <dd class="col-sm-8">{{ pago.descripcion }}</dd>
+                    </dl>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,171 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <h2>Registro de Notificaciones</h2>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label for="fecha_inicio" class="form-label">Fecha Inicio</label>
+                    <input type="date" class="form-control" id="fecha_inicio" name="fecha_inicio" value="{{ filtros.fecha_inicio }}">
+                </div>
+                <div class="col-md-3">
+                    <label for="fecha_fin" class="form-label">Fecha Fin</label>
+                    <input type="date" class="form-control" id="fecha_fin" name="fecha_fin" value="{{ filtros.fecha_fin }}">
+                </div>
+                <div class="col-md-3">
+                    <label for="tipo" class="form-label">Tipo de Notificación</label>
+                    <select class="form-select" id="tipo" name="tipo">
+                        <option value="">Todos</option>
+                        <option value="pedido" {% if filtros.tipo == 'pedido' %}selected{% endif %}>Pedido</option>
+                        <option value="pago" {% if filtros.tipo == 'pago' %}selected{% endif %}>Pago</option>
+                        <option value="sistema" {% if filtros.tipo == 'sistema' %}selected{% endif %}>Sistema</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="estado" class="form-label">Estado</label>
+                    <select class="form-select" id="estado" name="estado">
+                        <option value="">Todos</option>
+                        <option value="enviado" {% if filtros.estado == 'enviado' %}selected{% endif %}>Enviado</option>
+                        <option value="error" {% if filtros.estado == 'error' %}selected{% endif %}>Error</option>
+                        <option value="pendiente" {% if filtros.estado == 'pendiente' %}selected{% endif %}>Pendiente</option>
+                    </select>
+                </div>
+                <div class="col-12">
+                    <button type="submit" class="btn btn-primary">Filtrar</button>
+                    <a href="{% url 'log_notificaciones' %}" class="btn btn-secondary">Limpiar Filtros</a>
+                    <button type="button" class="btn btn-danger" onclick="limpiarRegistros()">Limpiar Registros</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Tipo</th>
+                    <th>Destinatario</th>
+                    <th>Asunto</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for notificacion in notificaciones %}
+                <tr>
+                    <td>{{ notificacion.fecha }}</td>
+                    <td>
+                        <span class="badge {% if notificacion.tipo == 'pedido' %}bg-primary{% elif notificacion.tipo == 'pago' %}bg-success{% else %}bg-info{% endif %}">
+                            {{ notificacion.tipo }}
+                        </span>
+                    </td>
+                    <td>{{ notificacion.destinatario }}</td>
+                    <td>{{ notificacion.asunto }}</td>
+                    <td>
+                        <span class="badge {% if notificacion.estado == 'enviado' %}bg-success{% elif notificacion.estado == 'error' %}bg-danger{% else %}bg-warning{% endif %}">
+                            {{ notificacion.estado }}
+                        </span>
+                    </td>
+                    <td>
+                        <button type="button" class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#detalleModal{{ notificacion.id }}">
+                            Ver Detalles
+                        </button>
+                        {% if notificacion.estado == 'error' %}
+                        <button type="button" class="btn btn-sm btn-warning" onclick="reintentarEnvio({{ notificacion.id }})">
+                            Reintentar
+                        </button>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% for notificacion in notificaciones %}
+    <div class="modal fade" id="detalleModal{{ notificacion.id }}" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Detalles de la Notificación</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Información General</h6>
+                            <dl class="row">
+                                <dt class="col-sm-4">ID</dt>
+                                <dd class="col-sm-8">{{ notificacion.id }}</dd>
+                                
+                                <dt class="col-sm-4">Fecha</dt>
+                                <dd class="col-sm-8">{{ notificacion.fecha }}</dd>
+                                
+                                <dt class="col-sm-4">Tipo</dt>
+                                <dd class="col-sm-8">{{ notificacion.tipo }}</dd>
+                                
+                                <dt class="col-sm-4">Estado</dt>
+                                <dd class="col-sm-8">{{ notificacion.estado }}</dd>
+                            </dl>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Detalles del Envío</h6>
+                            <dl class="row">
+                                <dt class="col-sm-4">Destinatario</dt>
+                                <dd class="col-sm-8">{{ notificacion.destinatario }}</dd>
+                                
+                                <dt class="col-sm-4">Asunto</dt>
+                                <dd class="col-sm-8">{{ notificacion.asunto }}</dd>
+                                
+                                <dt class="col-sm-4">Intentos</dt>
+                                <dd class="col-sm-8">{{ notificacion.intentos }}</dd>
+                            </dl>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <h6>Contenido del Mensaje</h6>
+                        <div class="bg-light p-3 rounded">
+                            {{ notificacion.contenido|linebreaks }}
+                        </div>
+                    </div>
+
+                    {% if notificacion.error_log %}
+                    <div class="mt-4">
+                        <h6>Log de Errores</h6>
+                        <pre class="bg-light p-3"><code>{{ notificacion.error_log }}</code></pre>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    {% if notificacion.estado == 'error' %}
+                    <button type="button" class="btn btn-warning" onclick="reintentarEnvio({{ notificacion.id }})">Reintentar Envío</button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% block extra_js %}
+<script>
+function reintentarEnvio(id) {
+    if (confirm('¿Deseas reintentar el envío de esta notificación?')) {
+        // Implementar lógica de reintento
+    }
+}
+
+function limpiarRegistros() {
+    if (confirm('¿Estás seguro de que deseas limpiar los registros antiguos? Esta acción no se puede deshacer.')) {
+        // Implementar lógica de limpieza
+    }
+}
+</script>
+{% endblock %}
+{% endblock %}
