@@ -32,6 +32,8 @@ class Pedido(models.Model):
         ('cancelado', 'Cancelado')
     ]
     
+    ESTADOS_DICT = dict(ESTADOS)
+    
     cliente = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name='pedidos', null=True, blank=True)
     empresa = models.ForeignKey(MicroempresaIntegral, on_delete=models.CASCADE, related_name='pedidos')
     producto = models.ForeignKey(ProductoTerminado, on_delete=models.CASCADE)
@@ -45,7 +47,7 @@ class Pedido(models.Model):
         return f'Pedido #{self.id} - {self.cliente.username}'
 
 class DetallePedido(models.Model):
-    pedido = models.ForeignKey(Pedido, on_delete=models.CASCADE, related_name='detalles')
+    pedido = models.ForeignKey(Pedido, on_delete=models.CASCADE, related_name='itempedido_set')
     producto = models.ForeignKey(ProductoTerminado, on_delete=models.CASCADE)
     cantidad = models.PositiveIntegerField()
     precio_unitario = models.DecimalField(max_digits=10, decimal_places=2)

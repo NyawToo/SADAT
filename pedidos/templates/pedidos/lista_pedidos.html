@@ -52,7 +52,7 @@
                 {% for pedido in pedidos %}
                 <tr>
                     <td>#{{ pedido.id }}</td>
-                    <td>{{ pedido.fecha_creacion|date:"d/m/Y H:i" }}</td>
+                    <td>{{ pedido.fecha_pedido|date:"d/m/Y H:i" }}</td>
                     <td>
                         {% if pedido.producto %}
                             {{ pedido.producto.nombre }}

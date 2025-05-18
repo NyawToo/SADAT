@@ -13,7 +13,7 @@
                     <h5>Información del Pedido</h5>
                     <p><strong>Fecha del Pedido:</strong> {{ pedido.fecha_pedido|date:"d/m/Y" }}</p>
                     <p><strong>Estado:</strong> {{ pedido.get_estado_display }}</p>
-                    <p><strong>Empresa:</strong> {{ pedido.empresa.nombre }}</p>
+                    <p><strong>Cliente:</strong> {{ pedido.cliente }}</p> 
                     <p><strong>Producto:</strong> {{ pedido.producto.nombre }}</p>
                     <p><strong>Cantidad:</strong> {{ pedido.cantidad }}</p>
                     <p><strong>Total:</strong> ${{ pedido.total|floatformat:2 }}</p>

@@ -11,7 +11,9 @@ from pedidos.models import Pedido, DetallePedido
 import pandas as pd
 import matplotlib.pyplot as plt
 import io
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Table, TableStyle
+import json
+import os
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Table, TableStyle, Spacer
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.pagesizes import letter
@@ -32,11 +34,11 @@ def reporte_cliente(request):
     ).annotate(
         total_compras=Count('id'),
         monto_total=Sum('total'),
-        productos_comprados=Count('producto', distinct=True)
+        productos_comprados=Count('itempedido_set__producto', distinct=True)
     ).order_by('-total_compras')  # Ordenar por cantidad de compras
 
     # Preparar datos para el gráfico
-    empresas_labels = [compra['empresa_integral__nombre_empresa'] for compra in compras_mes]
+    empresas_labels = [compra['empresa__nombre_empresa'] for compra in compras_mes]
     montos_totales = [float(compra['monto_total'] or 0) for compra in compras_mes]
 
     # Obtener detalles de todas las compras
@@ -48,7 +50,7 @@ def reporte_cliente(request):
         ).order_by('-fecha_pedido').first()
 
         detalles_compras.append({
-            'empresa': compra['empresa_integral__nombre_empresa'],
+            'empresa': compra['empresa__nombre_empresa'],
             'tipo': 'Integral',
             'productos_comprados': Pedido.objects.filter(
                 cliente=request.user,
@@ -135,33 +137,81 @@ def reporte_empresa(request, empresa_id=None):
     estados_cantidades = [estado['cantidad'] for estado in estados_data]
     estados_colores = ['#28a745' if estado['nombre'] == 'Completado' else '#ffc107' for estado in estados_data]
 
-    # Obtener pedidos recientes
-    pedidos = Pedido.objects.filter(
+    # Obtener pedidos recientes con sus relaciones
+    pedidos = Pedido.objects.select_related('cliente').prefetch_related(
+        'itempedido_set__producto'
+    ).filter(
         **{'empresa' if es_integral else 'empresa_satelite': empresa},
         fecha_pedido__gte=primer_dia_mes
     ).order_by('-fecha_pedido')[:10]
 
-    pedidos_data = [{
-        'id': pedido.id,
-        'cliente': pedido.cliente.get_full_name(),
-        'productos': ', '.join([f"{item.cantidad}x {item.producto.nombre}" for item in pedido.itempedido_set.all()]),
-        'fecha': pedido.fecha_creacion,
-        'estado': pedido.get_estado_display(),
-        'estado_color': 'success' if pedido.estado == 'completado' else 'warning',
-        'total': pedido.total
-    } for pedido in pedidos]
+    pedidos_data = []
+    for pedido in pedidos:
+        try:
+            # Obtener información del cliente de manera segura
+            nombre_cliente = 'Cliente no disponible'
+            if pedido.cliente:
+                nombre_completo = pedido.cliente.get_full_name().strip()
+                nombre_cliente = nombre_completo if nombre_completo else pedido.cliente.username
 
-    return render(request, 'reportes/reporte_empresa.html', {
+            # Obtener información de productos usando las relaciones precargadas
+            productos_detalles = []
+            productos_lista = []
+            
+            # Obtener detalles del pedido directamente
+            if hasattr(pedido, 'producto') and pedido.producto:
+                productos_lista.append(f"{pedido.cantidad}x {pedido.producto.nombre}")
+                productos_detalles.append({
+                    'nombre': pedido.producto.nombre,
+                    'cantidad': pedido.cantidad,
+                    'precio_unitario': float(pedido.total / pedido.cantidad),
+                    'subtotal': float(pedido.total)
+                })
+            
+            # También obtener productos del itempedido_set si existe
+            detalles = pedido.itempedido_set.all() if hasattr(pedido, 'itempedido_set') else []
+            
+            for detalle in detalles:
+                if detalle.producto:
+                    productos_lista.append(f"{detalle.cantidad}x {detalle.producto.nombre}")
+                    productos_detalles.append({
+                        'nombre': detalle.producto.nombre,
+                        'cantidad': detalle.cantidad,
+                        'precio_unitario': float(detalle.precio_unitario),
+                        'subtotal': float(detalle.cantidad * detalle.precio_unitario)
+                    })
+            
+            productos_info = ', '.join(productos_lista) if productos_lista else 'Sin productos'
+
+            pedidos_data.append({
+                'id': pedido.id,
+                'cliente': nombre_cliente,
+                'productos': productos_info,
+                'productos_detalles': productos_detalles,
+                'fecha': pedido.fecha_pedido,
+                'estado': pedido.get_estado_display(),
+                'estado_color': 'success' if pedido.estado == 'completado' else 'warning',
+                'total': pedido.total
+            })
+        except Exception as e:
+            continue  # Skip this pedido if there's an error
+
+    # Convertir datos a formato JSON seguro para JavaScript
+    context = {
         'empresa': empresa,
-        'productos_mas_vendidos': productos_vendidos[:5] if es_integral else [],
+        'es_integral': es_integral,
+        'productos_mas_vendidos': list(productos_vendidos[:5]) if es_integral else [],
         'estados_pedidos': estados_data,
         'pedidos': pedidos_data,
-        'productos_labels': productos_labels,
-        'productos_cantidades': productos_cantidades,
-        'estados_labels': estados_labels,
-        'estados_cantidades': estados_cantidades,
-        'estados_colores': estados_colores
-    })
+        'productos_labels': json.dumps(productos_labels),
+        'productos_cantidades': json.dumps(productos_cantidades),
+        'estados_labels': json.dumps(estados_labels),
+        'estados_cantidades': json.dumps(estados_cantidades),
+        'estados_colores': json.dumps(estados_colores),
+        'user': request.user
+    }
+
+    return render(request, 'reportes/reporte_empresa.html', context)
 
 @login_required
 @role_required(['superusuario'])
@@ -225,7 +275,7 @@ def exportar_reporte(request, tipo_reporte, formato, **kwargs):
         
         # Productos más vendidos
         if es_integral:
-            productos_vendidos = DetallePedido.objects.filter(
+            productos_vendidos = list(DetallePedido.objects.filter(
                 pedido__empresa=empresa,
                 pedido__fecha_pedido__gte=primer_dia_mes
             ).values(
@@ -233,15 +283,15 @@ def exportar_reporte(request, tipo_reporte, formato, **kwargs):
             ).annotate(
                 cantidad_vendida=Sum('cantidad'),
                 ingresos=Sum(F('cantidad') * F('precio_unitario'))
-            ).order_by('-cantidad_vendida')
+            ).order_by('-cantidad_vendida'))
         else:
             productos_vendidos = []
 
         # Estados de pedidos
-        estados_pedidos = Pedido.objects.filter(
+        estados_pedidos = list(Pedido.objects.filter(
             **{'empresa' if es_integral else 'empresa_satelite': empresa},
             fecha_pedido__gte=primer_dia_mes
-        ).values('estado').annotate(cantidad=Count('id'))
+        ).values('estado').annotate(cantidad=Count('id')))
 
         # Obtener pedidos recientes
         pedidos = Pedido.objects.filter(
@@ -253,28 +303,44 @@ def exportar_reporte(request, tipo_reporte, formato, **kwargs):
             'id': pedido.id,
             'cliente': pedido.cliente.get_full_name(),
             'productos': ', '.join([f"{item.cantidad}x {item.producto.nombre}" for item in pedido.itempedido_set.all()]),
-            'fecha': pedido.fecha_creacion,
+            'fecha': pedido.fecha_pedido.astimezone().replace(tzinfo=None).strftime('%Y-%m-%d %H:%M:%S'),
             'estado': pedido.get_estado_display(),
-            'total': pedido.total
+            'total': float(pedido.total)
         } for pedido in pedidos]
 
-        data = {
-            'productos_vendidos': pd.DataFrame(list(productos_vendidos)) if es_integral else pd.DataFrame(),
-            'estados_pedidos': pd.DataFrame(list(estados_pedidos)),
-            'pedidos': pd.DataFrame(pedidos_data)
-        }
+        # Convertir QuerySets a DataFrames con manejo explícito de datos
+        data = {}
+        if productos_vendidos:
+            data['productos_vendidos'] = pd.DataFrame(productos_vendidos)
+            if not data['productos_vendidos'].empty:
+                data['productos_vendidos']['ingresos'] = data['productos_vendidos']['ingresos'].astype(float)
+
+        if estados_pedidos:
+            data['estados_pedidos'] = pd.DataFrame(estados_pedidos)
+            if not data['estados_pedidos'].empty:
+                data['estados_pedidos']['cantidad'] = data['estados_pedidos']['cantidad'].astype(int)
+
+        if pedidos_data:
+            data['pedidos'] = pd.DataFrame(pedidos_data)
+            if not data['pedidos'].empty:
+                data['pedidos']['total'] = data['pedidos']['total'].astype(float)
     else:
         return HttpResponse('Tipo de reporte no válido', status=400)
 
     if formato == 'excel':
         output = io.BytesIO()
-        writer = pd.ExcelWriter(output, engine='xlsxwriter')
-        for sheet_name, df in data.items():
-            df.to_excel(writer, sheet_name=sheet_name, index=False)
-        writer.save()
+        with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+            for sheet_name, df in data.items():
+                # Convertir fechas a formato datetime sin zona horaria
+                if 'fecha' in df.columns:
+                    df['fecha'] = pd.to_datetime(df['fecha']).dt.tz_localize(None)
+                df.to_excel(writer, sheet_name=sheet_name, index=False)
+        
         output.seek(0)
-        response = HttpResponse(output.read(),
-                              content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response = HttpResponse(
+            output.getvalue(),
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
         response['Content-Disposition'] = f'attachment; filename={tipo_reporte}_reporte.xlsx'
         return response
 
@@ -293,8 +359,10 @@ def exportar_reporte(request, tipo_reporte, formato, **kwargs):
         
         # Agregar tablas de datos
         for name, df in data.items():
-            elements.append(Paragraph(name.replace('_', ' ').title(), styles['Heading1']))
             if not df.empty:
+                elements.append(Paragraph(name.replace('_', ' ').title(), styles['Heading1']))
+                # Convertir datos numéricos a string para evitar errores de formato
+                df = df.astype(str)
                 table_data = [df.columns.tolist()] + df.values.tolist()
                 t = Table(table_data)
                 t.setStyle(TableStyle([
@@ -312,6 +380,7 @@ def exportar_reporte(request, tipo_reporte, formato, **kwargs):
                     ('GRID', (0, 0), (-1, -1), 1, colors.black)
                 ]))
                 elements.append(t)
+                elements.append(Spacer(1, 20))
         
         doc.build(elements)
         return response
