@@ -6,11 +6,13 @@
         <div class="col-md-8">
             <div class="card shadow-sm border-0 rounded-3">
                 <div class="card-header {% if transaccion.estado == 'completado' %}bg-success{% else %}bg-danger{% endif %} text-white py-3">
-                    <h3 class="h4 mb-0">
+                    <h3 class="h4 mb-0 d-flex align-items-center justify-content-between">
                         {% if transaccion.estado == 'completado' %}
-                            ¡Pago Exitoso!
+                            <span>¡Pago Exitoso!</span>
+                            <i class="bi bi-shield-check fs-4"></i>
                         {% else %}
-                            Error en el Pago
+                            <span>Error en el Pago</span>
+                            <i class="bi bi-shield-exclamation fs-4"></i>
                         {% endif %}
                     </h3>
                 </div>
@@ -28,32 +30,53 @@
                             <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
                             <h4 class="mt-3">¡Gracias por tu compra!</h4>
                             <p class="lead">Tu pago ha sido procesado exitosamente.</p>
+                            <div class="alert alert-success" role="alert">
+                                <i class="bi bi-info-circle-fill me-2"></i>
+                                Hemos enviado un correo electrónico con los detalles de tu compra.
+                            </div>
                         {% else %}
                             <i class="bi bi-x-circle-fill text-danger" style="font-size: 4rem;"></i>
                             <h4 class="mt-3">Lo sentimos</h4>
                             <p class="lead">Hubo un problema al procesar tu pago.</p>
+                            <div class="alert alert-warning" role="alert">
+                                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                Por favor, verifica tu método de pago e intenta nuevamente.
+                            </div>
                         {% endif %}
                     </div>
 
                     <div class="mb-4">
-                        <h5 class="mb-3">Detalles de la Transacción</h5>
+                        <h5 class="mb-3 d-flex align-items-center">
+                            <i class="bi bi-receipt me-2"></i>
+                            Detalles de la Transacción
+                        </h5>
                         <div class="table-responsive">
-                            <table class="table">
+                            <table class="table table-hover">
                                 <tbody>
                                     <tr>
-                                        <td>Número de Pedido:</td>
-                                        <td class="text-end">#{{ transaccion.pedido.id }}</td>
+                                        <td><i class="bi bi-hash me-2"></i>Número de Pedido:</td>
+                                        <td class="text-end fw-bold">#{{ transaccion.pedido.id }}</td>
                                     </tr>
                                     <tr>
-                                        <td>Fecha:</td>
+                                        <td><i class="bi bi-calendar-event me-2"></i>Fecha:</td>
                                         <td class="text-end">{{ transaccion.fecha|date:"d/m/Y H:i" }}</td>
                                     </tr>
                                     <tr>
-                                        <td>Monto:</td>
-                                        <td class="text-end">${{ transaccion.monto }}</td>
+                                        <td><i class="bi bi-cash me-2"></i>Monto:</td>
+                                        <td class="text-end fw-bold">${{ transaccion.monto }}</td>
                                     </tr>
                                     <tr>
-                                        <td>Estado:</td>
+                                        <td><i class="bi bi-credit-card me-2"></i>Método de Pago:</td>
+                                        <td class="text-end">
+                                            {% if transaccion.metodo_pago == 'card' %}
+                                                <span class="badge bg-info">Tarjeta de Crédito/Débito</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">Transferencia Bancaria</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><i class="bi bi-check-circle me-2"></i>Estado:</td>
                                         <td class="text-end">
                                             <span class="badge {% if transaccion.estado == 'completado' %}bg-success{% else %}bg-danger{% endif %}">
                                                 {{ transaccion.get_estado_display }}
@@ -67,16 +90,20 @@
 
                     <div class="d-grid gap-2">
                         {% if transaccion.estado == 'completado' %}
-                            <a href="{% url 'ver_pedidos' %}" class="btn btn-primary">
-                                Ver Mis Pedidos
+                            <a href="{% url 'mis_pedidos' %}" class="btn btn-primary">
+                                <i class="bi bi-bag-check me-2"></i>Ver Mis Pedidos
                             </a>
                         {% else %}
-                            <a href="{% url 'ejecucion_pago' %}" class="btn btn-primary">
-                                Intentar Nuevamente
-                            </a>
+                            <form method="post" action="{% url 'ejecucion_pago' %}" class="d-grid">
+                                {% csrf_token %}
+                                <input type="hidden" name="pedido_id" value="{{ transaccion.pedido.id }}">
+                                <button type="submit" class="btn btn-primary mb-2">
+                                    <i class="bi bi-arrow-repeat me-2"></i>Reintentar Pago
+                                </button>
+                            </form>
                         {% endif %}
-                        <a href="{% url 'inicio' %}" class="btn btn-outline-secondary">
-                            Volver al Inicio
+                        <a href="{% url 'home' %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-house me-2"></i>Volver al Inicio
                         </a>
                     </div>
                 </div>

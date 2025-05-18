@@ -8,6 +8,51 @@ from django.db import IntegrityError
 from .models import ProductoTerminado, ComentarioProducto, CalificacionProducto, CategoriaProducto, MicroempresaIntegral
 
 @login_required
+def gestionar_categorias(request):
+    if request.user.tipo != 'integral':
+        messages.error(request, 'Solo las empresas integrales pueden gestionar categorías')
+        return redirect('home')
+
+    if request.method == 'POST':
+        nombre = request.POST.get('nombre')
+        descripcion = request.POST.get('descripcion')
+
+        if not nombre:
+            messages.error(request, 'El nombre de la categoría es obligatorio.')
+            return redirect('gestionar_categorias')
+
+        try:
+            CategoriaProducto.objects.create(
+                nombre=nombre,
+                descripcion=descripcion
+            )
+            messages.success(request, 'Categoría creada exitosamente.')
+            return redirect('gestionar_categorias')
+        except Exception as e:
+            messages.error(request, f'Error al crear la categoría: {str(e)}')
+
+    categorias = CategoriaProducto.objects.all()
+    return render(request, 'empresas/gestionar_categorias.html', {
+        'categorias': categorias
+    })
+
+@login_required
+def eliminar_categoria(request, categoria_id):
+    if request.user.tipo != 'integral':
+        messages.error(request, 'Solo las empresas integrales pueden eliminar categorías')
+        return redirect('home')
+
+    if request.method == 'POST':
+        categoria = get_object_or_404(CategoriaProducto, id=categoria_id)
+        try:
+            categoria.delete()
+            messages.success(request, 'Categoría eliminada exitosamente.')
+        except Exception as e:
+            messages.error(request, f'Error al eliminar la categoría: {str(e)}')
+
+    return redirect('gestionar_categorias')
+
+@login_required
 def agregar_comentario(request, producto_id):
     if request.method == 'POST' and request.user.tipo == 'cliente':
         producto = get_object_or_404(ProductoTerminado, id=producto_id)
