@@ -80,6 +80,7 @@
                                     <button type="submit" class="btn btn-sm btn-primary">Actualizar</button>
                                 </form>
                             </td>
+                            
                             <td>{{ pedido.fecha_pedido|date:"d/m/Y H:i" }}</td>
                             <td>
                                 <a href="{% url 'detalle_pedido' pedido.id %}" class="btn btn-sm btn-info">Ver Detalles</a>
