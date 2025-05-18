@@ -1,0 +1,129 @@
+@startuml
+title -DIAGRAMA DE ACTIVIDADES: Sistema de Gestión de Citas Médicas-
+skinparam linetype ortho
+
+' Actividades del Paciente
+rectangle "Paciente" {
+    start
+    :Registro de Paciente (RF-02);
+    if (¿Paciente ya existe?) then (Sí)
+        :Mostrar error "Paciente ya existe";
+        stop
+    else (No)
+        :Guardar información del paciente;
+        :Confirmar registro de paciente;
+    endif
+
+    :Inicio de Sesión (RF-01);
+    if (¿Credenciales válidas?) then (Sí)
+        :Confirmar inicio de sesión;
+    else (No)
+        :Mostrar error "Credenciales incorrectas";
+        stop
+    endif
+
+    :Reservar Cita (RF-04);
+    :Seleccionar médico;
+    :Ver horarios disponibles;
+    if (¿Horario disponible?) then (Sí)
+        :Seleccionar fecha y hora;
+        :Confirmar reserva de cita;
+        :Recibir confirmación por correo electrónico;
+    else (No)
+        :Mostrar error "Horario no disponible";
+        stop
+    endif
+
+    :Cancelar o Reprogramar Cita (RF-05);
+    if (¿Cancelar cita?) then (Sí)
+        :Cancelar cita;
+        :Recibir confirmación de cancelación;
+    else (No)
+        :Reprogramar cita;
+        if (¿Nuevo horario disponible?) then (Sí)
+            :Confirmar reprogramación;
+            :Recibir confirmación por correo electrónico;
+        else (No)
+            :Mostrar error "Horario no disponible";
+            stop
+        endif
+    endif
+
+    :Ver Historial de Citas (RF-06);
+    :Mostrar listado de citas anteriores;
+    stop
+}
+
+' Actividades del Médico
+rectangle "Médico" {
+    start
+    :Inicio de Sesión (RF-01);
+    if (¿Credenciales válidas?) then (Sí)
+        :Confirmar inicio de sesión;
+    else (No)
+        :Mostrar error "Credenciales incorrectas";
+        stop
+    endif
+
+    :Ver Citas Asignadas (RF-04);
+    :Mostrar listado de citas programadas;
+    :Ver detalles de cada cita (paciente, fecha, hora);
+
+    :Actualizar Disponibilidad (RF-03);
+    :Seleccionar fecha y hora;
+    if (¿Disponibilidad válida?) then (Sí)
+        :Actualizar horario;
+        :Confirmar cambios;
+    else (No)
+        :Mostrar error "Horario no válido";
+        stop
+    endif
+    stop
+}
+
+' Actividades del Administrador
+rectangle "Administrador" {
+    start
+    :Inicio de Sesión (RF-01);
+    if (¿Credenciales válidas?) then (Sí)
+        :Confirmar inicio de sesión;
+    else (No)
+        :Mostrar error "Credenciales incorrectas";
+        stop
+    endif
+
+    :Gestionar Médicos (RF-03);
+    if (¿Registrar médico?) then (Sí)
+        :Ingresar detalles del médico (nombre, especialidad, horarios);
+        :Guardar información del médico;
+    else (No)
+        if (¿Editar médico?) then (Sí)
+            :Modificar detalles del médico;
+            :Actualizar información;
+        else (No)
+            :Eliminar médico;
+        endif
+    endif
+    :Confirmar cambios;
+
+    :Gestionar Pacientes (RF-02);
+    if (¿Registrar paciente?) then (Sí)
+        :Ingresar detalles del paciente (nombre, documento, edad, contacto);
+        :Guardar información del paciente;
+    else (No)
+        if (¿Editar paciente?) then (Sí)
+            :Modificar detalles del paciente;
+            :Actualizar información;
+        else (No)
+            :Eliminar paciente;
+        endif
+    endif
+    :Confirmar cambios;
+
+    :Generar Reportes (RF-06);
+    :Seleccionar tipo de reporte (citas diarias, médicos más solicitados);
+    :Generar reporte en formato PDF o Excel;
+    stop
+}
+
+@enduml

@@ -1,109 +1,199 @@
 @startuml
 title -DIAGRAMA DE ACTIVIDADES SADAT-
+skinparam linetype ortho
 
-|Cliente|
-start
-:Registrarse en el sistema;
+' Actividades del Superusuario
+rectangle "Superusuario" {
+    start
+    :Inicio de Sesión;
+    if (¿Credenciales válidas?) then (Sí)
+        :Confirmar inicio de sesión;
+    else (No)
+        :Mostrar error "Credenciales incorrectas";
+        stop
+    endif
 
-|Sistema|
-:Validar registro;
+    :Gestionar usuarios;
+    if (¿Tipo de gestión?) then (Crear)
+        :Ingresar datos de usuario;
+        :Validar información;
+        :Guardar usuario;
+    else (Modificar)
+        :Actualizar datos;
+        :Validar cambios;
+        :Guardar cambios;
+    endif
 
-|Cliente|
-if (¿Tipo de pedido?) then (Catálogo)
-  :Explorar catálogo de productos;
-  :Agregar productos al carrito;
-  if (¿Finalizar compra?) then (sí)
-    :Revisar carrito;
-    :Confirmar pedido;
-    
-    |Sistema|
-    :Validar stock;
-    :Calcular total;
-    :Procesar pago;
-    :Generar transacción;
-    :Enviar notificación de pago;
-    
-    |Empresa Integral|
-    :Recibir pedido;
-    :Preparar productos;
-    :Actualizar estado;
-    :Generar reporte de venta;
-    :Enviar notificación de estado;
-    
-    |Cliente|
-    :Recibir productos;
-    :Calificar productos;
-    :Comentar productos;
-    if (¿Tiene problemas?) then (sí)
-      :Generar queja;
-      |Sistema|
-      :Procesar queja;
-      :Notificar a empresa;
-    else (no)
-      :Finalizar proceso;
-    endif;
-  else (no)
-    :Continuar comprando;
-  endif
+    :Gestionar empresas;
+    if (¿Tipo de empresa?) then (Integral)
+        :Registrar empresa integral;
+        :Validar documentación;
+    else (Satélite)
+        :Registrar empresa satélite;
+        :Validar capacidades;
+    endif
+    :Confirmar registro;
 
-else (Personalizado)
-  if (¿Tipo solicitud?) then (Confección)
-    :Crear solicitud de confección;
-    :Especificar detalles;
-    
-    |Empresa Satélite|
-    :Recibir solicitud;
+    :Monitorear sistema;
+    :Supervisar transacciones;
+    :Auditar operaciones;
+    stop
+}
+
+' Actividades del Cliente
+rectangle "Cliente" {
+    start
+    :Registro en el sistema;
+    if (¿Datos válidos?) then (Sí)
+        :Guardar información;
+        :Confirmar registro;
+    else (No)
+        :Mostrar error "Datos inválidos";
+        stop
+    endif
+
+    :Inicio de Sesión;
+    if (¿Credenciales válidas?) then (Sí)
+        :Confirmar inicio de sesión;
+    else (No)
+        :Mostrar error "Credenciales incorrectas";
+        stop
+    endif
+
+    if (¿Tipo de pedido?) then (Catálogo)
+        :Explorar catálogo;
+        :Agregar productos al carrito;
+        if (¿Finalizar compra?) then (Sí)
+            :Revisar carrito;
+            :Confirmar pedido;
+            if (¿Stock disponible?) then (Sí)
+                :Procesar pago;
+                :Recibir confirmación;
+            else (No)
+                :Mostrar error "Stock insuficiente";
+                stop
+            endif
+        else (No)
+            :Continuar comprando;
+        endif
+    else (Personalizado)
+        if (¿Tipo solicitud?) then (Confección)
+            :Crear solicitud;
+            :Especificar detalles;
+            :Esperar cotización;
+            if (¿Aceptar cotización?) then (Sí)
+                :Confirmar solicitud;
+                :Procesar pago;
+            else (No)
+                :Rechazar cotización;
+                stop
+            endif
+        else (Producto)
+            :Crear pedido personalizado;
+            :Adjuntar referencia;
+            :Esperar cotización;
+            if (¿Aceptar cotización?) then (Sí)
+                :Confirmar pedido;
+                :Procesar pago;
+            else (No)
+                :Rechazar cotización;
+                stop
+            endif
+        endif
+    endif
+
+    :Recibir producto/servicio;
+    :Calificar y comentar;
+    if (¿Tiene problemas?) then (Sí)
+        :Generar queja;
+        :Esperar resolución;
+        :Recibir respuesta;
+    else (No)
+        :Finalizar proceso;
+    endif
+    stop
+}
+
+' Actividades de la Empresa Integral
+rectangle "Empresa Integral" {
+    start
+    :Inicio de Sesión;
+    if (¿Credenciales válidas?) then (Sí)
+        :Confirmar inicio de sesión;
+    else (No)
+        :Mostrar error "Credenciales incorrectas";
+        stop
+    endif
+
+    :Gestionar catálogo;
+    :Recibir pedidos;
+    if (¿Tipo pedido?) then (Catálogo)
+        :Preparar productos;
+        :Actualizar stock;
+    else (Personalizado)
+        :Evaluar pedido;
+        :Enviar cotización;
+        if (¿Cotización aceptada?) then (Sí)
+            :Iniciar producción;
+            :Actualizar estado;
+        else (No)
+            stop
+        endif
+    endif
+    :Generar reporte;
+    :Enviar notificaciones;
+    stop
+}
+
+' Actividades de la Empresa Satélite
+rectangle "Empresa Satélite" {
+    start
+    :Inicio de Sesión;
+    if (¿Credenciales válidas?) then (Sí)
+        :Confirmar inicio de sesión;
+    else (No)
+        :Mostrar error "Credenciales incorrectas";
+        stop
+    endif
+
+    :Recibir solicitudes;
     :Evaluar solicitud;
     :Enviar cotización;
-    
-    |Cliente|
-    if (¿Aceptar cotización?) then (sí)
-      :Confirmar solicitud;
-      
-      |Empresa Satélite|
-      :Iniciar confección;
-      :Actualizar estado;
-      :Generar reporte de producción;
-      :Enviar notificación de avance;
-      :Entregar trabajo;
-      
-      |Cliente|
-      :Recibir trabajo;
-      :Realizar pago;
-      :Calificar servicio;
-    else (no)
-      :Rechazar cotización;
+    if (¿Cotización aceptada?) then (Sí)
+        :Gestionar materias primas;
+        :Iniciar confección;
+        :Actualizar estado;
+        :Generar reporte;
+    else (No)
+        stop
     endif
-    
-  else (Producto)
-    :Crear pedido personalizado;
-    :Adjuntar referencia;
-    
-    |Empresa Integral|
-    :Evaluar pedido;
-    :Enviar cotización;
-    
-    |Cliente|
-    if (¿Aceptar cotización?) then (sí)
-      :Confirmar pedido;
-      
-      |Empresa Integral|
-      :Iniciar producción;
-      :Actualizar estado;
-      :Generar reporte de producción;
-      :Enviar notificación de avance;
-      :Entregar producto;
-      
-      |Cliente|
-      :Recibir producto;
-      :Realizar pago;
-      :Calificar servicio;
-    else (no)
-      :Rechazar cotización;
-    endif
-  endif
-endif
+    :Entregar trabajo;
+    stop
+}
 
-stop
+' Actividades del Sistema
+rectangle "Sistema" {
+    start
+    :Validar datos;
+    :Crear cuentas;
+    :Enviar confirmaciones;
+    :Procesar transacciones;
+    if (¿Transacción exitosa?) then (Sí)
+        :Generar comprobante;
+        :Notificar partes;
+    else (No)
+        :Registrar error;
+        :Notificar fallo;
+    endif
+    :Gestionar notificaciones;
+    if (¿Hay quejas?) then (Sí)
+        :Procesar queja;
+        :Notificar involucrados;
+        :Dar seguimiento;
+    else (No)
+        :Continuar operación;
+    endif
+    stop
+}
 
 @enduml

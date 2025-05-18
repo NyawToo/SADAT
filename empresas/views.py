@@ -65,8 +65,11 @@ def gestionar_productos(request):
         empresa = request.user.microempresaintegral
         productos = ProductoTerminado.objects.filter(empresa=empresa)
         categorias = CategoriaProducto.objects.all()
-        if not categorias.exists():
+        
+        # Solo mostrar el mensaje si estamos en el contexto de crear/editar un producto
+        if request.method == 'GET' and 'crear' in request.GET and not categorias.exists():
             messages.warning(request, 'No hay categorías disponibles. Por favor, cree una categoría primero.')
+            
         return render(request, 'empresas/gestionar_productos.html', {
             'productos': productos,
             'categorias': categorias,
