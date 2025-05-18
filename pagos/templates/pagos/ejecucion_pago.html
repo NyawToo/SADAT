@@ -60,11 +60,11 @@
                         {% endif %}
                         <div class="mb-3">
                             <label for="direccion_envio" class="form-label">Dirección de Envío</label>
-                            <input type="text" class="form-control" id="direccion_envio" name="direccion_envio" required>
+                            <input type="text" class="form-control" id="direccion_envio" name="direccion_envio" value="{{ direccion_usuario }}" required>
                         </div>
                         <div class="mb-3">
                             <label for="telefono_contacto" class="form-label">Teléfono de Contacto</label>
-                            <input type="tel" class="form-control" id="telefono_contacto" name="telefono_contacto" required>
+                            <input type="tel" class="form-control" id="telefono_contacto" name="telefono_contacto" value="{{ telefono_usuario }}" required>
                         </div>
                         <div class="mb-3">
                             <label for="instrucciones_especiales" class="form-label">Instrucciones Especiales (opcional)</label>

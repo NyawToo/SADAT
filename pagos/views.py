@@ -62,17 +62,11 @@ def ejecucion_pago(request):
                 if metodo_pago == 'card':
                     # Crear sesión de Checkout de Stripe
                     session = StripeService.create_checkout_session(transaccion)
-                    # Limpiar el carrito después de crear la sesión de pago
-                    items_carrito.delete()
-                    carrito_obj.delete()
                     return redirect(session.url)
                 else:
                     # Para transferencia bancaria
                     transaccion.estado = PAYMENT_STATUS['PENDING']
                     transaccion.save()
-                    # Limpiar el carrito después de actualizar la transacción
-                    items_carrito.delete()
-                    carrito_obj.delete()
                     messages.success(request, 'Pedido creado exitosamente')
                     return redirect('confirmar_pago', transaccion_id=transaccion.id)
                 
@@ -84,7 +78,9 @@ def ejecucion_pago(request):
         'items_carrito': items_carrito,
         'subtotal': round(subtotal, 2),
         'iva': iva,
-        'total': total
+        'total': total,
+        'direccion_usuario': request.user.direccion,
+        'telefono_usuario': request.user.telefono
     }
     return render(request, 'pagos/ejecucion_pago.html',context)
 
@@ -92,12 +88,43 @@ def ejecucion_pago(request):
 def confirmar_pago(request, transaccion_id):
     transaccion = get_object_or_404(Transaccion, id=transaccion_id, usuario=request.user)
     
+    success = request.GET.get('success') == 'true'
+    canceled = request.GET.get('canceled') == 'true'
+
+    # Si el pago fue cancelado, redirigir al carrito
+    if canceled:
+        messages.error(request, 'El pago fue cancelado')
+        return redirect('ver_carrito')
+
     # Verificar si el pago ya fue procesado
     if transaccion.estado == PAYMENT_STATUS['COMPLETED']:
         messages.info(request, 'Este pago ya ha sido procesado')
         return render(request, 'pagos/resultado_pago.html', {'transaccion': transaccion})
     
+    # Obtener el carrito del usuario
+    carrito_obj = Carrito.objects.filter(usuario=request.user).first()
+    items_carrito = ItemCarrito.objects.filter(carrito=carrito_obj) if carrito_obj else None
+    
+    # Manejar cambio de método de pago
     if request.method == 'POST':
+        nuevo_metodo_pago = request.POST.get('metodo_pago')
+        if nuevo_metodo_pago:
+            transaccion.metodo_pago = nuevo_metodo_pago
+            transaccion.save()
+            
+            if nuevo_metodo_pago == 'card':
+                # Crear nueva sesión de Checkout de Stripe
+                try:
+                    session = StripeService.create_checkout_session(transaccion)
+                    return redirect(session.url)
+                except Exception as e:
+                    messages.error(request, f'Error al procesar el pago con tarjeta: {str(e)}')
+                    return render(request, 'pagos/confirmar_pago.html', {'transaccion': transaccion})
+            
+            messages.success(request, 'Método de pago actualizado correctamente')
+            return render(request, 'pagos/confirmar_pago.html', {'transaccion': transaccion})
+    
+    if success:
         try:
             # Si es pago con tarjeta y tiene un PaymentIntent
             if transaccion.metodo_pago == 'card' and transaccion.stripe_payment_intent_id:
@@ -112,8 +139,13 @@ def confirmar_pago(request, transaccion_id):
                 transaccion.estado = PAYMENT_STATUS['COMPLETED']
                 transaccion.save()
                 
+                # Limpiar el carrito solo después de un pago exitoso
+                if carrito_obj and items_carrito:
+                    items_carrito.delete()
+                    carrito_obj.delete()
+                
                 messages.success(request, 'Pago procesado exitosamente')
-                return redirect('mis_pedidos')
+                return render(request, 'pagos/resultado_pago.html', {'transaccion': transaccion})
             else:
                 # Para transferencia bancaria, solo actualizamos el estado
                 transaccion.estado = PAYMENT_STATUS['COMPLETED']
@@ -124,14 +156,19 @@ def confirmar_pago(request, transaccion_id):
                 pedido.estado = 'en_proceso'
                 pedido.save()
                 
+                # Limpiar el carrito solo después de un pago exitoso
+                if carrito_obj and items_carrito:
+                    items_carrito.delete()
+                    carrito_obj.delete()
+                
                 messages.success(request, 'Pago registrado exitosamente')
-                return redirect('mis_pedidos')
+                return render(request, 'pagos/resultado_pago.html', {'transaccion': transaccion})
             
         except Exception as e:
             transaccion.estado = PAYMENT_STATUS['FAILED']
             transaccion.save()
             messages.error(request, f'Error al procesar el pago: {str(e)}')
-            return render(request, 'pagos/resultado_pago.html', {'transaccion': transaccion})
+            return redirect('ver_carrito')
     
     return render(request, 'pagos/confirmar_pago.html', {'transaccion': transaccion})
 

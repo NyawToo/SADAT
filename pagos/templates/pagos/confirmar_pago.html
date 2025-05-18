@@ -45,7 +45,20 @@
 
                     <div class="mb-4">
                         <h4 class="mb-3">Método de Pago</h4>
-                        <p class="mb-2">Has seleccionado: <strong>{{ transaccion.get_metodo_pago_display }}</strong></p>
+                        
+                        <form method="post" class="mb-3">
+                            {% csrf_token %}
+                            <div class="form-group">
+                                <label for="metodo_pago" class="form-label">Selecciona el método de pago:</label>
+                                <select class="form-select" id="metodo_pago" name="metodo_pago" required>
+                                    <option value="card" {% if transaccion.metodo_pago == 'card' %}selected{% endif %}>Tarjeta de Crédito/Débito</option>
+                                    <option value="transfer" {% if transaccion.metodo_pago == 'transfer' %}selected{% endif %}>Transferencia Bancaria</option>
+                                </select>
+                            </div>
+                            <div class="mt-3">
+                                <button type="submit" class="btn btn-primary">Actualizar Método de Pago</button>
+                            </div>
+                        </form>
                         
                         {% if transaccion.metodo_pago == 'transfer' %}
                             <div class="alert alert-info">
@@ -58,12 +71,16 @@
                                     <li>Monto: ${{ transaccion.monto }}</li>
                                 </ul>
                             </div>
-                        {% elif transaccion.metodo_pago == 'card' and transaccion.stripe_payment_intent_id %}
+                        {% elif transaccion.metodo_pago == 'card' %}
                             <div class="alert alert-info">
                                 <h5 class="alert-heading">Pago con Tarjeta</h5>
-                                <p>Tu pago está siendo procesado por Stripe.</p>
-                                <p>ID de Transacción: {{ transaccion.stripe_payment_intent_id }}</p>
-                                <p>Estado: {{ transaccion.get_estado_display }}</p>
+                                {% if transaccion.stripe_payment_intent_id %}
+                                    <p>Tu pago está siendo procesado por Stripe.</p>
+                                    <p>ID de Transacción: {{ transaccion.stripe_payment_intent_id }}</p>
+                                    <p>Estado: {{ transaccion.get_estado_display }}</p>
+                                {% else %}
+                                    <p>Selecciona "Actualizar Método de Pago" para proceder con el pago por tarjeta.</p>
+                                {% endif %}
                             </div>
                         {% endif %}
                     </div>

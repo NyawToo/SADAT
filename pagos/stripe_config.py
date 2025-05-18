@@ -10,7 +10,6 @@ load_dotenv()
 stripe.api_key = os.environ.get('STRIPE_SECRET_KEY')
 STRIPE_PUBLIC_KEY = os.environ.get('STRIPE_PUBLIC_KEY')
 STRIPE_WEBHOOK_SECRET = os.environ.get('STRIPE_WEBHOOK_SECRET')
-
 # Configurar el dominio para las redirecciones
 DOMAIN = os.environ.get('DOMAIN', 'http://localhost:8000')
 
