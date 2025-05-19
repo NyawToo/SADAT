@@ -45,10 +45,6 @@ function updateTotal(cantidad, precioUnitario, totalId) {
 
 // Inicialización de componentes Bootstrap
 document.addEventListener('DOMContentLoaded', () => {
-    // Establecer el contexto de la página actual
-    const pageContext = document.body.dataset.pageContext || '';
-    setNotificationContext(pageContext);
-
     // Tooltips
     const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
     tooltipTriggerList.map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
@@ -57,15 +53,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
     popoverTriggerList.map(popoverTriggerEl => new bootstrap.Popover(popoverTriggerEl));
 
-    // Las alertas ahora se manejan a través del sistema de notificaciones
+    // Alertas automáticas (excepto las del carrito)
     const alertList = document.querySelectorAll('.alert:not(.alert-cart)');
     alertList.forEach(alert => {
-        const message = alert.textContent.trim();
-        const type = alert.classList.contains('alert-success') ? 'success' :
-                     alert.classList.contains('alert-danger') ? 'danger' :
-                     alert.classList.contains('alert-warning') ? 'warning' : 'info';
-        showNotification(message, type, pageContext);
-        alert.remove();
+        if (alert) {
+            setTimeout(() => {
+                const bsAlert = new bootstrap.Alert(alert);
+                bsAlert.close();
+            }, 600000); // 10 minutos
+        }
     });
 });
 
@@ -129,14 +125,14 @@ function agregarAlCarrito(productoId) {
                 stockElement.textContent = data.nuevo_stock;
             }
             // Mostrar mensaje de éxito
-            showSuccess('Producto agregado al carrito exitosamente', 'carrito');
+            alert('Producto agregado al carrito exitosamente');
         } else {
-            showError(data.error || 'Error al agregar al carrito', 'carrito');
+            alert(data.error || 'Error al agregar al carrito');
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        showError('Error al agregar al carrito', 'carrito');
+        alert('Error al agregar al carrito');
     });
 }
 
@@ -166,7 +162,7 @@ function eliminarDelCarrito() {
     const itemIds = Array.from(checkboxes).map(cb => cb.closest('tr').dataset.itemId);
 
     if (itemIds.length === 0) {
-        showWarning('Por favor, selecciona al menos un producto para eliminar.', 'carrito');
+        alert('Por favor, selecciona al menos un producto para eliminar.');
         return;
     }
 

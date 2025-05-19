@@ -1,37 +1,7 @@
 // Sistema de notificaciones
 let activeNotifications = new Set();
-let currentContext = '';
-let contextStack = [];
 
-// Función para establecer el contexto actual
-function setNotificationContext(context) {
-    if (context) {
-        contextStack.push(context);
-        currentContext = context;
-    } else {
-        if (contextStack.length > 0) {
-            contextStack.pop();
-            currentContext = contextStack.length > 0 ? contextStack[contextStack.length - 1] : '';
-        } else {
-            currentContext = '';
-        }
-    }
-    // Limpiar notificaciones al cambiar de contexto
-    activeNotifications.clear();
-}
-
-function showNotification(message, type = 'success', context = '') {
-    // Validación más estricta del contexto
-    if (context) {
-        // Si hay un contexto específico, verificar si está en la pila de contextos
-        if (!contextStack.includes(context)) {
-            return;
-        }
-    } else if (currentContext) {
-        // Si no se especifica contexto y hay uno activo, la notificación debe pertenecer al contexto actual
-        return;
-    }
-    
+function showNotification(message, type = 'success') {
     // Si la notificación ya está activa, no la mostramos de nuevo
     if (activeNotifications.has(message)) {
         return;
@@ -59,26 +29,26 @@ function showNotification(message, type = 'success', context = '') {
             notification.remove();
             // Remover la notificación del conjunto de activas
             activeNotifications.delete(message);
-        }, 150);
-    }, 2000);
+        }, 100);
+    }, 1800);
 }
 
 // Función para mostrar notificaciones de éxito
-function showSuccess(message, context = '') {
-    showNotification(message, 'success', context);
+function showSuccess(message) {
+    showNotification(message, 'success');
 }
 
 // Función para mostrar notificaciones de error
-function showError(message, context = '') {
-    showNotification(message, 'danger', context);
+function showError(message) {
+    showNotification(message, 'danger');
 }
 
 // Función para mostrar notificaciones de advertencia
-function showWarning(message, context = '') {
-    showNotification(message, 'warning', context);
+function showWarning(message) {
+    showNotification(message, 'warning');
 }
 
 // Función para mostrar notificaciones informativas
-function showInfo(message, context = '') {
-    showNotification(message, 'info', context);
+function showInfo(message) {
+    showNotification(message, 'info');
 }
