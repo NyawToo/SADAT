@@ -1,4 +1,3 @@
 Fix Notificaciones (Todos Los Roles)
-Satelite -->  Maquinaria (Arreglar o Quitar)
-Cambiar color del fondo de pedidos personalizados
-SuperAdministrador --> Poder Modificar el IVA del sistema (Obligatorio)
+Filtros (Revicion y Asignacion)
+Hacer que en pedidos/producto/id  arreglar todo... (estrellas ,likes y dislikes)
