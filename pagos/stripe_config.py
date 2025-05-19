@@ -12,7 +12,7 @@ STRIPE_PUBLIC_KEY = os.environ.get('STRIPE_PUBLIC_KEY')
 STRIPE_WEBHOOK_SECRET = os.environ.get('STRIPE_WEBHOOK_SECRET')
 
 # Configurar el dominio para las redirecciones
-DOMAIN = os.environ.get('DOMAIN', 'http://localhost:8000')
+DOMAIN = os.environ.get('DOMAIN', 'http://localhost:8000','sadat-ezff.onrender.com')
 
 # Configurar la moneda por defecto
 CURRENCY = 'cop'  # Peso colombiano

@@ -37,4 +37,3 @@ pip-log.txt
 *.pyd
 .Python
 pip-log.txt
-*.sqlite3
