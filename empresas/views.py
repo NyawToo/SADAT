@@ -29,23 +29,43 @@ def detalle_empresa_integral(request, pk):
     productos = ProductoTerminado.objects.filter(empresa=empresa)
     pedidos_completados = 0  # Esto se actualizará cuando implementemos el sistema de pedidos
     calificacion_promedio = 0  # Esto se actualizará cuando implementemos el sistema de calificaciones
+    
+    # Obtener datos de contacto del usuario asociado
+    direccion = empresa.usuario.direccion
+    telefono = empresa.usuario.telefono
+    email = empresa.usuario.email
+    
     return render(request, 'empresas/detalle_empresa_integral.html', {
         'empresa': empresa,
         'productos': productos,
         'pedidos_completados': pedidos_completados,
-        'calificacion_promedio': calificacion_promedio
+        'calificacion_promedio': calificacion_promedio,
+        'direccion': direccion,
+        'telefono': telefono,
+        'email': email
     })
 
 @login_required
 def detalle_empresa_satelite(request, pk):
     empresa = get_object_or_404(MicroempresaSatelite, pk=pk)
     servicios = Servicio.objects.filter(empresa=empresa)
+    maquinaria = empresa.maquinaria.all()
     puede_solicitar = request.user.tipo == 'cliente'
+    
+    # Obtener datos de contacto del usuario asociado si no están especificados en la empresa
+    direccion = empresa.direccion or empresa.usuario.direccion
+    telefono = empresa.telefono or empresa.usuario.telefono
+    email = empresa.email or empresa.usuario.email
+    
     return render(request, 'empresas/detalle_empresa_satelite.html', {
         'empresa': empresa,
         'servicios': servicios,
+        'maquinaria': maquinaria,
         'puede_solicitar': puede_solicitar,
-        'solicitar_confeccion_url': 'solicitar_confeccion'
+        'solicitar_confeccion_url': 'solicitar_confeccion',
+        'direccion': direccion,
+        'telefono': telefono,
+        'email': email
     })
 
 @login_required

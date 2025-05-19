@@ -2,11 +2,13 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from .models import Usuario
+from .models_config import ConfiguracionSistema
 from .forms import CustomUserCreationForm
 from .forms_empresa import ClienteRegistrationForm, EmpresaIntegralRegistrationForm, EmpresaSateliteRegistrationForm
 from empresas.models import MicroempresaIntegral, MicroempresaSatelite
+from core.decorators import role_required
 
 def inicio(request):
     if request.user.is_authenticated:
@@ -183,20 +185,31 @@ def gestionar_usuarios(request):
     }
     
     return render(request, 'core/gestionar_usuarios.html', context)
+
+@login_required
+@role_required(['superusuario'])
+def configuracion_sistema(request):
+    # Obtener o crear la configuración del sistema
+    config, created = ConfiguracionSistema.objects.get_or_create(id=1)
     
-    # Obtener usuarios por tipo
-    clientes = Usuario.objects.filter(tipo='cliente')
-    empresas_integrales = MicroempresaIntegral.objects.all()
-    empresas_satelites = MicroempresaSatelite.objects.all()
+    if request.method == 'POST':
+        nuevo_iva = request.POST.get('iva')
+        try:
+            nuevo_iva = float(nuevo_iva)
+            if 0 <= nuevo_iva <= 100:
+                config.iva = nuevo_iva
+                config.actualizado_por = request.user
+                config.save()
+                messages.success(request, f'IVA actualizado exitosamente a {nuevo_iva}%')
+            else:
+                messages.error(request, 'El IVA debe estar entre 0 y 100')
+        except ValueError:
+            messages.error(request, 'Por favor ingrese un valor numérico válido para el IVA')
+        
+        return redirect('configuracion_sistema')
     
-    context = {
-        'clientes': clientes,
-        'empresas_integrales': empresas_integrales,
-        'empresas_satelites': empresas_satelites,
-    }
-    
-    return render(request, 'core/gestionar_usuarios.html', context)
-    
+    return render(request, 'core/configuracion_sistema.html', {'config': config})
+
     if request.method == 'POST':
         usuario_id = request.POST.get('usuario_id')
         action = request.POST.get('action')

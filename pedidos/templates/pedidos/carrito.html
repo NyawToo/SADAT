@@ -62,11 +62,11 @@
                         </div>
                       </td>
                       <td class="text-center">
-                        <p class="mb-1">Precio unitario: <span class="precio">${{ item.producto.precio|floatformat:2 }}</span></p>
+                        <p class="mb-1">Precio unitario: <span class="precio">${{ item.producto.precio|floatformat:0 }}</span></p>
                         <p class="text-muted small mb-0">Cantidad: <span class="cantidad">{{ item.cantidad }}</span></p>
                       </td>
                       <td class="text-end">
-                        <span class="text-primary fw-bold">${{ item.subtotal|floatformat:2 }}</span>
+                        <span class="text-primary fw-bold">${{ item.subtotal|floatformat:0 }}</span>
                       </td>
                     </tr>
                   {% endfor %}
@@ -97,16 +97,16 @@
         <div class="card-body p-4">
           <div class="d-flex justify-content-between mb-3">
             <span>Subtotal:</span>
-            <span id="subtotal">${{ subtotal|floatformat:2 }}</span>
+            <span id="subtotal">${{ subtotal|floatformat:0 }}</span>
           </div>
           <div class="d-flex justify-content-between mb-3">
-            <span>IVA (19%):</span>
-            <span id="iva">${{ iva|floatformat:2 }}</span>
+            <span>IVA ({{ porcentaje_iva|floatformat:1 }}%):</span>
+            <span id="iva">${{ iva|floatformat:0 }}</span>
           </div>
           <hr class="my-3">
           <div class="d-flex justify-content-between mb-3">
             <span class="fw-bold">Total a pagar:</span>
-            <span id="total" class="text-primary fw-bold">${{ total|floatformat:2 }}</span>
+            <span id="total" class="text-primary fw-bold">${{ total|floatformat:0 }}</span>
           </div>
           {% if items_carrito %}
             <a href="{% url 'ejecucion_pago' %}" class="btn btn-primary w-100 rounded-2">Continuar compra</a>

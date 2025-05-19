@@ -1,8 +1,4 @@
 Fix Notificaciones (Todos Los Roles)
-Seccion Quejas Usuarios --> Super Admin (Arreglar o Quitar)
 Satelite -->  Maquinaria (Arreglar o Quitar)
-Integral --> Mis Pedidos --> quitar seccion en blanco parte superior
 Cambiar color del fondo de pedidos personalizados
-Materia prima --> vender adentro de las empresas materia prima (---extra---) --> Opcional Adicional a lo que ya esta
-Mirar Zona de mis pedidos conexion de datos
 SuperAdministrador --> Poder Modificar el IVA del sistema (Obligatorio)

@@ -1,5 +1,5 @@
 from django.urls import path, include
-from . import views, views_producto
+from . import views, views_producto, views_maquinaria
 
 urlpatterns = [
     path('servicios/agregar/', views.agregar_servicios, name='agregar_servicios'),
@@ -19,4 +19,7 @@ urlpatterns = [
     path('dar-dislike/<int:comentario_id>/', views_producto.dar_dislike, name='dar_dislike'),
     # URLs de materia prima
     path('', include('empresas.urls_materia_prima')),
+    path('gestionar-maquinaria/', views_maquinaria.gestionar_maquinaria, name='gestionar_maquinaria'),
+    path('editar-maquina/<int:maquina_id>/', views_maquinaria.editar_maquina, name='editar_maquina'),
+    path('eliminar-maquina/<int:maquina_id>/', views_maquinaria.eliminar_maquina, name='eliminar_maquina'),
 ]

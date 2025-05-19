@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <h2 class="text-center mb-4">Gestionar Maquinaria</h2>
+
+    <!-- Formulario para agregar/editar maquinaria -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h4 class="mb-0">{% if editing %}Editar{% else %}Agregar{% endif %} Máquina</h4>
+        </div>
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="nombre" class="form-label">Nombre de la Máquina</label>
+                        <input type="text" class="form-control" id="nombre" name="nombre" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="tipo" class="form-label">Tipo de Máquina</label>
+                        <input type="text" class="form-control" id="tipo" name="tipo" required>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="marca" class="form-label">Marca</label>
+                        <input type="text" class="form-control" id="marca" name="marca" required>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="modelo" class="form-label">Modelo</label>
+                        <input type="text" class="form-control" id="modelo" name="modelo" required>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="cantidad" class="form-label">Cantidad</label>
+                        <input type="number" class="form-control" id="cantidad" name="cantidad" min="1" value="1" required>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="descripcion" class="form-label">Descripción</label>
+                    <textarea class="form-control" id="descripcion" name="descripcion" rows="3"></textarea>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="estado" class="form-label">Estado</label>
+                        <select class="form-select" id="estado" name="estado" required>
+                            <option value="activa">Activa</option>
+                            <option value="mantenimiento">En Mantenimiento</option>
+                            <option value="inactiva">Inactiva</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="imagen" class="form-label">Imagen</label>
+                        <input type="file" class="form-control" id="imagen" name="imagen" accept="image/*">
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">{% if editing %}Actualizar{% else %}Agregar{% endif %} Máquina</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Lista de maquinaria existente -->
+    <div class="card">
+        <div class="card-header">
+            <h4 class="mb-0">Maquinaria Registrada</h4>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                {% for maquina in maquinaria %}
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100">
+                        {% if maquina.imagen %}
+                        <img src="{{ maquina.imagen.url }}" class="card-img-top" alt="{{ maquina.nombre }}">
+                        {% endif %}
+                        <div class="card-body">
+                            <h5 class="card-title">{{ maquina.nombre }}</h5>
+                            <p class="card-text">
+                                <strong>Tipo:</strong> {{ maquina.tipo }}<br>
+                                <strong>Marca:</strong> {{ maquina.marca }}<br>
+                                <strong>Modelo:</strong> {{ maquina.modelo }}<br>
+                                <strong>Cantidad:</strong> {{ maquina.cantidad }}<br>
+                                <strong>Estado:</strong> {{ maquina.estado }}
+                            </p>
+                            <p class="card-text">{{ maquina.descripcion }}</p>
+                            <div class="btn-group">
+                                <a href="{% url 'editar_maquina' maquina.id %}" class="btn btn-warning">Editar</a>
+                                <a href="{% url 'eliminar_maquina' maquina.id %}" class="btn btn-danger" onclick="return confirm('¿Está seguro de eliminar esta máquina?')">Eliminar</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-12">
+                    <div class="alert alert-info" role="alert">
+                        No hay maquinaria registrada.
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

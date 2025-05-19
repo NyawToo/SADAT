@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="text-center">Editar Máquina</h2>
+                </div>
+                <div class="card-body">
+                    <form method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="nombre" class="form-label">Nombre de la Máquina</label>
+                                <input type="text" class="form-control" id="nombre" name="nombre" value="{{ maquina.nombre }}" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="tipo" class="form-label">Tipo</label>
+                                <input type="text" class="form-control" id="tipo" name="tipo" value="{{ maquina.tipo }}" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="marca" class="form-label">Marca</label>
+                                <input type="text" class="form-control" id="marca" name="marca" value="{{ maquina.marca }}" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="modelo" class="form-label">Modelo</label>
+                                <input type="text" class="form-control" id="modelo" name="modelo" value="{{ maquina.modelo }}" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="cantidad" class="form-label">Cantidad</label>
+                                <input type="number" class="form-control" id="cantidad" name="cantidad" value="{{ maquina.cantidad }}" min="1" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="estado" class="form-label">Estado</label>
+                                <select class="form-select" id="estado" name="estado" required>
+                                    <option value="activa" {% if maquina.estado == 'activa' %}selected{% endif %}>Activa</option>
+                                    <option value="mantenimiento" {% if maquina.estado == 'mantenimiento' %}selected{% endif %}>En Mantenimiento</option>
+                                    <option value="inactiva" {% if maquina.estado == 'inactiva' %}selected{% endif %}>Inactiva</option>
+                                </select>
+                            </div>
+                            <div class="col-md-12 mb-3">
+                                <label for="descripcion" class="form-label">Descripción</label>
+                                <textarea class="form-control" id="descripcion" name="descripcion" rows="3">{{ maquina.descripcion }}</textarea>
+                            </div>
+                            <div class="col-md-12 mb-3">
+                                {% if maquina.imagen %}
+                                <div class="mb-2">
+                                    <img src="{{ maquina.imagen.url }}" alt="{{ maquina.nombre }}" style="max-width: 200px;">
+                                </div>
+                                {% endif %}
+                                <label for="imagen" class="form-label">Nueva Imagen (opcional)</label>
+                                <input type="file" class="form-control" id="imagen" name="imagen" accept="image/*">
+                            </div>
+                        </div>
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                            <a href="{% url 'gestionar_maquinaria' %}" class="btn btn-secondary">Cancelar</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -72,19 +72,25 @@ def carrito(request):
     carrito_obj, created = Carrito.objects.get_or_create(usuario=request.user)
     items_carrito = ItemCarrito.objects.filter(carrito=carrito_obj).select_related('producto')
     
+    # Obtener el valor del IVA desde la configuración del sistema
+    from core.models_config import ConfiguracionSistema
+    config = ConfiguracionSistema.objects.first()
+    porcentaje_iva = float(config.iva if config else 25)
+
     # Calcular subtotal por producto y totales
     for item in items_carrito:
         item.subtotal = float(item.producto.precio) * item.cantidad
     
     subtotal = sum(item.subtotal for item in items_carrito)
-    iva = round(subtotal * 0.19, 2)
+    iva = round(subtotal * (porcentaje_iva / 100), 2)
     total = round(subtotal + iva, 2)
     
     context = {
         'items_carrito': items_carrito,
         'subtotal': round(subtotal, 2),
         'iva': iva,
-        'total': total
+        'total': total,
+        'porcentaje_iva': porcentaje_iva  # Agregamos el porcentaje de IVA al contexto
     }
     return render(request, 'pedidos/carrito.html', context)
 
@@ -760,7 +766,7 @@ def eliminar_del_carrito(request):
                 # Recalcular subtotal, IVA y total
                 remaining_items = ItemCarrito.objects.filter(carrito=carrito).select_related('producto')
                 subtotal = sum(float(item.producto.precio) * item.cantidad for item in remaining_items)
-                iva = round(subtotal * 0.19, 2)
+                iva = round(subtotal * 0.25, 2)
                 total = round(subtotal + iva, 2)
                 
                 return JsonResponse({

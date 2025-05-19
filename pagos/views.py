@@ -28,8 +28,13 @@ def ejecucion_pago(request):
     for item in items_carrito:
         item.subtotal = float(item.producto.precio) * item.cantidad
     
+    # Obtener el valor del IVA desde la configuración del sistema
+    from core.models_config import ConfiguracionSistema
+    config = ConfiguracionSistema.objects.first()
+    porcentaje_iva = float(config.iva if config else 25) / 100
+
     subtotal = sum(item.subtotal for item in items_carrito)
-    iva = round(subtotal * 0.19, 2)
+    iva = round(subtotal * porcentaje_iva, 2)
     total = round(subtotal + iva, 2)
     
     if request.method == 'POST':
@@ -85,6 +90,7 @@ def ejecucion_pago(request):
         'items_carrito': items_carrito,
         'subtotal': round(subtotal, 2),
         'iva': iva,
+        'porcentaje_iva': round(porcentaje_iva * 100, 1),
         'total': total,
         'direccion_usuario': request.user.direccion if hasattr(request.user, 'direccion') else '',
         'telefono_usuario': request.user.telefono if hasattr(request.user, 'telefono') else ''

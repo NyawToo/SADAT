@@ -11,18 +11,12 @@
                 </div>
                 <div class="card-body">
                     <div class="row">
-                        <div class="col-md-6">
+                        <div class="col-md-12">
                             <h4>Información General</h4>
-                            <p><strong>Tipo:</strong> {{ empresa.get_tipo_display }}</p>
-                            <p><strong>Dirección:</strong> {{ empresa.direccion }}</p>
-                            <p><strong>Teléfono:</strong> {{ empresa.telefono }}</p>
-                            <p><strong>Email:</strong> {{ empresa.email }}</p>
-                        </div>
-                        <div class="col-md-6">
-                            <h4>Capacidad y Recursos</h4>
-                            <p><strong>Capacidad de Producción:</strong> {{ empresa.capacidad_produccion }} unidades/día</p>
-                            <p><strong>Trabajadores:</strong> {{ empresa.numero_trabajadores }}</p>
-                            <p><strong>Estado:</strong> {% if empresa.disponible %}Disponible{% else %}No Disponible{% endif %}</p>
+                            <p><strong>Tipo:</strong> {{ empresa.get_tipo_display|default:"Satelite" }}</p>
+                            <p><strong>Dirección:</strong> {{ direccion|default:"No especificada" }}</p>
+                            <p><strong>Teléfono:</strong> {{ telefono|default:"No especificado" }}</p>
+                            <p><strong>Email:</strong> {{ email|default:"No especificado" }}</p>
                         </div>
                     </div>
                 </div>
@@ -47,8 +41,10 @@
                                     <h5 class="card-title">{{ maquina.nombre }}</h5>
                                     <p class="card-text">
                                         <strong>Tipo:</strong> {{ maquina.tipo }}<br>
-                                        <strong>Estado:</strong> {{ maquina.estado }}<br>
-                                        <strong>Capacidad:</strong> {{ maquina.capacidad }}
+                                        <strong>Marca:</strong> {{ maquina.marca }}<br>
+                                        <strong>Modelo:</strong> {{ maquina.modelo }}<br>
+                                        <strong>Cantidad:</strong> {{ maquina.cantidad }}<br>
+                                        <strong>Estado:</strong> {{ maquina.get_estado_display }}
                                     </p>
                                     <p class="card-text">{{ maquina.descripcion }}</p>
                                 </div>

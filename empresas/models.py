@@ -68,21 +68,39 @@ class MicroempresaSatelite(models.Model):
     descripcion = models.TextField()
     rut_empresa = models.CharField(max_length=20, unique=True)
     imagen = models.ImageField(upload_to='logos_satelite/', null=True, blank=True)
+    direccion = models.CharField(max_length=200, null=True, blank=True)
+    telefono = models.CharField(max_length=20, null=True, blank=True)
+    email = models.EmailField(null=True, blank=True)
+    tipo = models.CharField(max_length=20, default='satelite')
+
+    def get_tipo_display(self):
+        return 'Satélite'
 
 class Maquina(models.Model):
-    empresa = models.ForeignKey(MicroempresaSatelite, on_delete=models.CASCADE)
-    tipo = models.CharField(max_length=50)
-    marca = models.CharField(max_length=50)
-    modelo = models.CharField(max_length=50)
+    empresa = models.ForeignKey(MicroempresaSatelite, on_delete=models.CASCADE, related_name='maquinaria')
+    nombre = models.CharField(max_length=100, default='Nueva Máquina')
+    tipo = models.CharField(max_length=50, default='Industrial')
+    marca = models.CharField(max_length=50, default='Sin Especificar')
+    modelo = models.CharField(max_length=50, default='Sin Especificar')
+    cantidad = models.PositiveIntegerField(default=1)
+    descripcion = models.TextField(null=True, blank=True)
     estado = models.CharField(max_length=20, choices=[
         ('activa', 'Activa'),
         ('mantenimiento', 'En Mantenimiento'),
         ('inactiva', 'Inactiva')
-    ])
+    ], default='activa')
+    
+    def get_upload_path(instance, filename):
+        return f'maquinaria/{instance.empresa.nombre_empresa}/{filename}'
+    
+    imagen = models.ImageField(upload_to=get_upload_path, null=True, blank=True)
     
     class Meta:
         verbose_name = 'Máquina'
         verbose_name_plural = 'Máquinas'
+        
+    def __str__(self):
+        return f'{self.nombre} - {self.empresa.nombre_empresa}'
 
 class Servicio(models.Model):
     empresa = models.ForeignKey(MicroempresaSatelite, on_delete=models.CASCADE, related_name='servicios')
