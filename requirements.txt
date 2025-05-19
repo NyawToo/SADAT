@@ -49,9 +49,5 @@ tzdata>=2023.3
 uritemplate>=4.1.1
 urllib3>=2.0.7
 wheel>=0.41.2
-<<<<<<< HEAD
 whitenoise>=6.5.0
 xlsxwriter>=3.2.3
-=======
-whitenoise>=6.5.0
->>>>>>> 395c836d08aedfb2fe4d6ed57259818abba6e0e8
