@@ -244,6 +244,85 @@ def responder_cotizacion_personalizada(request, pedido_id):
     return redirect('mis_pedidos')
 
 @login_required
+def cotizar_solicitud_confeccion(request, solicitud_id):
+    if not request.user.es_empresa_satelite:
+        messages.error(request, 'No tiene permisos para realizar esta acción')
+        return JsonResponse({'success': False, 'error': 'No tiene permisos'})
+
+    try:
+        solicitud = SolicitudConfeccion.objects.get(id=solicitud_id, empresa_satelite__usuario=request.user)
+        
+        if request.method == 'POST':
+            data = json.loads(request.body)
+            precio_por_prenda = data.get('precio_por_prenda')
+            tiempo_estimado = data.get('tiempo_estimado')
+            comentarios = data.get('comentarios')
+
+            if not precio_por_prenda or not tiempo_estimado:
+                return JsonResponse({'success': False, 'error': 'Faltan datos requeridos'})
+
+            try:
+                precio_total = float(precio_por_prenda) * solicitud.cantidad_prendas
+                solicitud.cotizacion = precio_total
+                solicitud.estado = 'cotizada'
+                solicitud.save()
+
+                # Crear notificación para el cliente
+                Notificacion.objects.create(
+                    usuario=solicitud.cliente,
+                    tipo='solicitud_confeccion',
+                    titulo='Solicitud de confección cotizada',
+                    mensaje=f'Tu solicitud de confección #{solicitud.id} ha sido cotizada por {solicitud.empresa_satelite.nombre}. '
+                            f'Precio total: ${precio_total}, Tiempo estimado: {tiempo_estimado} días',
+                    prioridad='alta'
+                )
+
+                return JsonResponse({'success': True})
+            except ValueError:
+                return JsonResponse({'success': False, 'error': 'Datos inválidos'})
+
+    except SolicitudConfeccion.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Solicitud no encontrada'})
+
+    return JsonResponse({'success': False, 'error': 'Método no permitido'})
+
+@login_required
+def responder_cotizacion_confeccion(request, solicitud_id):
+    if request.method == 'POST':
+        solicitud = get_object_or_404(SolicitudConfeccion, id=solicitud_id, cliente=request.user)
+        accion = request.POST.get('accion')
+        
+        if accion == 'aceptar':
+            solicitud.estado = 'aceptada'
+            messages.success(request, 'Has aceptado la cotización de la solicitud de confección.')
+            
+            # Crear notificación para la empresa
+            Notificacion.objects.create(
+                usuario=solicitud.empresa_satelite.usuario,
+                tipo='solicitud_confeccion',
+                titulo='Cotización aceptada',
+                mensaje=f'El cliente ha aceptado la cotización de la solicitud de confección #{solicitud.id}',
+                prioridad='alta'
+            )
+        elif accion == 'rechazar':
+            solicitud.estado = 'rechazada'
+            messages.info(request, 'Has rechazado la cotización de la solicitud de confección.')
+            
+            # Crear notificación para la empresa
+            Notificacion.objects.create(
+                usuario=solicitud.empresa_satelite.usuario,
+                tipo='solicitud_confeccion',
+                titulo='Cotización rechazada',
+                mensaje=f'El cliente ha rechazado la cotización de la solicitud de confección #{solicitud.id}',
+                prioridad='alta'
+            )
+        
+        solicitud.save()
+        return redirect('mis_pedidos')
+    
+    return redirect('mis_pedidos')
+
+@login_required
 def lista_productos(request):
     return render(request, 'pedidos/lista_productos.html')
 

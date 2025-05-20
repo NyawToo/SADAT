@@ -1,7 +1,13 @@
 from django.urls import path
-from . import views, views_pedidos_empresa
+from . import views, views_pedidos_empresa, views_producto
 
 urlpatterns = [
+    # Rutas para gestión de solicitudes de confección
+    path('confeccion/gestionar/', views_pedidos_empresa.gestionar_solicitudes_confeccion, name='gestionar_solicitudes_confeccion'),
+    path('confeccion/actualizar-estado/<int:solicitud_id>/', views_pedidos_empresa.actualizar_estado_solicitud, name='actualizar_estado_solicitud'),
+    path('confeccion/cotizar/<int:solicitud_id>/', views_pedidos_empresa.cotizar_solicitud, name='cotizar_solicitud'),
+    path('solicitudes/cotizar/<int:solicitud_id>/', views_pedidos_empresa.cotizar_solicitud, name='cotizar_solicitud_alt'),
+    path('confeccion/responder-cotizacion/<int:solicitud_id>/', views.responder_cotizacion_confeccion, name='responder_cotizacion_confeccion'),
     path('responder-cotizacion/<int:pedido_id>/', views.responder_cotizacion_personalizada, name='responder_cotizacion_personalizada'),
     path('empresa/pedidos/', views_pedidos_empresa.lista_pedidos_empresa, name='lista_pedidos_empresa'),
     path('lista/', views.lista_pedidos, name='lista_pedidos'),

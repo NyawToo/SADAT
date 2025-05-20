@@ -16,7 +16,7 @@
                         <select class="form-select" id="filtroEstado" name="estado">
                             <option value="">Todos los estados</option>
                             <option value="pendiente" {% if estado_filtro == 'pendiente' %}selected{% endif %}>Pendientes</option>
-                            <option value="cotizado" {% if estado_filtro == 'cotizado' %}selected{% endif %}>Cotizados</option>
+                            <option value="cotizada" {% if estado_filtro == 'cotizada' %}selected{% endif %}>Cotizados</option>
                             <option value="aceptado" {% if estado_filtro == 'aceptado' %}selected{% endif %}>Aceptados</option>
                             <option value="en_proceso" {% if estado_filtro == 'en_proceso' %}selected{% endif %}>En Proceso</option>
                             <option value="completado" {% if estado_filtro == 'completado' %}selected{% endif %}>Completados</option>
@@ -43,13 +43,13 @@
                             <tbody>
                                 {% for solicitud in solicitudes %}
                                 <tr>
-                                    <td>{{ solicitud.numero_solicitud }}</td>
-                                    <td>{{ solicitud.cliente.nombre }}</td>
-                                    <td>{{ solicitud.get_tipo_servicio_display }}</td>
+                                    <td class="fw-bold">#{{ solicitud.id }}</td>
+                                    <td class="fw-bold">{{ solicitud.cliente.username }} {{ solicitud.cliente.apellido }}</td>
+                                    <td class="fw-bold">{{ solicitud.descripcion|truncatechars:50 }}</td>
                                     <td>{{ solicitud.cantidad_prendas }}</td>
-                                    <td>{{ solicitud.fecha_deseada }}</td>
+                                    <td class="fw-bold">{{ solicitud.fecha_entrega_requerida }}</td>
                                     <td>
-                                        <span class="badge bg-{{ solicitud.get_estado_color }}">{{ solicitud.get_estado_display }}</span>
+                                        <span class="badge bg-{{ solicitud.get_estado_color }} text-dark">{{ solicitud.get_estado_display }}</span>
                                     </td>
                                     <td>
                                         <button class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#detallesSolicitud{{ solicitud.id }}">
@@ -76,23 +76,22 @@
                                     <div class="modal-dialog modal-lg">
                                         <div class="modal-content">
                                             <div class="modal-header">
-                                                <h5 class="modal-title">Detalles de la Solicitud #{{ solicitud.numero_solicitud }}</h5>
+                                                <h5 class="modal-title">Detalles de la Solicitud #{{ solicitud.id }}</h5>
                                                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                             </div>
                                             <div class="modal-body">
                                                 <div class="row mb-4">
                                                     <div class="col-md-6">
                                                         <h6>Información del Cliente</h6>
-                                                        <p><strong>Nombre:</strong> {{ solicitud.cliente.nombre }}</p>
+                                                        <p><strong>Nombre:</strong> {{ solicitud.cliente.username}}</p> 
                                                         <p><strong>Email:</strong> {{ solicitud.cliente.email }}</p>
                                                         <p><strong>Teléfono:</strong> {{ solicitud.cliente.telefono }}</p>
                                                     </div>
                                                     <div class="col-md-6">
                                                         <h6>Detalles de la Solicitud</h6>
-                                                        <p><strong>Tipo de Servicio:</strong> {{ solicitud.get_tipo_servicio_display }}</p>
+                                                        <p><strong>Tipo de Servicio:</strong> {{ solicitud.descripcion|truncatechars:50 }}</p>
                                                         <p><strong>Cantidad de Prendas:</strong> {{ solicitud.cantidad_prendas }}</p>
-                                                        <p><strong>Fecha de Entrega Material:</strong> {{ solicitud.fecha_entrega_material }}</p>
-                                                        <p><strong>Fecha Deseada:</strong> {{ solicitud.fecha_deseada }}</p>
+                                                        <p><strong>Fecha Deseada:</strong> {{ solicitud.fecha_entrega_requerida }}</p>
                                                     </div>
                                                 </div>
 
@@ -145,7 +144,7 @@
                                     <div class="modal-dialog">
                                         <div class="modal-content">
                                             <div class="modal-header">
-                                                <h5 class="modal-title">Cotizar Solicitud #{{ solicitud.numero_solicitud }}</h5>
+                                                <h5 class="modal-title">Cotizar Solicitud #{{ solicitud.id}}</h5>
                                                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                             </div>
                                             <div class="modal-body">
@@ -216,6 +215,11 @@ function enviarCotizacion(solicitudId) {
     const tiempo = document.getElementById(`tiempo${solicitudId}`).value;
     const comentarios = document.getElementById(`comentarios${solicitudId}`).value;
 
+    if (!precio || !tiempo) {
+        alert('Por favor, complete todos los campos requeridos');
+        return;
+    }
+
     fetch(`/pedidos/confeccion/cotizar/${solicitudId}/`, {
         method: 'POST',
         headers: {
@@ -228,13 +232,22 @@ function enviarCotizacion(solicitudId) {
             comentarios: comentarios
         })
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Error en la respuesta del servidor');
+        }
+        return response.json();
+    })
     .then(data => {
         if (data.success) {
             location.reload();
         } else {
-            alert('Error al enviar la cotización');
+            alert(data.error || 'Error al enviar la cotización');
         }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error al procesar la solicitud');
     });
 }
 

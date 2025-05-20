@@ -48,7 +48,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Botón para limpiar filtros
     const limpiarFiltros = document.createElement('button');
-    limpiarFiltros.className = 'btn btn-outline-secondary';
+    limpiarFiltros.className = 'btn btn-outline-secondary ms-2';
     limpiarFiltros.innerHTML = '<i class="fas fa-times"></i> Limpiar filtros';
     limpiarFiltros.onclick = function() {
         localStorage.removeItem('filtroEstado');
@@ -59,6 +59,52 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     // Agregar botón de limpiar junto a los filtros
-    const contenedorFiltros = document.querySelector('.d-flex.gap-2');
-    contenedorFiltros.appendChild(limpiarFiltros);
-}));
+    const contenedorFiltros = document.querySelector('.card-header .d-flex.gap-2');
+    if (contenedorFiltros) {
+        contenedorFiltros.appendChild(limpiarFiltros);
+    }
+});
+
+function enviarCotizacion(solicitudId) {
+    const precio = document.getElementById(`precio${solicitudId}`).value;
+    const tiempo = document.getElementById(`tiempo${solicitudId}`).value;
+    const comentarios = document.getElementById(`comentarios${solicitudId}`).value;
+
+    if (!precio || !tiempo) {
+        alert('Por favor, complete todos los campos requeridos');
+        return;
+    }
+
+    // Obtener el token CSRF del elemento meta en el HTML
+    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+    fetch(`/pedidos/confeccion/cotizar/${solicitudId}/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrftoken
+        },
+        body: JSON.stringify({
+            precio_por_prenda: parseFloat(precio),
+            tiempo_estimado: parseInt(tiempo),
+            comentarios: comentarios
+        })
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Error en la respuesta del servidor');
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert(data.error || 'Error al enviar la cotización');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error al procesar la solicitud');
+    });
+}

@@ -98,6 +98,10 @@ class SolicitudConfeccion(models.Model):
     ]
     
     empresa_integral = models.ForeignKey(MicroempresaIntegral, on_delete=models.CASCADE, null=True, blank=True)
+    precio_por_prenda = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    tiempo_estimado = models.IntegerField(help_text='Tiempo estimado en días', null=True, blank=True)
+    comentarios_cotizacion = models.TextField(null=True, blank=True)
+    fecha_cotizacion = models.DateTimeField(null=True, blank=True)
     empresa_satelite = models.ForeignKey(MicroempresaSatelite, on_delete=models.CASCADE)
     cliente = models.ForeignKey(Usuario, on_delete=models.CASCADE, null=True)
     descripcion = models.TextField()
