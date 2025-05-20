@@ -1,0 +1,100 @@
+@startuml
+title -DIAGRAMA DE CLASES SADAT: ROL EMPRESA SATELITE-
+
+class MicroempresaSatelite {
+  -id: Integer
+  -nombre_empresa: String
+  -descripcion: Text
+  -rut_empresa: String
+  -imagen: String
+  -direccion: Text
+  -estado: EstadoEmpresa
+  +gestionarServicios()
+  +gestionarSolicitudes()
+  +gestionarMaquinaria()
+  +gestionarMateriasPrimas()
+  +generarReportes()
+}
+
+class Servicio {
+  -id: Integer
+  -nombre: String
+  -descripcion: Text
+  -precio_minimo: Decimal
+  -precio_maximo: Decimal
+  -fecha_creacion: DateTime
+  -empresa: MicroempresaSatelite
+  +actualizarPrecios()
+  +actualizarDisponibilidad()
+  +cotizar()
+}
+
+class SolicitudConfeccion {
+  -id: Integer
+  -descripcion: Text
+  -cantidad: Integer
+  -fecha_solicitud: DateTime
+  -estado: EstadoSolicitud
+  -material_cliente: Boolean
+  -detalles_material: Text
+  -empresa: MicroempresaSatelite
+  +actualizarEstado()
+  +registrarCotizacion()
+  +gestionarMateriales()
+}
+
+class MateriaPrima {
+  -id: Integer
+  -nombre: String
+  -descripcion: Text
+  -cantidad: Decimal
+  -unidad_medida: String
+  -precio_unitario: Decimal
+  -proveedor: String
+  +actualizarStock()
+  +actualizarPrecio()
+  +verificarDisponibilidad()
+}
+
+class Maquina {
+  -id: Integer
+  -nombre: String
+  -descripcion: Text
+  -cantidad: Integer
+  -imagen: String
+  -estado: EstadoMaquina
+  +actualizarEstado()
+  +registrarMantenimiento()
+}
+
+class Reporte {
+  -id: Integer
+  -tipo: TipoReporte
+  -fecha_inicio: DateTime
+  -fecha_fin: DateTime
+  -datos: JSON
+  +generarReporteServicios()
+  +generarReporteSolicitudes()
+  +generarReporteInventario()
+  +exportarReporte()
+}
+
+class Notificacion {
+  -id: Integer
+  -titulo: String
+  -mensaje: Text
+  -fecha: DateTime
+  -tipo: TipoNotificacion
+  -leida: Boolean
+  +marcarComoLeida()
+  +enviar()
+}
+
+MicroempresaSatelite "1" -- "*" Servicio
+MicroempresaSatelite "1" -- "*" SolicitudConfeccion
+MicroempresaSatelite "1" -- "*" MateriaPrima
+MicroempresaSatelite "1" -- "*" Maquina
+MicroempresaSatelite "1" -- "*" Reporte
+MicroempresaSatelite "1" -- "*" Notificacion
+
+@enduml

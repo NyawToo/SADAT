@@ -1,0 +1,45 @@
+@startuml
+title -DIAGRAMA DE ACTIVIDADES SADAT: ROL SUPERADMINISTRADOR-
+
+|SuperAdministrador|
+start
+:Iniciar sesión;
+
+|Sistema|
+:Validar credenciales;
+:Mostrar panel de control;
+
+|SuperAdministrador|
+while (¿Gestionar sistema?) is (sí)
+  split
+    :Gestionar usuarios;
+    :Crear/Modificar/Eliminar usuarios;
+    :Asignar roles y permisos;
+  split again
+    :Gestionar empresas;
+    :Revisar solicitudes de registro;
+    :Validar documentación;
+    :Aprobar/Rechazar empresas;
+  split again
+    :Configurar sistema;
+    :Ajustar parámetros globales;
+    :Actualizar configuraciones;
+  split again
+    :Monitorear actividad;
+    :Revisar logs del sistema;
+    :Analizar métricas;
+  end split
+
+  |Sistema|
+  :Actualizar cambios;
+  :Generar notificaciones;
+
+  |SuperAdministrador|
+  :Generar reportes del sistema;
+  :Revisar estadísticas;
+  :Tomar decisiones basadas en datos;
+endwhile (no)
+
+stop
+
+@enduml

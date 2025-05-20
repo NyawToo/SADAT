@@ -1,0 +1,26 @@
+@startuml
+title -DIAGRAMA DE CASOS DE USO SADAT: ROL EMPRESA SATELITE-
+
+actor "Empresa Satélite" as ES
+
+rectangle "Sistema SADAT" {
+  usecase "Gestionar Servicios" as UC1
+  usecase "Gestionar Solicitudes de Confección" as UC2
+  usecase "Gestionar Materias Primas" as UC3
+  usecase "Gestionar Maquinaria" as UC4
+  usecase "Actualizar Disponibilidad" as UC5
+  usecase "Generar Cotizaciones" as UC6
+  usecase "Generar Reportes" as UC7
+  usecase "Ver Notificaciones" as UC8
+}
+
+ES --> UC1
+ES --> UC2
+ES --> UC3
+ES --> UC4
+ES --> UC5
+ES --> UC6
+ES --> UC7
+ES --> UC8
+
+@enduml

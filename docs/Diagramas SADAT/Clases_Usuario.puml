@@ -1,0 +1,154 @@
+@startuml
+title -DIAGRAMA DE CLASES SADAT: ROL USUARIO-
+
+class Usuario {
+  -id: Integer
+  -username: String
+  -email: String
+  -password: String
+  -tipo: TipoUsuario
+  -telefono: String
+  -direccion: Text
+  -fecha_registro: DateTime
+  +registrar()
+  +autenticar()
+  +actualizarPerfil()
+  +gestionarPedidos()
+  +gestionarCarrito()
+  +solicitarServicios()
+}
+
+class CategoriaProducto {
+  -id: Integer
+  -nombre: String
+  -descripcion: Text
+}
+
+class ProductoTerminado {
+  -id: Integer
+  -nombre: String
+  -descripcion: Text
+  -precio: Decimal
+  -stock: Integer
+  -imagen: String
+  -categoria: CategoriaProducto
+  +verDetalles()
+  +agregarAlCarrito()
+  +verificarDisponibilidad()
+}
+
+class Servicio {
+  -id: Integer
+  -nombre: String
+  -descripcion: Text
+  -precio_minimo: Decimal
+  -precio_maximo: Decimal
+  -fecha_creacion: DateTime
+  +cotizar()
+}
+
+class Carrito {
+  -id: Integer
+  -fecha_creacion: DateTime
+  -fecha_actualizacion: DateTime
+  +agregarItem()
+  +eliminarItem()
+  +calcularTotal()
+}
+
+class ItemCarrito {
+  -id: Integer
+  -cantidad: Integer
+  -fecha_agregado: DateTime
+  +actualizarCantidad()
+  +calcularSubtotal()
+}
+
+class Pedido {
+  -id: Integer
+  -cantidad: Integer
+  -fecha_pedido: DateTime
+  -fecha_entrega: Date
+  -estado: EstadoPedido
+  -total: Decimal
+  +calcularTotal()
+  +actualizarEstado()
+}
+
+class DetallePedido {
+  -id: Integer
+  -cantidad: Integer
+  -precio_unitario: Decimal
+  -subtotal: Decimal
+  +calcularSubtotal()
+}
+
+class PedidoPersonalizado {
+  -id: Integer
+  -descripcion: Text
+  -cantidad: Integer
+  -fecha_solicitud: DateTime
+  -estado: EstadoPedido
+  -cotizacion: Decimal
+  -fecha_entrega_estimada: Date
+  -referencia_imagen: String
+  +actualizarEstado()
+  +registrarCotizacion()
+}
+
+class SolicitudConfeccion {
+  -id: Integer
+  -descripcion: Text
+  -cantidad: Integer
+  -fecha_solicitud: DateTime
+  -estado: EstadoSolicitud
+  -material_cliente: Boolean
+  -detalles_material: Text
+  +actualizarEstado()
+  +registrarCotizacion()
+}
+
+class Notificacion {
+  -id: Integer
+  -titulo: String
+  -mensaje: Text
+  -fecha: DateTime
+  -tipo: TipoNotificacion
+  -leida: Boolean
+  +marcarComoLeida()
+  +enviar()
+}
+
+class Transaccion {
+  -id: Integer
+  -monto: Decimal
+  -fecha: DateTime
+  -estado: EstadoTransaccion
+  -metodo_pago: String
+  -descripcion: Text
+  +procesarPago()
+  +actualizarEstado()
+  +generarComprobante()
+}
+
+Usuario "1" -- "1" Carrito
+Carrito "1" -- "*" ItemCarrito
+ItemCarrito "*" -- "1" ProductoTerminado
+ProductoTerminado "*" -- "1" CategoriaProducto
+
+Usuario "1" -- "*" Pedido
+Pedido "1" -- "*" DetallePedido
+DetallePedido "*" -- "1" ProductoTerminado
+
+Usuario "1" -- "*" PedidoPersonalizado
+Usuario "1" -- "*" SolicitudConfeccion
+
+Usuario "1" -- "*" Notificacion
+Notificacion "*" -- "*" Pedido
+Notificacion "*" -- "*" SolicitudConfeccion
+
+Pedido "1" -- "*" Transaccion
+PedidoPersonalizado "1" -- "*" Transaccion
+SolicitudConfeccion "1" -- "*" Transaccion
+
+@enduml

@@ -2,6 +2,40 @@
 
 {% block content %}
 <main class="container my-5">
+  <!-- Filtros de Productos -->
+  <div class="card shadow-sm border-0 rounded-3 mb-4">
+    <div class="card-header bg-primary text-white py-3">
+      <h2 class="h5 mb-0">Filtros de Búsqueda</h2>
+    </div>
+    <div class="card-body p-3">
+      <form id="filtro-productos" method="GET" class="row g-3">
+        <div class="col-md-3">
+          <label for="nombre" class="form-label">Nombre del Producto</label>
+          <input type="text" class="form-control" id="nombre" name="nombre" value="{{ request.GET.nombre }}">
+        </div>
+        <div class="col-md-3">
+          <label for="categoria" class="form-label">Categoría</label>
+          <select class="form-select" id="categoria" name="categoria">
+            <option value="">Todas las categorías</option>
+            {% for categoria in categorias %}
+            <option value="{{ categoria.id }}" {% if request.GET.categoria == categoria.id|stringformat:"i" %}selected{% endif %}>{{ categoria.nombre }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-2">
+          <label for="precio_min" class="form-label">Precio Mínimo</label>
+          <input type="number" class="form-control" id="precio_min" name="precio_min" value="{{ request.GET.precio_min }}" min="0">
+        </div>
+        <div class="col-md-2">
+          <label for="precio_max" class="form-label">Precio Máximo</label>
+          <input type="number" class="form-control" id="precio_max" name="precio_max" value="{{ request.GET.precio_max }}" min="0">
+        </div>
+        <div class="col-md-2 d-flex align-items-end">
+          <button type="submit" class="btn btn-primary w-100">Filtrar</button>
+        </div>
+      </form>
+    </div>
+  </div>
   <!-- Empresa Información -->
   <section class="empresa-info mb-5">
     <div class="card shadow-sm border-0 rounded-3">
@@ -76,42 +110,10 @@
   <!-- Catálogo de Productos -->
   <section class="catalogo-productos">
     <div class="row g-4">
-      <!-- Filtros -->
-      <div class="col-md-3">
-        <div class="card shadow-sm border-0 rounded-3 filtros-card position-sticky" style="top: 1rem;">
-          <div class="card-header bg-primary text-white py-3">
-            <h2 class="h5 mb-0">Filtros</h2>
-          </div>
-          <div class="card-body p-4">
-            <form id="filtrosForm">
-              <div class="mb-3">
-                <label for="busqueda" class="form-label fw-medium">Buscar por nombre</label>
-                <input type="text" class="form-control rounded-2" id="busqueda" placeholder="Nombre del producto">
-              </div>
-              <div class="mb-3">
-                <label for="categoria" class="form-label fw-medium">Categoría</label>
-                <select class="form-select rounded-2" id="categoria">
-                  <option value="">Todas las categorías</option>
-                  {% for categoria in categorias %}
-                    <option value="{{ categoria }}">{{ categoria }}</option>
-                  {% endfor %}
-                </select>
-              </div>
-              <div class="mb-3">
-                <label class="form-label fw-medium">Rango de precio</label>
-                <div class="d-flex gap-2">
-                  <input type="number" class="form-control rounded-2" id="precioMin" placeholder="Mín">
-                  <input type="number" class="form-control rounded-2" id="precioMax" placeholder="Máx">
-                </div>
-              </div>
-              <button type="button" class="btn btn-primary w-100 rounded-2" onclick="aplicarFiltros()">Aplicar Filtros</button>
-            </form>
-          </div>
-        </div>
-      </div>
+
 
       <!-- Lista de Productos -->
-      <div class="col-md-9">
+      <div class="col-md-17">
         <div class="card shadow-sm border-0 rounded-3">
           <div class="card-header bg-primary text-white text-center py-3">
             <h2 class="h4 mb-0">Productos Disponibles</h2>

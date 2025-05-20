@@ -51,16 +51,6 @@ class ComentarioProducto(models.Model):
         verbose_name_plural = 'Comentarios'
         ordering = ['-fecha']
 
-class CalificacionProducto(models.Model):
-    producto = models.ForeignKey(ProductoTerminado, on_delete=models.CASCADE, related_name='calificaciones')
-    usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE)
-    puntuacion = models.PositiveIntegerField(choices=[(i, i) for i in range(1, 6)])
-    fecha = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        verbose_name = 'Calificación'
-        verbose_name_plural = 'Calificaciones'
-        unique_together = ['producto', 'usuario']
 
 class MicroempresaSatelite(models.Model):
     usuario = models.OneToOneField(Usuario, on_delete=models.CASCADE)

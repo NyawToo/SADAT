@@ -1,0 +1,102 @@
+@startuml
+title -DIAGRAMA DE CLASES SADAT: ROL SUPERADMINISTRADOR-
+
+class SuperAdministrador {
+  -id: Integer
+  -username: String
+  -email: String
+  -password: String
+  -tipo: TipoUsuario
+  -fecha_registro: DateTime
+  +gestionarUsuarios()
+  +gestionarEmpresas()
+  +gestionarConfiguracion()
+  +generarReportes()
+  +gestionarNotificaciones()
+}
+
+class ConfiguracionSistema {
+  -id: Integer
+  -nombre_sistema: String
+  -descripcion: Text
+  -logo: String
+  -email_contacto: String
+  -telefono_contacto: String
+  -direccion: Text
+  -terminos_condiciones: Text
+  -politica_privacidad: Text
+  +actualizarConfiguracion()
+}
+
+class MicroempresaIntegral {
+  -id: Integer
+  -nombre_empresa: String
+  -descripcion: Text
+  -rut_empresa: String
+  -imagen: String
+  -estado: EstadoEmpresa
+  +aprobarEmpresa()
+  +rechazarEmpresa()
+  +suspenderEmpresa()
+  +activarEmpresa()
+}
+
+class MicroempresaSatelite {
+  -id: Integer
+  -nombre_empresa: String
+  -descripcion: Text
+  -rut_empresa: String
+  -imagen: String
+  -estado: EstadoEmpresa
+  +aprobarEmpresa()
+  +rechazarEmpresa()
+  +suspenderEmpresa()
+  +activarEmpresa()
+}
+
+class Usuario {
+  -id: Integer
+  -username: String
+  -email: String
+  -password: String
+  -tipo: TipoUsuario
+  -telefono: String
+  -direccion: Text
+  -fecha_registro: DateTime
+  +bloquearUsuario()
+  +desbloquearUsuario()
+  +resetearPassword()
+}
+
+class Notificacion {
+  -id: Integer
+  -titulo: String
+  -mensaje: Text
+  -fecha: DateTime
+  -tipo: TipoNotificacion
+  -leida: Boolean
+  +enviarNotificacionMasiva()
+  +enviarNotificacionEmpresa()
+  +enviarNotificacionUsuario()
+}
+
+class Reporte {
+  -id: Integer
+  -tipo: TipoReporte
+  -fecha_inicio: DateTime
+  -fecha_fin: DateTime
+  -datos: JSON
+  +generarReporteVentas()
+  +generarReporteUsuarios()
+  +generarReporteEmpresas()
+  +exportarReporte()
+}
+
+SuperAdministrador "1" -- "1" ConfiguracionSistema
+SuperAdministrador "1" -- "*" MicroempresaIntegral
+SuperAdministrador "1" -- "*" MicroempresaSatelite
+SuperAdministrador "1" -- "*" Usuario
+SuperAdministrador "1" -- "*" Notificacion
+SuperAdministrador "1" -- "*" Reporte
+
+@enduml

@@ -1,0 +1,28 @@
+@startuml
+title -DIAGRAMA DE CASOS DE USO SADAT: ROL EMPRESA INTEGRAL-
+
+actor "Empresa Integral" as EI
+
+rectangle "Sistema SADAT" {
+  usecase "Gestionar Catálogo" as UC1
+  usecase "Gestionar Productos" as UC2
+  usecase "Gestionar Pedidos" as UC3
+  usecase "Gestionar Materias Primas" as UC4
+  usecase "Gestionar Maquinaria" as UC5
+  usecase "Gestionar Transacciones" as UC6
+  usecase "Generar Reportes" as UC7
+  usecase "Ver Notificaciones" as UC8
+  usecase "Gestionar Solicitudes de Confección" as UC9
+}
+
+EI --> UC1
+EI --> UC2
+EI --> UC3
+EI --> UC4
+EI --> UC5
+EI --> UC6
+EI --> UC7
+EI --> UC8
+EI --> UC9
+
+@enduml

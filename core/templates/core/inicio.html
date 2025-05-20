@@ -1,6 +1,123 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block content %}
+<style>
+    .main-content {
+        background: radial-gradient(circle, #87ceeb 0%, #1e90ff 70%);
+        min-height: 1000px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: relative;
+        overflow-x: hidden;
+        font-family: 'Poppins', sans-serif;
+        width: 100%;
+        padding: 20px;
+    }
+
+    .info-section {
+        background: #e6f0fa;
+        color: #1a3c5e;
+        border-radius: 25px;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        padding: 40px;
+        margin-bottom: 30px;
+    }
+
+    .info-section:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .section-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #1a3c5e;
+        margin-bottom: 20px;
+    }
+
+    .section-text {
+        font-size: 1.1rem;
+        color: #1a3c5e;
+        opacity: 0.9;
+    }
+
+    .feature-card {
+        background: #e6f0fa;
+        padding: 30px;
+        border-radius: 25px;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        height: 100%;
+    }
+
+    .feature-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .feature-card h4 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #1a3c5e;
+        margin-bottom: 15px;
+    }
+
+    .feature-card p {
+        color: #1a3c5e;
+        opacity: 0.9;
+    }
+
+    .card {
+        background: #e6f0fa;
+        border-radius: 25px;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .card-title {
+        color: #1a3c5e;
+        font-weight: 600;
+    }
+
+    .btn-primary {
+        background: #007bff;
+        border: none;
+        padding: 12px 30px;
+        border-radius: 30px;
+        transition: background 0.3s ease, transform 0.3s ease;
+    }
+
+    .btn-primary:hover {
+        background: #0056b3;
+        transform: scale(1.05);
+    }
+
+    @media (max-width: 768px) {
+        .main-content {
+            padding: 10px;
+        }
+
+        .info-section {
+            padding: 20px;
+        }
+
+        .section-title {
+            font-size: 2rem;
+        }
+
+        .feature-card {
+            padding: 20px;
+        }
+    }
+</style>
+
 <div class="container-fluid px-0">
     <!-- Contenedor 1: Sobre la empresa -->
     <section class="info-section section-about">

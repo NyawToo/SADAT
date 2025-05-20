@@ -27,6 +27,22 @@ def catalogo_satelites(request):
 def detalle_empresa_integral(request, pk):
     empresa = get_object_or_404(MicroempresaIntegral, pk=pk)
     productos = ProductoTerminado.objects.filter(empresa=empresa)
+    
+    # Aplicar filtros si existen
+    nombre = request.GET.get('nombre')
+    categoria_id = request.GET.get('categoria')
+    precio_min = request.GET.get('precio_min')
+    precio_max = request.GET.get('precio_max')
+    
+    if nombre:
+        productos = productos.filter(nombre__icontains=nombre)
+    if categoria_id:
+        productos = productos.filter(categoria_id=categoria_id)
+    if precio_min:
+        productos = productos.filter(precio__gte=float(precio_min))
+    if precio_max:
+        productos = productos.filter(precio__lte=float(precio_max))
+    
     pedidos_completados = 0  # Esto se actualizará cuando implementemos el sistema de pedidos
     calificacion_promedio = 0  # Esto se actualizará cuando implementemos el sistema de calificaciones
     
@@ -35,6 +51,10 @@ def detalle_empresa_integral(request, pk):
     telefono = empresa.usuario.telefono
     email = empresa.usuario.email
     
+    # Obtener todas las categorías para el filtro
+    from empresas.models import CategoriaProducto
+    categorias = CategoriaProducto.objects.all()
+    
     return render(request, 'empresas/detalle_empresa_integral.html', {
         'empresa': empresa,
         'productos': productos,
@@ -42,7 +62,13 @@ def detalle_empresa_integral(request, pk):
         'calificacion_promedio': calificacion_promedio,
         'direccion': direccion,
         'telefono': telefono,
-        'email': email
+        'email': email,
+        'categorias': categorias,
+        # Devolver los valores actuales de los filtros
+        'nombre_filtro': nombre,
+        'categoria_filtro': categoria_id,
+        'precio_min_filtro': precio_min,
+        'precio_max_filtro': precio_max
     })
 
 @login_required

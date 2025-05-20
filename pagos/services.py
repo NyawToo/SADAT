@@ -149,9 +149,9 @@ class StripeService:
             
             # URLs de redirección
             if not success_url:
-                success_url = "https://sadat-ezff.onrender.com/pagos/confirmar-pago/{transaccion.id}/?success=true"
+                success_url = f"{DOMAIN}/pagos/confirmar-pago/{transaccion.id}/?success=true"
             if not cancel_url:
-                cancel_url = "https://sadat-ezff.onrender.com/pagos/ejecucion-pago/?canceled=true"
+                cancel_url = f"{DOMAIN}/pagos/ejecucion-pago/?canceled=true"
             
             # Crear la sesión de Checkout
             session = stripe.checkout.Session.create(

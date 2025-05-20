@@ -1,37 +1,154 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="container mt-5">
-    <div class="card">
-        <div class="card-header">
-            <h2 class="text-center">Catálogo de Empresas</h2>
+<style>
+    * {
+        box-sizing: border-box;
+    }
+
+    /* Aseguramos que el fondo se aplique al contenedor principal dentro de base.html */
+    .main-content {
+        background: radial-gradient(circle, #87ceeb 0%, #1e90ff 70%);
+        min-height: 1000px; /* Ajustamos altura para considerar posibles header/footer en base.html */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        /* padding: 20px 20px; */
+        position: relative;
+        overflow-x: hidden;
+        font-family: 'Poppins', sans-serif;
+        width: 150%;
+        /* margin: 0 0; Centrado dentro del contenedor padre */
+    }
+
+    .container {
+        max-width: 1400px;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 60px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .header, .card {
+        background: #e6f0fa; /* Blanco azulado sólido */
+        color: #1a3c5e; /* Azul oscuro para contraste */
+        border-radius: 25px;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        text-align: center;
+        padding: 40px;
+        width: 100%;
+    }
+
+    .header:hover, .card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .header h1 {
+        font-size: 3rem;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    .header p {
+        font-size: 1.3rem;
+        font-weight: 300;
+        margin-top: 15px;
+        opacity: 0.9;
+    }
+
+    .cards {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 40px;
+        width: 100%;
+    }
+
+    .card {
+        max-width: 400px;
+        width: 100%;
+        padding: 30px;
+    }
+
+    .card h3 {
+        font-size: 2rem;
+        font-weight: 600;
+        margin-bottom: 20px;
+    }
+
+    .card a {
+        display: inline-block;
+        padding: 12px 30px;
+        background: #007bff;
+        color: #ffffff;
+        text-decoration: none;
+        font-size: 1.2rem;
+        font-weight: 400;
+        border-radius: 30px;
+        transition: background 0.3s ease, transform 0.3s ease;
+    }
+
+    .card a:hover {
+        background: #0056b3;
+        transform: scale(1.05);
+    }
+
+    @media (max-width: 768px) {
+        .main-content {
+            padding: 20px 10px;
+            min-height: calc(100vh - 80px); /* Ajuste para móvil */
+        }
+
+        .container {
+            gap: 30px;
+        }
+
+        .header, .card {
+            padding: 20px;
+            border-radius: 15px;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+        }
+
+        .header p {
+            font-size: 1rem;
+        }
+
+        .cards {
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .card {
+            max-width: 90%;
+        }
+    }
+</style>
+
+<div class="main-content">
+    <div class="container">
+        <div class="header">
+            <h1>Catálogo de Empresas</h1>
+            <p>Descubre un universo de soluciones.</p>
         </div>
-        <div class="card-body">
-            <div class="row justify-content-center">
-                <div class="col-md-6 mb-4">
-                    <a href="{% url 'catalogo_integrales' %}" class="btn btn-primary btn-lg btn-block">
-                        <h4 class="mb-0">Microempresas Integrales</h4>
-                    </a>
-                </div>
-                <div class="col-md-6 mb-4">
-                    <a href="{% url 'catalogo_satelites' %}" class="btn btn-primary btn-lg btn-block">
-                        <h4 class="mb-0">Microempresas Satélites</h4>
-                    </a>
-                </div>
+        <div class="cards">
+            <div class="card">
+                <h3>Microempresas Integrales</h3>
+                <a href="{% url 'catalogo_integrales' %}">Explorar</a>
+            </div>
+            <div class="card">
+                <h3>Microempresas Satélites</h3>
+                <a href="{% url 'catalogo_satelites' %}">Explorar</a>
             </div>
         </div>
     </div>
 </div>
-{% endblock %}
-
-{% block extra_js %}
-<script>
-    document.getElementById('aplicarFiltros').addEventListener('click', function() {
-        const tipo = document.getElementById('tipo').value;
-        const ubicacion = document.getElementById('ubicacion').value;
-        
-        // Aquí se implementará la lógica de filtrado
-        // Se puede usar AJAX para actualizar la lista sin recargar la página
-    });
-</script>
 {% endblock %}

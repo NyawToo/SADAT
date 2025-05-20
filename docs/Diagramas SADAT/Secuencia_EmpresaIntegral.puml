@@ -1,0 +1,64 @@
+@startuml
+title -DIAGRAMA DE SECUENCIA SADAT: ROL EMPRESA INTEGRAL-
+
+actor "Empresa Integral" as EI
+participant "Sistema" as Sistema
+participant "Base de Datos" as BD
+
+== Autenticación ==
+EI -> Sistema: Iniciar sesión
+Sistema -> BD: Validar credenciales
+BD --> Sistema: Credenciales validadas
+Sistema --> EI: Mostrar panel de empresa
+
+== Gestión de Catálogo ==
+EI -> Sistema: Crear/Actualizar producto
+Sistema -> BD: Guardar información del producto
+BD --> Sistema: Producto registrado
+Sistema --> EI: Confirmar actualización
+
+EI -> Sistema: Gestionar inventario
+Sistema -> BD: Actualizar stock
+BD --> Sistema: Stock actualizado
+Sistema --> EI: Mostrar estado del inventario
+
+== Gestión de Pedidos ==
+Sistema -> EI: Notificar nueva solicitud
+EI -> Sistema: Evaluar pedido
+Sistema -> BD: Consultar detalles
+BD --> Sistema: Información del pedido
+Sistema --> EI: Mostrar detalles
+
+EI -> Sistema: Procesar pedido
+Sistema -> BD: Actualizar estado
+BD --> Sistema: Estado actualizado
+Sistema --> EI: Confirmar procesamiento
+
+== Gestión de Recursos ==
+EI -> Sistema: Administrar materias primas
+Sistema -> BD: Actualizar inventario de materias primas
+BD --> Sistema: Inventario actualizado
+Sistema --> EI: Mostrar estado actual
+
+EI -> Sistema: Controlar maquinaria
+Sistema -> BD: Registrar estado de maquinaria
+BD --> Sistema: Estado registrado
+Sistema --> EI: Confirmar actualización
+
+== Transacciones y Reportes ==
+EI -> Sistema: Generar cotización
+Sistema -> BD: Calcular precios
+BD --> Sistema: Cotización generada
+Sistema --> EI: Mostrar cotización
+
+EI -> Sistema: Procesar pago
+Sistema -> BD: Registrar transacción
+BD --> Sistema: Transacción confirmada
+Sistema --> EI: Mostrar confirmación
+
+EI -> Sistema: Solicitar reportes
+Sistema -> BD: Generar métricas de ventas
+BD --> Sistema: Datos procesados
+Sistema --> EI: Mostrar reportes
+
+@enduml

@@ -1,0 +1,46 @@
+@startuml
+title -DIAGRAMA DE ACTIVIDADES SADAT: ROL EMPRESA INTEGRAL-
+
+|Empresa Integral|
+start
+:Iniciar sesión;
+
+|Sistema|
+:Validar credenciales;
+:Mostrar panel de empresa;
+
+|Empresa Integral|
+while (¿Gestionar operaciones?) is (sí)
+  split
+    :Gestionar catálogo;
+    :Crear/Actualizar productos;
+    :Gestionar inventario;
+  split again
+    :Gestionar pedidos;
+    :Recibir solicitudes;
+    :Evaluar pedidos;
+    :Procesar pedidos;
+    :Actualizar estado;
+  split again
+    :Gestionar recursos;
+    :Administrar materias primas;
+    :Controlar maquinaria;
+    :Actualizar disponibilidad;
+  end split
+
+  |Sistema|
+  :Procesar cambios;
+  :Actualizar inventario;
+  :Enviar notificaciones;
+
+  |Empresa Integral|
+  :Gestionar transacciones;
+  :Generar cotizaciones;
+  :Procesar pagos;
+  :Generar reportes;
+  :Analizar métricas de ventas;
+endwhile (no)
+
+stop
+
+@enduml

@@ -1,11 +1,10 @@
 from django.shortcuts import get_object_or_404, redirect, render
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
-from django.db.models import Avg
 from django.contrib import messages
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
-from .models import ProductoTerminado, ComentarioProducto, CalificacionProducto, CategoriaProducto, MicroempresaIntegral
+from .models import ProductoTerminado, ComentarioProducto, CategoriaProducto, MicroempresaIntegral
 
 @login_required
 def agregar_comentario(request, producto_id):
@@ -23,28 +22,7 @@ def agregar_comentario(request, producto_id):
         
     return JsonResponse({'success': False, 'error': 'No se pudo agregar el comentario'})
 
-@login_required
-def calificar_producto(request, producto_id):
-    if request.method == 'POST' and request.user.tipo == 'cliente':
-        producto = get_object_or_404(ProductoTerminado, id=producto_id)
-        puntuacion = request.POST.get('puntuacion')
-        
-        try:
-            puntuacion = int(puntuacion)
-            if 1 <= puntuacion <= 5:
-                CalificacionProducto.objects.update_or_create(
-                    producto=producto,
-                    usuario=request.user,
-                    defaults={'puntuacion': puntuacion}
-                )
-                
-                # Actualizar calificación promedio
-                promedio = producto.calificaciones.aggregate(Avg('puntuacion'))['puntuacion__avg'] or 0
-                return JsonResponse({'success': True, 'promedio': round(promedio, 1)})
-        except (ValueError, TypeError):
-            pass
-            
-    return JsonResponse({'success': False, 'error': 'No se pudo calificar el producto'})
+
 
 @login_required
 def dar_like(request, comentario_id):

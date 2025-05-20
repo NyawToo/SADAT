@@ -1,0 +1,61 @@
+@startuml
+title -DIAGRAMA DE SECUENCIA SADAT: ROL USUARIO-
+
+actor Usuario
+participant "Sistema" as Sistema
+participant "Base de Datos" as BD
+
+== Autenticación ==
+Usuario -> Sistema: Registrarse/Iniciar sesión
+Sistema -> BD: Validar credenciales
+BD --> Sistema: Credenciales validadas
+Sistema --> Usuario: Mostrar catálogo
+
+== Exploración de Productos ==
+Usuario -> Sistema: Explorar catálogo
+Sistema -> BD: Consultar productos
+BD --> Sistema: Lista de productos
+Sistema --> Usuario: Mostrar productos disponibles
+Usuario -> Sistema: Solicitar detalles de producto
+Sistema -> BD: Consultar detalles
+BD --> Sistema: Información del producto
+Sistema --> Usuario: Mostrar detalles del producto
+
+== Gestión de Carrito ==
+Usuario -> Sistema: Agregar producto al carrito
+Sistema -> BD: Actualizar carrito
+BD --> Sistema: Carrito actualizado
+Sistema --> Usuario: Mostrar carrito actualizado
+Usuario -> Sistema: Actualizar cantidades
+Sistema -> BD: Modificar carrito
+BD --> Sistema: Carrito modificado
+Sistema --> Usuario: Mostrar total actualizado
+
+== Gestión de Pedidos ==
+Usuario -> Sistema: Realizar pedido
+Sistema -> BD: Crear pedido
+BD --> Sistema: Pedido creado
+Sistema --> Usuario: Solicitar confirmación
+Usuario -> Sistema: Confirmar detalles
+Sistema -> BD: Registrar pedido
+BD --> Sistema: Pedido registrado
+
+== Proceso de Pago ==
+Usuario -> Sistema: Realizar pago
+Sistema -> BD: Procesar pago
+BD --> Sistema: Pago procesado
+Sistema -> BD: Actualizar inventario
+BD --> Sistema: Inventario actualizado
+Sistema --> Usuario: Enviar confirmación
+
+== Seguimiento de Pedido ==
+Usuario -> Sistema: Consultar estado del pedido
+Sistema -> BD: Obtener estado
+BD --> Sistema: Estado actual
+Sistema --> Usuario: Mostrar estado del pedido
+Usuario -> Sistema: Confirmar recepción
+Sistema -> BD: Actualizar estado
+BD --> Sistema: Estado actualizado
+Sistema --> Usuario: Mostrar confirmación
+
+@enduml

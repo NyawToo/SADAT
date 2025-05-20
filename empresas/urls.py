@@ -14,7 +14,7 @@ urlpatterns = [
     path('materia-prima/', views.gestionar_materia_prima, name='gestionar_materia_prima'),
     path('productos/', views.gestionar_productos, name='gestionar_productos'),
     path('producto/<int:producto_id>/agregar-comentario/', views_producto.agregar_comentario, name='agregar_comentario'),
-    path('producto/<int:producto_id>/calificar/', views_producto.calificar_producto, name='calificar_producto'),
+
     path('dar-like/<int:comentario_id>/', views_producto.dar_like, name='dar_like'),
     path('dar-dislike/<int:comentario_id>/', views_producto.dar_dislike, name='dar_dislike'),
     # URLs de materia prima
