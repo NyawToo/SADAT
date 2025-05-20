@@ -1,11 +1,29 @@
 @startuml
-title -DIAGRAMA DE PAQUETES SADAT-
+title -DIAGRAMA DE PAQUETES SADAT POR ROLES-
 
 package "Frontend" {
-  package "Interfaz de Usuario" {
-    [Páginas]
-    [Componentes]
-    [Estilos]
+  package "Interfaz por Roles" {
+    package "Usuario" {
+      [Páginas Usuario]
+      [Componentes Usuario]
+    }
+    
+    package "Empresa Integral" {
+      [Páginas Integral]
+      [Componentes Integral]
+    }
+    
+    package "Empresa Satélite" {
+      [Páginas Satélite]
+      [Componentes Satélite]
+    }
+    
+    package "SuperAdministrador" {
+      [Páginas Admin]
+      [Componentes Admin]
+    }
+    
+    [Estilos Compartidos]
   }
   
   package "Lógica de Cliente" {
@@ -32,6 +50,8 @@ package "Backend" {
     [Gestión Integral]
     [Gestión Satélite]
     [Catálogo]
+    [Gestión de Maquinaria]
+    [Gestión de Materias Primas]
   }
   
   package "Pedidos" {

@@ -1,5 +1,5 @@
 @startuml
-title -DIAGRAMA DE ESTRUCTURA COMPUESTA SADAT-
+title -DIAGRAMA DE ESTRUCTURA COMPUESTA SADAT POR ROLES-
 
 component "Sistema SADAT" {
   interface "Interfaz Web" as web
@@ -25,10 +25,14 @@ component "Sistema SADAT" {
     component "Integral" as integral
     component "Satélite" as satelite
     component "Catálogo" as catalogo
+    component "Maquinaria" as maquinaria
+    component "Materias Primas" as materias
     
     integral -(0- ge
     satelite -(0- ge
     catalogo -(0- ge
+    maquinaria -(0- ge
+    materias -(0- ge
   }
   
   component "Módulo de Pedidos" as pedidos {
@@ -49,10 +53,12 @@ component "Sistema SADAT" {
     component "Asignación" as asign
     component "Estados" as states
     component "Calidad" as qc
+    component "Gestión de Recursos" as recursos
     
     asign -(0- ctrl
     states -(0- ctrl
     qc -(0- ctrl
+    recursos -(0- ctrl
   }
   
   component "Módulo de Pagos" as pagos {

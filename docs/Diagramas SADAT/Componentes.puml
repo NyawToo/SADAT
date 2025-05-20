@@ -1,9 +1,27 @@
 @startuml
-title -DIAGRAMA DE COMPONENTES SADAT-
+title -DIAGRAMA DE COMPONENTES SADAT POR ROLES-
 
 package "Frontend" {
-  [Interfaz Web] as IW
-  [Componentes React/Vue] as CR
+  package "Usuario" {
+    [Interfaz Web Usuario] as IWU
+    [Componentes Usuario] as CU
+  }
+  
+  package "Empresa Integral" {
+    [Interfaz Web Integral] as IWI
+    [Componentes Integral] as CI
+  }
+  
+  package "Empresa Satélite" {
+    [Interfaz Web Satélite] as IWS
+    [Componentes Satélite] as CS
+  }
+  
+  package "SuperAdministrador" {
+    [Interfaz Web Admin] as IWA
+    [Componentes Admin] as CA
+  }
+  
   [Sistema de Notificaciones UI] as SN
 }
 
@@ -14,6 +32,8 @@ package "Backend" {
   [Gestión de Pedidos] as GP
   [Gestión de Pagos] as GPAY
   [Gestión de Producción] as GPROD
+  [Gestión de Maquinaria] as GMAQ
+  [Gestión de Materias Primas] as GMP
   [Sistema de Notificaciones] as NOTI
   [Generador de Reportes] as REP
 }
@@ -27,15 +47,28 @@ cloud "Servicios Externos" {
   [Servicio de Correo] as EMAIL
 }
 
-IW --> CR : "usa"
-CR --> SN : "usa"
-CR --> API : "HTTP/REST"
+IWU --> CU : "usa"
+IWI --> CI : "usa"
+IWS --> CS : "usa"
+IWA --> CA : "usa"
+
+CU --> SN : "usa"
+CI --> SN : "usa"
+CS --> SN : "usa"
+CA --> SN : "usa"
+
+CU --> API : "HTTP/REST"
+CI --> API : "HTTP/REST"
+CS --> API : "HTTP/REST"
+CA --> API : "HTTP/REST"
 
 API --> AUTH : "valida"
 API --> GU : "gestiona"
 API --> GP : "procesa"
 API --> GPAY : "procesa"
 API --> GPROD : "gestiona"
+API --> GMAQ : "gestiona"
+API --> GMP : "gestiona"
 API --> NOTI : "envía"
 API --> REP : "genera"
 
@@ -47,6 +80,8 @@ GU --> DB : "lee/escribe"
 GP --> DB : "lee/escribe"
 GPAY --> DB : "lee/escribe"
 GPROD --> DB : "lee/escribe"
+GMAQ --> DB : "lee/escribe"
+GMP --> DB : "lee/escribe"
 NOTI --> DB : "lee/escribe"
 REP --> DB : "lee"
 
