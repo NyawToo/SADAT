@@ -1,4 +1,4 @@
-// Validación de formularios
+// Validación de formularios con mejor feedback visual
 function validateForm(formId) {
     const form = document.getElementById(formId);
     if (!form) return true;
@@ -10,15 +10,29 @@ function validateForm(formId) {
         if (!field.value.trim()) {
             isValid = false;
             field.classList.add('is-invalid');
+            field.style.borderColor = '#ef4444';
+            field.style.animation = 'shake 0.3s ease';
         } else {
             field.classList.remove('is-invalid');
+            field.style.borderColor = '#10b981';
         }
     });
 
     return isValid;
 }
 
-// Previsualización de imágenes
+// Animación de shake para campos inválidos
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-10px); }
+        75% { transform: translateX(10px); }
+    }
+`;
+document.head.appendChild(style);
+
+// Previsualización de imágenes con animación
 function previewImage(input, previewId) {
     const preview = document.getElementById(previewId);
     if (!preview) return;
@@ -27,20 +41,34 @@ function previewImage(input, previewId) {
     if (file) {
         const reader = new FileReader();
         reader.onload = function(e) {
-            preview.src = e.target.result;
-            preview.style.display = 'block';
+            preview.style.opacity = '0';
+            setTimeout(() => {
+                preview.src = e.target.result;
+                preview.style.display = 'block';
+                preview.style.opacity = '1';
+                preview.style.transition = 'opacity 0.3s ease';
+            }, 100);
         };
         reader.readAsDataURL(file);
     }
 }
 
-// Actualización dinámica de precios
+// Actualización dinámica de precios con animación
 function updateTotal(cantidad, precioUnitario, totalId) {
     const total = document.getElementById(totalId);
     if (!total) return;
 
     const monto = cantidad * precioUnitario;
-    total.textContent = `$${monto.toFixed(2)}`;
+    
+    // Animación de actualización
+    total.style.transform = 'scale(1.1)';
+    total.style.color = '#60a5fa';
+    
+    setTimeout(() => {
+        total.textContent = `$${monto.toFixed(2)}`;
+        total.style.transform = 'scale(1)';
+        total.style.color = '';
+    }, 150);
 }
 
 // Inicialización de componentes Bootstrap

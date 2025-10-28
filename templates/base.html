@@ -14,326 +14,9 @@
     <!-- Font Awesome CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- CSS personalizado -->
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
-    <style>
-        /* Paleta de colores coherente */
-        :root {
-            --azul-oscuro: #1e3a8a;
-            --azul-medio: #3b82f6;
-            --azul-claro: #bfdbfe;
-            --blanco: #ffffff;
-            --gris-claro: #f1f5f9;
-        }
-
-        /* Estilos generales */
-        body {
-            background: linear-gradient(135deg, var(--azul-claro) 0%, var(--gris-claro) 100%);
-            font-family: 'Poppins', sans-serif;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            margin: 0;
-        }
-
-        /* Estilos de la barra de navegación */
-        .navbar {
-            background: var(--blanco) !important;
-            padding: 1rem 2rem;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
-        }
-
-        .navbar-brand {
-            font-size: 2rem;
-            font-weight: 600;
-            color: var(--azul-oscuro) !important;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            position: relative;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            animation: resaltar-logo 1s ease-in-out;
-        }
-
-        .navbar-brand::after {
-            content: '';
-            position: absolute;
-            bottom: -5px;
-            left: 0;
-            width: 100%;
-            height: 3px;
-            background: var(--azul-medio);
-            transform: scaleX(0);
-            transform-origin: bottom right;
-            transition: transform 0.4s ease;
-        }
-
-        .navbar-brand:hover::after {
-            transform: scaleX(1);
-            transform-origin: bottom left;
-        }
-
-        @keyframes resaltar-logo {
-            0% {
-                opacity: 0;
-                transform: scale(0.8);
-            }
-            100% {
-                opacity: 1;
-                transform: scale(1);
-            }
-        }
-
-        .nav-link {
-            color: var(--azul-oscuro) !important;
-            font-weight: 400;
-            margin: 0 1rem;
-            transition: color 0.3s ease, transform 0.3s ease;
-        }
-
-        .nav-link:hover {
-            color: var(--azul-medio) !important;
-            transform: translateY(-2px);
-        }
-
-        .nav-link.btn-outline-primary {
-            border-color: var(--azul-medio);
-            color: var(--azul-medio);
-            border-radius: 50px;
-            padding: 0.5rem 1.5rem;
-            margin: 0 0.5rem;
-            transition: all 0.3s ease;
-        }
-
-        .nav-link.btn-outline-primary:hover {
-            background: var(--azul-medio);
-            color: var(--blanco) !important;
-            transform: translateY(-3px);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-        }
-
-        /* Animación para el dropdown */
-        .dropdown-menu {
-            border: none;
-            border-radius: 10px;
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
-            animation: deslizar-abajo 0.3s ease forwards;
-        }
-
-        @keyframes deslizar-abajo {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .dropdown-item {
-            color: var(--azul-oscuro);
-            padding: 0.5rem 1.5rem;
-        }
-
-        .dropdown-item:hover {
-            background: var(--azul-claro);
-            color: var(--azul-oscuro);
-            transform: scale(1.02);
-            transition: all 0.2s ease;
-        }
-
-        /* Contenedor principal */
-        .container.mt-4 {
-            flex: 1;
-            padding: 2rem;
-            animation: aparecer-suave 0.5s ease-in;
-        }
-
-        @keyframes aparecer-suave {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* Estilo para el título de la página */
-        h1 {
-            color: var(--azul-oscuro);
-            font-weight: 600;
-            text-align: center;
-            margin-bottom: 2rem;
-            animation: aparecer-suave 0.5s ease-in;
-        }
-
-        /* Estilo para el formulario de filtros */
-        .filtro-form {
-            background: var(--blanco);
-            padding: 1.5rem;
-            border-radius: 10px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-            margin-bottom: 2rem;
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 1rem;
-            align-items: center;
-        }
-
-        .filtro-form input,
-        .filtro-form select {
-            border: 1px solid var(--azul-claro);
-            border-radius: 5px;
-            padding: 0.5rem;
-            width: 100%;
-            transition: border-color 0.3s ease;
-        }
-
-        .filtro-form input:focus,
-        .filtro-form select:focus {
-            border-color: var(--azul-medio);
-            outline: none;
-            box-shadow: 0 0 5px rgba(59, 130, 246, 0.3);
-        }
-
-        .filtro-form button {
-            padding: 0.5rem 1.5rem;
-            border-radius: 5px;
-            font-weight: 500;
-            transition: all 0.3s ease;
-        }
-
-        .filtro-form .btn-filtrar {
-            background: var(--azul-medio);
-            color: var(--blanco);
-            border: none;
-        }
-
-        .filtro-form .btn-filtrar:hover {
-            background: var(--azul-oscuro);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-        }
-
-        .filtro-form .btn-limpiar {
-            background: var(--gris-claro);
-            color: var(--azul-oscuro);
-            border: 1px solid var(--azul-claro);
-        }
-
-        .filtro-form .btn-limpiar:hover {
-            background: var(--azul-claro);
-            transform: translateY(-2px);
-        }
-
-        /* Estilo para la tabla */
-        .tabla-resultados {
-            width: 100%;
-            border-collapse: collapse;
-            background: var(--blanco);
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-        }
-
-        .tabla-resultados th,
-        .tabla-resultados td {
-            padding: 1rem;
-            text-align: left;
-            border-bottom: 1px solid var(--azul-claro);
-        }
-
-        .tabla-resultados th {
-            background: var(--azul-oscuro);
-            color: var(--blanco);
-            font-weight: 500;
-        }
-
-        .tabla-resultados tr:hover {
-            background: var(--azul-claro);
-            transition: background 0.3s ease;
-        }
-
-        .tabla-resultados td {
-            color: var(--azul-oscuro);
-        }
-
-        /* Mensaje de no resultados */
-        .sin-resultados {
-            text-align: center;
-            color: var(--azul-oscuro);
-            font-style: italic;
-            margin-top: 1rem;
-        }
-
-        /* Estilos del footer */
-        .footer-custom {
-            background: linear-gradient(90deg, var(--azul-oscuro) 0%, var(--azul-medio) 100%);
-            padding: 2rem 0;
-            color: var(--blanco);
-            position: relative;
-        }
-
-        .footer-custom .row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 1rem;
-        }
-
-        .footer-custom a {
-            color: var(--blanco);
-            margin: 0 1rem;
-            transition: transform 0.3s ease, color 0.3s ease;
-        }
-
-        .footer-custom a:hover {
-            transform: scale(1.2);
-            color: var(--azul-claro);
-        }
-
-        .footer-custom p {
-            margin: 0;
-            font-size: 0.9rem;
-        }
-
-        /* Efecto de onda en los íconos sociales */
-        .social-icon {
-            position: relative;
-            display: inline-block;
-        }
-
-        .social-icon::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 0;
-            height: 0;
-            background: rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            transform: translate(-50%, -50%);
-            transition: width 0.4s ease, height 0.4s ease;
-        }
-
-        .social-icon:hover::after {
-            width: 40px;
-            height: 40px;
-        }
-
-        /* Estilo para botones centrados */
-        .center-buttons {
-            margin: 0 auto;
-            display: flex;
-            gap: 1rem;
-        }
-    </style>
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm">
@@ -529,34 +212,58 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{% static 'js/main.js' %}"></script>
     <script>
-        // Animación suave para el scroll
+        // Animación suave para scroll interno
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function (e) {
                 e.preventDefault();
-                document.querySelector(this.getAttribute('href')).scrollIntoView({
-                    behavior: 'smooth'
-                });
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
             });
         });
 
-        // Efecto de resaltado al pasar el mouse por los enlaces del footer
-        document.querySelectorAll('.footer-custom a').forEach(link => {
-            link.addEventListener('mouseover', () => {
-                link.style.textDecoration = 'underline';
-            });
-            link.addEventListener('mouseout', () => {
-                link.style.textDecoration = 'none';
-            });
-        });
-
-        // Animación para el navbar al hacer scroll
+        // Animación del navbar al hacer scroll
+        let lastScroll = 0;
         window.addEventListener('scroll', () => {
             const navbar = document.querySelector('.navbar');
-            if (window.scrollY > 50) {
-                navbar.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.2)';
+            const currentScroll = window.scrollY;
+            
+            if (currentScroll > 50) {
+                navbar.style.boxShadow = '0 4px 20px rgba(96, 165, 250, 0.15)';
+                navbar.style.padding = '0.75rem 0';
             } else {
-                navbar.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.1)';
+                navbar.style.boxShadow = '0 2px 8px rgba(96, 165, 250, 0.08)';
+                navbar.style.padding = '1rem 0';
             }
+            
+            lastScroll = currentScroll;
+        });
+
+        // Animación de entrada para elementos
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        // Observar cards y secciones
+        document.querySelectorAll('.card, .feature-card, .info-section').forEach(el => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(20px)';
+            el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+            observer.observe(el);
         });
     </script>
 </body>

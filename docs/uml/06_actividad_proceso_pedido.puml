@@ -1,0 +1,437 @@
+@startuml Actividad - Proceso Completo de Pedido
+title Sistema SADAT - Diagrama de Actividad: Gestión de Pedidos por Rol
+
+|#LightBlue|Cliente|
+start
+:Iniciar sesión;
+:Acceder al catálogo\nde productos;
+
+note right
+  El cliente puede:
+  - Ver todos los productos
+  - Filtrar por categoría
+  - Buscar por nombre
+  - Ver calificaciones
+end note
+
+:Seleccionar producto;
+:Ver detalles del producto;
+
+if (¿Stock disponible?) then (Sí)
+    :Seleccionar cantidad;
+    
+    if (¿Cantidad <= Stock?) then (Sí)
+        :Agregar al carrito;
+        
+        |Sistema|
+        :Actualizar ítems del carrito;
+        :Calcular subtotal del ítem\n(precio × cantidad);
+        
+        |Cliente|
+        
+        if (¿Continuar comprando?) then (Sí)
+            :Navegar catálogo\nde productos;
+            detach
+        else (No)
+            :Ir al carrito;
+        endif
+        
+    else (No)
+        :Mostrar error\n"Stock insuficiente";
+        :Navegar catálogo\nde productos;
+        detach
+    endif
+    
+else (No)
+    :Mostrar mensaje\n"Producto sin stock";
+    :Navegar catálogo\nde productos;
+    detach
+endif
+
+:Ver resumen del carrito;
+
+note right
+  Carrito muestra:
+  - Lista de productos
+  - Cantidades
+  - Precios unitarios
+  - Subtotal por ítem
+  - Total sin IVA
+  - IVA (19%)
+  - Total final
+end note
+
+if (¿Modificar carrito?) then (Sí)
+    :Actualizar cantidades\no eliminar ítems;
+    
+    |Sistema|
+    :Recalcular totales;
+    
+    |Cliente|
+    :Ver resumen del carrito;
+    detach
+else (No)
+endif
+
+:Proceder al checkout;
+
+|Sistema|
+:Verificar disponibilidad\nde stock actual;
+
+if (¿Todo el stock disponible?) then (No)
+    |Cliente|
+    :Mostrar alerta\n"Algunos productos sin stock";
+    :Ver resumen del carrito;
+    detach
+else (Sí)
+endif
+
+:Solicitar dirección\nde envío;
+
+|Cliente|
+:Ingresar dirección\nde entrega;
+:Confirmar datos del pedido;
+
+|Sistema|
+:Crear pedido en estado\n"pendiente_pago";
+:Generar número de pedido;
+:Reservar stock temporalmente;
+
+note left
+  Estado del pedido: PENDIENTE_PAGO
+  Stock reservado por 15 minutos
+  Si no se paga, stock se libera
+end note
+
+|Cliente|
+:Proceder al pago;
+
+|Sistema|
+partition "Proceso de Pago con Stripe" {
+    :Crear transacción en BD;
+    :Crear PaymentIntent en Stripe;
+    :Obtener client_secret;
+    :Redirigir a formulario Stripe;
+    
+    |Cliente|
+    :Ingresar datos de tarjeta\nen formulario Stripe;
+    :Confirmar pago;
+    
+    |Stripe|
+    :Procesar pago;
+    
+    if (¿Pago exitoso?) then (Sí)
+        :Enviar webhook\n"payment_intent.succeeded";
+        
+        |Sistema|
+        :Recibir confirmación webhook;
+        :Actualizar estado pedido\na "confirmado";
+        :Actualizar transacción\na "completado";
+        :Descontar stock definitivo;
+        
+        note right
+          Stock se decrementa:
+          producto.stock -= cantidad_pedida
+          Se verifica stock mínimo
+          Si stock < 10, alerta a empresa
+        end note
+        
+        :Enviar notificación\na Empresa Integral;
+        :Enviar email confirmación\nal Cliente;
+        
+        |Cliente|
+        :Mostrar página\n"Pago exitoso";
+        :Ver detalles del pedido;
+        
+        note right
+          Detalles incluyen:
+          - Número de pedido
+          - Fecha estimada de entrega
+          - Productos comprados
+          - Total pagado
+          - Dirección de envío
+        end note
+        
+        stop
+        
+    else (No)
+        :Enviar webhook\n"payment_intent.failed";
+        
+        |Sistema|
+        :Actualizar transacción\na "fallido";
+        :Liberar stock reservado;
+        :Actualizar pedido\na "cancelado";
+        
+        |Cliente|
+        :Mostrar página\n"Pago fallido";
+        :Mostrar opción\n"Reintentar pago";
+        
+        if (¿Reintentar?) then (Sí)
+            :Proceder al pago;
+            detach
+        else (No)
+            stop
+        endif
+    endif
+}
+
+|#LightGreen|Empresa Integral|
+start
+:Recibir notificación\nde nuevo pedido;
+:Acceder a panel\nde gestión;
+:Ver lista de pedidos;
+:Seleccionar pedido\na gestionar;
+
+if (¿Puede preparar pedido?) then (Sí)
+    :Cambiar estado a\n"en_preparacion";
+    
+    note left
+      Empresa prepara el pedido:
+      - Selecciona productos
+      - Empaqueta
+      - Genera etiqueta de envío
+    end note
+    
+    :Preparar productos;
+    :Cambiar estado a\n"enviado";
+    :Ingresar datos de envío\n(courier, tracking);
+    
+    |Sistema|
+    :Enviar notificación\nal Cliente;
+    
+    |#LightBlue|Cliente|
+    :Recibir notificación\n"Pedido enviado";
+    :Acceder a\n"Mis Pedidos";
+    :Rastrear envío;
+    
+    note right
+      Cliente puede:
+      - Ver estado actual
+      - Ver número de tracking
+      - Ver fecha estimada
+    end note
+    
+    :Recibir pedido;
+    :Confirmar recepción\nen sistema;
+    
+    |Sistema|
+    :Cambiar estado a\n"entregado";
+    
+    |Cliente|
+    
+    if (¿Satisfecho con pedido?) then (Sí)
+        :Calificar productos;
+        :Dejar comentario (opcional);
+        
+        note right
+          Calificación 1-5 estrellas
+          Comentario opcional
+          Visible para otros clientes
+        end note
+        
+        stop
+    else (No)
+        :Reportar problema;
+        
+        |Sistema|
+        :Crear ticket de soporte;
+        :Notificar a empresa;
+        
+        stop
+    endif
+    
+else (No)
+    :Contactar al cliente;
+    :Negociar solución;
+    
+    if (¿Cliente acepta?) then (Sí)
+        :Procesar según acuerdo;
+        stop
+    else (No)
+        :Cancelar pedido;
+        :Procesar reembolso;
+        
+        |Sistema|
+        :Crear reembolso en Stripe;
+        :Restaurar stock;
+        :Cambiar estado a "cancelado";
+        
+        |#LightBlue|Cliente|
+        :Recibir notificación\nde reembolso;
+        :Ver confirmación\nen sistema;
+        stop
+    endif
+    
+else (Cancelación)
+    :Solicitar cancelación;
+    
+    |#Yellow|Sistema|
+    :Verificar estado\ndel pedido;
+    
+    if (¿Puede cancelarse?) then (Sí)
+        :Cancelar pedido;
+        :Procesar reembolso;
+        :Notificar a empresa;
+        
+        |#LightBlue|Cliente|
+        :Recibir confirmación\nde cancelación;
+        stop
+    else (No)
+        :Mostrar mensaje\n"Pedido no puede cancelarse";
+        stop
+    endif
+endif
+
+|#LightCoral|Microempresa Satélite|
+start
+:Recibir solicitud\nde confección;
+:Acceder a panel\nde servicios;
+:Ver solicitudes\npendientes;
+:Revisar detalles\nde solicitud;
+
+if (¿Puede realizar trabajo?) then (Sí)
+    :Calcular presupuesto;
+    :Calcular tiempo estimado;
+    :Enviar cotización\nal cliente;
+    
+    |#Yellow|Sistema|
+    :Notificar al cliente\ncotización disponible;
+    
+    |#LightBlue|Cliente|
+    :Revisar cotización;
+    
+    if (¿Acepta cotización?) then (Sí)
+        :Aceptar cotización;
+        :Proceder al pago;
+        
+        |#Yellow|Sistema|
+        :Procesar pago\ncon Stripe;
+        
+        if (¿Pago exitoso?) then (Sí)
+            :Confirmar pago;
+            :Notificar a empresa;
+            
+            |#LightCoral|Microempresa Satélite|
+            :Cambiar estado a\n"aprobado";
+            :Iniciar trabajo;
+            :Cambiar estado a\n"en_proceso";
+            :Realizar confección;
+            :Completar trabajo;
+            :Cambiar estado a\n"completado";
+            :Notificar al cliente;
+            
+            |#LightBlue|Cliente|
+            :Recibir notificación;
+            :Recoger trabajo;
+            :Confirmar recepción;
+            stop
+        else (No)
+            :Notificar fallo;
+            stop
+        endif
+    else (No)
+        :Rechazar cotización;
+        
+        |#LightCoral|Microempresa Satélite|
+        :Recibir notificación\nde rechazo;
+        :Archivar solicitud;
+        stop
+    endif
+else (No)
+    :Rechazar solicitud;
+    :Enviar motivo\nde rechazo;
+    
+    |#Yellow|Sistema|
+    :Notificar al cliente;
+    
+    |#LightBlue|Cliente|
+    :Recibir notificación\nde rechazo;
+    stop
+endif
+
+|#Red|Super Usuario|
+start
+:Acceder a panel\nadministrador;
+
+if (¿Qué gestionar?) then (Pedidos)
+    :Ver todos los pedidos;
+    :Filtrar por estado/fecha;
+    :Seleccionar pedido;
+    :Ver detalles completos;
+    
+    if (¿Acción?) then (Cancelar)
+        :Cancelar pedido;
+        :Procesar reembolso;
+        :Notificar partes;
+        stop
+    else (Modificar)
+        :Modificar estado;
+        :Guardar cambios;
+        :Notificar partes;
+        stop
+    endif
+    
+elseif (¿Qué gestionar?) then (Transacciones)
+    :Ver todas las transacciones;
+    :Filtrar por estado;
+    :Seleccionar transacción;
+    
+    if (¿Acción?) then (Reembolsar)
+        :Procesar reembolso manual;
+        :Actualizar estado;
+        :Notificar cliente;
+        stop
+    else (Revisar)
+        :Ver detalles Stripe;
+        :Exportar información;
+        stop
+    endif
+    
+elseif (¿Qué gestionar?) then (Reportes)
+    :Seleccionar tipo de reporte;
+    :Configurar filtros;
+    :Generar reporte;
+    :Exportar (PDF/Excel);
+    stop
+else (Configuración)
+    :Modificar IVA;
+    :Configurar Stripe;
+    :Guardar cambios;
+    stop
+endif
+
+note bottom
+  **Roles y Responsabilidades:**
+  
+  **Cliente:**
+  - Navegar catálogo
+  - Gestionar carrito
+  - Realizar pedidos
+  - Pagar con tarjeta
+  - Rastrear envíos
+  - Calificar productos
+  - Solicitar servicios
+  
+  **Microempresa Integral:**
+  - Gestionar productos
+  - Recibir pedidos
+  - Preparar envíos
+  - Actualizar estados
+  - Ver reportes de ventas
+  
+  **Microempresa Satélite:**
+  - Gestionar servicios
+  - Recibir solicitudes
+  - Cotizar trabajos
+  - Realizar confecciones
+  - Gestionar maquinaria
+  
+  **Super Usuario:**
+  - Gestionar todos los pedidos
+  - Gestionar transacciones
+  - Generar reportes globales
+  - Configurar sistema
+  - Moderar contenido
+end note
+
+@enduml

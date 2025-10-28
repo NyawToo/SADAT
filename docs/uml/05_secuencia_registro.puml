@@ -1,0 +1,169 @@
+@startuml .
+title -DIAGRAMA DE SECUENCIA: Sistema SADAT - Registro de Usuarios-
+skinparam linetype ortho
+
+actor "Usuario" as Usuario
+participant "Vista:\nregistro.html" as Vista
+participant "Controlador:\nregistro_view()" as Controlador
+participant "Form" as Form
+participant "Modelo:\nUsuario" as ModeloUsuario
+participant "Modelo:\nEmpresa" as ModeloEmpresa
+participant "Base de Datos" as BD
+participant "Sistema Email" as Email
+
+== Escenario 1: Registro de Cliente Exitoso ==
+Usuario -> Vista: Solicitar registro como cliente
+Vista -> Usuario: Mostrar formulario de registro de cliente
+Usuario -> Vista: Completar datos (username, email, password, teléfono, dirección)
+Vista -> Controlador: Enviar datos (POST)
+Controlador -> Form: Crear ClienteRegistrationForm(request.POST)
+Form -> Form: Validar formato de campos
+Form -> BD: SELECT COUNT(*) FROM core_usuario WHERE username = ?
+BD --> Form: 0 (username único)
+Form -> BD: SELECT COUNT(*) FROM core_usuario WHERE email = ?
+BD --> Form: 0 (email único)
+Form -> Form: Validar contraseñas coinciden
+Form -> Form: Validar fortaleza de contraseña
+Form --> Controlador: Formulario válido
+Controlador -> Form: form.save(commit=False)
+Form -> ModeloUsuario: Crear instancia Usuario
+ModeloUsuario -> ModeloUsuario: Hash de contraseña (make_password)
+ModeloUsuario -> ModeloUsuario: Asignar tipo = 'cliente'
+ModeloUsuario -> ModeloUsuario: Establecer is_staff = False
+Form --> Controlador: Instancia de usuario
+Controlador -> ModeloUsuario: usuario.save()
+ModeloUsuario -> BD: INSERT INTO core_usuario
+BD --> ModeloUsuario: Usuario creado
+ModeloUsuario --> Controlador: Usuario guardado
+Controlador -> Email: Enviar email de bienvenida
+Email --> Controlador: Email enviado
+Controlador --> Vista: redirect('login')
+Vista --> Usuario: Redirigir a login con mensaje de éxito
+
+== Escenario 2: Registro de Microempresa Integral Exitoso ==
+Usuario -> Vista: Solicitar registro como empresa integral
+Vista -> Usuario: Mostrar formulario de empresa integral
+Usuario -> Vista: Completar datos personales y de empresa
+Vista -> Controlador: Enviar datos (POST + FILES)
+Controlador -> Form: Crear EmpresaIntegralRegistrationForm(request.POST, request.FILES)
+Form -> Form: Validar formato de campos
+Form -> BD: SELECT COUNT(*) FROM core_usuario WHERE username = ?
+BD --> Form: 0 (username único)
+Form -> BD: SELECT COUNT(*) FROM core_usuario WHERE email = ?
+BD --> Form: 0 (email único)
+Form -> BD: SELECT COUNT(*) FROM empresas_microempresaintegral WHERE rut_empresa = ?
+BD --> Form: 0 (RUT único)
+Form -> Form: Validar imagen (formato, tamaño máximo 5MB)
+Form --> Controlador: Formulario válido
+Controlador -> Form: form.save(commit=False)
+Form -> ModeloUsuario: Crear instancia Usuario
+ModeloUsuario -> ModeloUsuario: Hash de contraseña
+ModeloUsuario -> ModeloUsuario: Asignar tipo = 'integral'
+ModeloUsuario -> ModeloUsuario: Establecer is_staff = True
+Form --> Controlador: Instancia de usuario
+Controlador -> ModeloUsuario: usuario.save()
+ModeloUsuario -> BD: INSERT INTO core_usuario
+BD --> ModeloUsuario: Usuario creado (ID generado)
+ModeloUsuario --> Controlador: Usuario guardado
+Controlador -> ModeloEmpresa: Crear MicroempresaIntegral
+ModeloEmpresa -> BD: INSERT INTO empresas_microempresaintegral
+BD --> ModeloEmpresa: Empresa creada
+ModeloEmpresa --> Controlador: Empresa guardada
+Controlador -> Email: Enviar email de bienvenida
+Email --> Controlador: Email enviado
+Controlador --> Vista: redirect('login')
+Vista --> Usuario: Redirigir a login con mensaje de éxito
+
+== Escenario 3: Registro de Microempresa Satélite Exitoso ==
+Usuario -> Vista: Solicitar registro como empresa satélite
+Vista -> Usuario: Mostrar formulario de empresa satélite
+Usuario -> Vista: Completar datos personales y de empresa
+Vista -> Controlador: Enviar datos (POST + FILES)
+Controlador -> Form: Crear EmpresaSateliteRegistrationForm(request.POST, request.FILES)
+Form -> Form: Validar formato de campos
+Form -> BD: SELECT COUNT(*) FROM empresas_microempresasatelite WHERE rut_empresa = ?
+BD --> Form: 0 (RUT único)
+Form --> Controlador: Formulario válido
+Controlador -> ModeloUsuario: Crear Usuario
+ModeloUsuario -> ModeloUsuario: Asignar tipo = 'satelite'
+ModeloUsuario -> ModeloUsuario: Establecer is_staff = True
+ModeloUsuario -> BD: INSERT INTO core_usuario
+BD --> ModeloUsuario: Usuario creado
+Controlador -> ModeloEmpresa: Crear MicroempresaSatelite
+ModeloEmpresa -> BD: INSERT INTO empresas_microempresasatelite
+BD --> ModeloEmpresa: Empresa creada
+Controlador -> Email: Enviar email de bienvenida
+Email --> Controlador: Email enviado
+Controlador --> Vista: redirect('login')
+Vista --> Usuario: Redirigir a login con mensaje de éxito
+
+== Escenario 4: Error - Username Ya Existe ==
+Usuario -> Vista: Solicitar registro
+Vista -> Usuario: Mostrar formulario
+Usuario -> Vista: Completar datos con username existente
+Vista -> Controlador: Enviar datos (POST)
+Controlador -> Form: Validar formulario
+Form -> BD: SELECT COUNT(*) FROM core_usuario WHERE username = ?
+BD --> Form: 1 (username ya existe)
+Form --> Controlador: Formulario inválido (error: username duplicado)
+Controlador --> Vista: render(registro.html) con formulario y errores
+Vista --> Usuario: Mostrar "Este nombre de usuario ya existe"
+
+== Escenario 5: Error - Email Ya Registrado ==
+Usuario -> Vista: Solicitar registro
+Vista -> Usuario: Mostrar formulario
+Usuario -> Vista: Completar datos con email existente
+Vista -> Controlador: Enviar datos (POST)
+Controlador -> Form: Validar formulario
+Form -> BD: SELECT COUNT(*) FROM core_usuario WHERE email = ?
+BD --> Form: 1 (email ya existe)
+Form --> Controlador: Formulario inválido (error: email duplicado)
+Controlador --> Vista: render(registro.html) con errores
+Vista --> Usuario: Mostrar "Este email ya está registrado"
+
+== Escenario 6: Error - RUT de Empresa Ya Existe ==
+Usuario -> Vista: Solicitar registro como empresa
+Vista -> Usuario: Mostrar formulario de empresa
+Usuario -> Vista: Completar datos con RUT existente
+Vista -> Controlador: Enviar datos (POST)
+Controlador -> Form: Validar formulario
+Form -> BD: SELECT COUNT(*) FROM empresas_* WHERE rut_empresa = ?
+BD --> Form: 1 (RUT ya existe)
+Form --> Controlador: Formulario inválido (error: RUT duplicado)
+Controlador --> Vista: render(registro.html) con errores
+Vista --> Usuario: Mostrar "Este RUT ya está registrado"
+
+== Escenario 7: Error - Contraseñas No Coinciden ==
+Usuario -> Vista: Solicitar registro
+Vista -> Usuario: Mostrar formulario
+Usuario -> Vista: Ingresar contraseñas diferentes
+Vista -> Controlador: Enviar datos (POST)
+Controlador -> Form: Validar formulario
+Form -> Form: Comparar password1 == password2
+Form --> Controlador: Formulario inválido (error: contraseñas no coinciden)
+Controlador --> Vista: render(registro.html) con errores
+Vista --> Usuario: Mostrar "Las contraseñas no coinciden"
+
+== Escenario 8: Error - Contraseña Muy Débil ==
+Usuario -> Vista: Solicitar registro
+Vista -> Usuario: Mostrar formulario
+Usuario -> Vista: Ingresar contraseña débil (menos de 8 caracteres)
+Vista -> Controlador: Enviar datos (POST)
+Controlador -> Form: Validar formulario
+Form -> Form: Validar fortaleza de contraseña
+Form --> Controlador: Formulario inválido (error: contraseña débil)
+Controlador --> Vista: render(registro.html) con errores
+Vista --> Usuario: Mostrar "La contraseña debe tener al menos 8 caracteres"
+
+== Escenario 9: Error - Imagen Demasiado Grande ==
+Usuario -> Vista: Solicitar registro como empresa
+Vista -> Usuario: Mostrar formulario de empresa
+Usuario -> Vista: Subir imagen mayor a 5MB
+Vista -> Controlador: Enviar datos (POST + FILES)
+Controlador -> Form: Validar formulario
+Form -> Form: Validar tamaño de imagen
+Form --> Controlador: Formulario inválido (error: imagen muy grande)
+Controlador --> Vista: render(registro.html) con errores
+Vista --> Usuario: Mostrar "La imagen no debe superar 5MB"
+
+@enduml

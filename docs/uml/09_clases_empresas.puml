@@ -1,0 +1,255 @@
+@startuml Clases - Módulo Empresas
+title Sistema SADAT - Diagrama de Clases: Módulo Empresas (Productos y Servicios)
+
+package "empresas" {
+    
+    class MicroempresaIntegral {
+        {field} + id: BigAutoField <<PK>>
+        {field} + usuario: OneToOneField(Usuario) <<FK, unique>>
+        {field} + nombre_empresa: CharField(200)
+        {field} + rut_empresa: CharField(12) <<unique>>
+        {field} + descripcion: TextField
+        {field} + imagen: ImageField <<null>>
+        {field} + fecha_registro: DateTimeField
+        --
+        {method} + __str__(): string
+        {method} + get_productos_activos(): QuerySet
+        {method} + get_total_ventas(): Decimal
+        {method} + tiene_stock_bajo(): boolean
+    }
+    
+    note right of MicroempresaIntegral
+      Empresa que fabrica y vende productos
+      
+      Relaciones:
+      - 1:1 con Usuario
+      - 1:N con ProductoTerminado
+      - 1:N con Pedido (como proveedor)
+      
+      upload_to para imagen:
+      'empresas_integral/{rut_empresa}/'
+    end note
+    
+    class MicroempresaSatelite {
+        {field} + id: BigAutoField <<PK>>
+        {field} + usuario: OneToOneField(Usuario) <<FK, unique>>
+        {field} + nombre_empresa: CharField(200)
+        {field} + rut_empresa: CharField(12) <<unique>>
+        {field} + descripcion: TextField
+        {field} + direccion: TextField
+        {field} + telefono: CharField(20)
+        {field} + email: EmailField(254)
+        {field} + imagen: ImageField <<null>>
+        {field} + fecha_registro: DateTimeField
+        --
+        {method} + __str__(): string
+        {method} + get_servicios_activos(): QuerySet
+        {method} + get_maquinas_disponibles(): QuerySet
+        {method} + get_total_servicios_completados(): int
+    }
+    
+    note left of MicroempresaSatelite
+      Empresa que ofrece servicios de confección
+      y arrienda maquinaria
+      
+      Relaciones:
+      - 1:1 con Usuario
+      - 1:N con Servicio
+      - 1:N con Maquina
+      - 1:N con SolicitudConfeccion
+      
+      upload_to para imagen:
+      'empresas_satelite/{rut_empresa}/'
+    end note
+    
+    class CategoriaProducto {
+        {field} + id: BigAutoField <<PK>>
+        {field} + nombre: CharField(100) <<unique>>
+        {field} + descripcion: TextField <<null, blank>>
+        {field} + fecha_creacion: DateTimeField
+        --
+        {method} + __str__(): string
+        {method} + get_total_productos(): int
+    }
+    
+    class ProductoTerminado {
+        {field} + id: BigAutoField <<PK>>
+        {field} + empresa: ForeignKey(MicroempresaIntegral) <<FK>>
+        {field} + nombre: CharField(200)
+        {field} + descripcion: TextField
+        {field} + precio: DecimalField(10,2)
+        {field} + stock: IntegerField
+        {field} + categoria: ForeignKey(CategoriaProducto) <<FK, null>>
+        {field} + imagen: ImageField <<null>>
+        {field} + materiales: TextField
+        {field} + fecha_creacion: DateTimeField
+        {field} + fecha_actualizacion: DateTimeField
+        --
+        {method} + __str__(): string
+        {method} + save(override): void
+        {method} + tiene_stock(): boolean
+        {method} + stock_suficiente(cantidad): boolean
+        {method} + descontar_stock(cantidad): void
+        {method} + aumentar_stock(cantidad): void
+        {method} + get_precio_con_iva(): Decimal
+        {method} + get_calificacion_promedio(): float
+        {method} + get_total_ventas(): int
+    }
+    
+    note bottom of ProductoTerminado
+      Auto-actualiza fecha_actualizacion en save()
+      
+      Validaciones:
+      - precio > 0
+      - stock >= 0
+      - nombre no vacío
+      - imagen max 5MB
+      
+      upload_to para imagen:
+      'productos/{empresa.rut_empresa}/{nombre}/'
+      
+      Stock bajo: stock < 10
+    end note
+    
+    class CalificacionProducto {
+        {field} + id: BigAutoField <<PK>>
+        {field} + producto: ForeignKey(ProductoTerminado) <<FK>>
+        {field} + usuario: ForeignKey(Usuario) <<FK>>
+        {field} + calificacion: IntegerField
+        {field} + fecha: DateTimeField
+        --
+        {method} + __str__(): string
+        {method} + clean(): void
+    }
+    
+    note right of CalificacionProducto
+      unique_together = ['producto', 'usuario']
+      Un usuario solo puede calificar
+      un producto una vez
+      
+      Validación:
+      1 <= calificacion <= 5
+    end note
+    
+    class ComentarioProducto {
+        {field} + id: BigAutoField <<PK>>
+        {field} + producto: ForeignKey(ProductoTerminado) <<FK>>
+        {field} + usuario: ForeignKey(Usuario) <<FK>>
+        {field} + comentario: TextField
+        {field} + fecha: DateTimeField
+        --
+        {method} + __str__(): string
+    }
+    
+    class Servicio {
+        {field} + id: BigAutoField <<PK>>
+        {field} + empresa_satelite: ForeignKey(MicroempresaSatelite) <<FK>>
+        {field} + nombre: CharField(200)
+        {field} + descripcion: TextField
+        {field} + precio_base: DecimalField(10,2)
+        {field} + tiempo_estimado: IntegerField
+        {field} + disponible: BooleanField
+        {field} + fecha_creacion: DateTimeField
+        --
+        {method} + __str__(): string
+        {method} + get_precio_con_iva(): Decimal
+    }
+    
+    note left of Servicio
+      Servicios de confección ofrecidos
+      
+      precio_base: Precio por hora o por trabajo
+      tiempo_estimado: En horas
+      disponible: Si está activo para solicitudes
+    end note
+    
+    class Maquina {
+        {field} + id: BigAutoField <<PK>>
+        {field} + empresa_satelite: ForeignKey(MicroempresaSatelite) <<FK>>
+        {field} + nombre: CharField(200)
+        {field} + descripcion: TextField
+        {field} + precio_alquiler: DecimalField(10,2)
+        {field} + disponible: BooleanField
+        {field} + imagen: ImageField <<null>>
+        {field} + fecha_registro: DateTimeField
+        --
+        {method} + __str__(): string
+        {method} + get_precio_alquiler_con_iva(): Decimal
+    }
+    
+    note right of Maquina
+      Maquinaria disponible para arriendo
+      
+      precio_alquiler: Por día
+      disponible: Si está libre para alquilar
+      
+      upload_to para imagen:
+      'maquinas/{empresa_satelite.rut_empresa}/'
+    end note
+    
+    ' Relaciones
+    MicroempresaIntegral "1" -- "0..*" ProductoTerminado : produce >
+    MicroempresaSatelite "1" -- "0..*" Servicio : ofrece >
+    MicroempresaSatelite "1" -- "0..*" Maquina : posee >
+    
+    ProductoTerminado "0..*" -- "0..1" CategoriaProducto : pertenece a >
+    ProductoTerminado "1" -- "0..*" CalificacionProducto : tiene >
+    ProductoTerminado "1" -- "0..*" ComentarioProducto : tiene >
+    
+}
+
+package "core" {
+    class Usuario <<external>> {
+        + id
+        + username
+        + tipo
+    }
+}
+
+' Relaciones con módulo core
+Usuario "1" -- "0..1" MicroempresaIntegral : posee >
+Usuario "1" -- "0..1" MicroempresaSatelite : posee >
+Usuario "1" -- "0..*" CalificacionProducto : califica >
+Usuario "1" -- "0..*" ComentarioProducto : comenta >
+
+note bottom of empresas
+  **Módulo Empresas - Funciones principales:**
+  
+  1. **Gestión de Empresas Integrales:**
+     - Registro y perfil de empresa
+     - Gestión de productos terminados
+     - Control de stock
+     - Seguimiento de ventas
+  
+  2. **Gestión de Empresas Satélites:**
+     - Registro y perfil de empresa
+     - Gestión de servicios de confección
+     - Gestión de maquinaria para arriendo
+     - Cotizaciones personalizadas
+  
+  3. **Catálogo Público:**
+     - Listado de productos con filtros
+     - Sistema de categorías
+     - Búsqueda de productos
+     - Calificaciones y comentarios
+  
+  **Reglas de negocio:**
+  - Stock se actualiza automáticamente con ventas
+  - Alerta cuando stock < 10 unidades
+  - Precios siempre > 0
+  - RUT único por empresa
+  - Calificación 1-5 estrellas
+  - Un usuario = una calificación por producto
+  
+  **Tablas en BD:**
+  - empresas_microempresaintegral
+  - empresas_microempresasatelite
+  - empresas_productoterminado
+  - empresas_categoriaproducto
+  - empresas_calificacionproducto
+  - empresas_comentarioproducto
+  - empresas_servicio
+  - empresas_maquina
+end note
+
+@enduml

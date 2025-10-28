@@ -1,0 +1,260 @@
+@startuml .
+title -DIAGRAMA DE SECUENCIA: Sistema SADAT - Autenticación-
+skinparam linetype ortho
+
+actor "Usuario" as Usuario
+participant "Vista:\nlogin.html" as Vista
+participant "Controlador:\nlogin_view()" as Controlador
+participant "Modelo:\nUsuario" as ModeloUsuario
+participant "Django Auth" as Auth
+participant "Base de Datos" as BD
+
+== Escenario 1: Inicio de Sesión Exitoso (Cliente) ==
+Usuario -> Vista: Solicitar acceso al sistema
+Vista -> Usuario: Mostrar formulario de login
+Usuario -> Vista: Ingresar username y contraseña
+Vista -> Controlador: Enviar credenciales (POST)
+Controlador -> Controlador: Validar campos no vacíos
+Controlador -> Auth: authenticate(username, password)
+Auth -> ModeloUsuario: Buscar usuario por username
+ModeloUsuario -> BD: SELECT * FROM core_usuario WHERE username = ?
+BD --> ModeloUsuario: Registro de usuario encontrado
+ModeloUsuario --> Auth: Objeto Usuario
+Auth -> Auth: Verificar hash de contraseña
+alt Contraseña correcta y usuario activo
+    Auth --> Controlador: Usuario autenticado
+    Controlador -> Auth: login(request, user)
+    Auth -> BD: INSERT INTO django_session
+    BD --> Auth: Sesión creada
+    Auth --> Controlador: Sesión establecida
+    Controlador -> Controlador: Determinar tipo de usuario (cliente)
+    Controlador --> Vista: redirect('catalogo_empresas')
+    Vista --> Usuario: Redirigir a catálogo de productos
+else Contraseña incorrecta
+    Auth --> Controlador: None (autenticación fallida)
+    Controlador --> Vista: render(login.html) con error
+    Vista --> Usuario: Mostrar "Credenciales incorrectas"
+end
+
+== Escenario 2: Inicio de Sesión Exitoso (Microempresa Integral) ==
+Usuario -> Vista: Solicitar acceso al sistema
+Vista -> Usuario: Mostrar formulario de login
+Usuario -> Vista: Ingresar username y contraseña
+Vista -> Controlador: Enviar credenciales (POST)
+Controlador -> Auth: authenticate(username, password)
+Auth -> ModeloUsuario: Buscar usuario
+ModeloUsuario -> BD: SELECT * FROM core_usuario WHERE username = ?
+BD --> ModeloUsuario: Usuario encontrado (tipo = 'integral')
+ModeloUsuario --> Auth: Objeto Usuario
+Auth -> Auth: Verificar hash de contraseña
+Auth --> Controlador: Usuario autenticado
+Controlador -> Auth: login(request, user)
+Auth -> BD: INSERT INTO django_session
+BD --> Auth: Sesión creada
+Auth --> Controlador: Sesión establecida
+Controlador -> Controlador: Determinar tipo de usuario (integral)
+Controlador --> Vista: redirect('gestionar_productos')
+Vista --> Usuario: Redirigir a gestión de productos
+
+== Escenario 3: Inicio de Sesión Exitoso (Microempresa Satélite) ==
+Usuario -> Vista: Solicitar acceso al sistema
+Vista -> Usuario: Mostrar formulario de login
+Usuario -> Vista: Ingresar username y contraseña
+Vista -> Controlador: Enviar credenciales (POST)
+Controlador -> Auth: authenticate(username, password)
+Auth -> ModeloUsuario: Buscar usuario
+ModeloUsuario -> BD: SELECT * FROM core_usuario WHERE username = ?
+BD --> ModeloUsuario: Usuario encontrado (tipo = 'satelite')
+ModeloUsuario --> Auth: Objeto Usuario
+Auth --> Controlador: Usuario autenticado
+Controlador -> Auth: login(request, user)
+Auth -> BD: INSERT INTO django_session
+BD --> Auth: Sesión creada
+Controlador -> Controlador: Determinar tipo de usuario (satelite)
+Controlador --> Vista: redirect('gestionar_solicitudes_confeccion')
+Vista --> Usuario: Redirigir a gestión de solicitudes
+
+== Escenario 4: Inicio de Sesión Exitoso (Super Usuario) ==
+Usuario -> Vista: Solicitar acceso al sistema
+Vista -> Usuario: Mostrar formulario de login
+Usuario -> Vista: Ingresar username y contraseña
+Vista -> Controlador: Enviar credenciales (POST)
+Controlador -> Auth: authenticate(username, password)
+Auth -> ModeloUsuario: Buscar usuario
+ModeloUsuario -> BD: SELECT * FROM core_usuario WHERE username = ?
+BD --> ModeloUsuario: Usuario encontrado (tipo = 'superusuario')
+ModeloUsuario --> Auth: Objeto Usuario
+Auth --> Controlador: Usuario autenticado
+Controlador -> Auth: login(request, user)
+Auth -> BD: INSERT INTO django_session
+BD --> Auth: Sesión creada
+Controlador -> Controlador: Determinar tipo de usuario (superusuario)
+Controlador --> Vista: redirect('reporte_global')
+Vista --> Usuario: Redirigir a panel de administración
+
+== Escenario 5: Usuario Inactivo ==
+Usuario -> Vista: Solicitar acceso al sistema
+Vista -> Usuario: Mostrar formulario de login
+Usuario -> Vista: Ingresar username y contraseña
+Vista -> Controlador: Enviar credenciales (POST)
+Controlador -> Auth: authenticate(username, password)
+Auth -> ModeloUsuario: Buscar usuario
+ModeloUsuario -> BD: SELECT * FROM core_usuario WHERE username = ?
+BD --> ModeloUsuario: Usuario encontrado (is_active = False)
+ModeloUsuario --> Auth: Objeto Usuario
+Auth -> Auth: Verificar hash de contraseña
+Auth --> Controlador: Usuario autenticado pero inactivo
+Controlador -> Controlador: Verificar user.is_active
+Controlador --> Vista: render(login.html) con error
+Vista --> Usuario: Mostrar "Usuario inactivo"
+
+== Escenario 6: Campos Vacíos ==
+Usuario -> Vista: Solicitar acceso al sistema
+Vista -> Usuario: Mostrar formulario de login
+Usuario -> Vista: Enviar formulario vacío o incompleto
+Vista -> Controlador: Enviar datos (POST)
+Controlador -> Controlador: Validar campos no vacíos
+Controlador --> Vista: render(login.html) con error
+Vista --> Usuario: Mostrar "Por favor ingrese usuario y contraseña"
+
+== Escenario 7: Cierre de Sesión ==
+Usuario -> Vista: Solicitar cerrar sesión
+Vista -> Controlador: logout()
+Controlador -> Auth: logout(request)
+Auth -> BD: DELETE FROM django_session WHERE session_key = ?
+BD --> Auth: Sesión eliminada
+Auth --> Controlador: Sesión cerrada
+Controlador --> Vista: redirect('login')
+Vista --> Usuario: Redirigir a página de login
+
+== Fase 1: Solicitud de Formulario de Login ==
+
+Usuario -> Vista : 1: GET /login/
+activate Vista
+Vista --> Usuario : 2: Renderizar formulario de login
+deactivate Vista
+
+note over Usuario, Vista
+  El usuario accede a la página de login
+  y se muestra el formulario vacío
+end note
+
+== Fase 2: Envío de Credenciales ==
+
+Usuario -> Vista : 3: POST /login/\n(username, password)
+activate Vista
+
+Vista -> Controlador : 4: Enviar datos del formulario
+activate Controlador
+
+note over Controlador
+  request.POST contiene:
+  - username
+  - password
+  - csrfmiddlewaretoken
+end note
+
+Controlador -> Controlador : 5: Obtener datos\nusername = request.POST.get('username')\npassword = request.POST.get('password')
+
+Controlador -> Controlador : 6: Validar campos no vacíos
+alt Campos vacíos
+    Controlador -> Controlador : 7a: Agregar mensaje de error\n"Por favor ingrese usuario y contraseña"
+    Controlador --> Vista : 8a: render(login.html) con error
+    deactivate Controlador
+    Vista --> Usuario : 9a: Mostrar formulario con error
+    deactivate Vista
+else Campos completos
+    
+    == Fase 3: Autenticación ==
+    
+    Controlador -> Auth : 7b: authenticate(request,\nusername=username,\npassword=password)
+    activate Auth
+    
+    Auth -> ModeloUsuario : 8: Buscar usuario por username
+    activate ModeloUsuario
+    
+    ModeloUsuario -> BD : 9: SELECT * FROM core_usuario\nWHERE username = ?
+    activate BD
+    BD --> ModeloUsuario : 10: Registro de usuario\n(id, username, password_hash, ...)
+    deactivate BD
+    
+    ModeloUsuario --> Auth : 11: Objeto Usuario o None
+    deactivate ModeloUsuario
+    
+    Auth -> Auth : 12: Verificar password hash\ncheck_password(password, user.password)
+    
+    Auth --> Controlador : 13: Usuario autenticado o None
+    deactivate Auth
+    
+    == Fase 4: Procesamiento del Resultado ==
+    
+    alt Usuario autenticado exitosamente
+        
+        Controlador -> Controlador : 14a: Verificar user.is_active
+        
+        alt Usuario activo
+            Controlador -> Auth : 15a: login(request, user)
+            activate Auth
+            
+            Auth -> BD : 16: INSERT INTO django_session\n(session_key, session_data, ...)
+            activate BD
+            BD --> Auth : 17: Sesión creada
+            deactivate BD
+            
+            Auth --> Controlador : 18: Sesión establecida
+            deactivate Auth
+            
+            Controlador -> Controlador : 19: Agregar mensaje de éxito\n"Inicio de sesión exitoso"
+            
+            Controlador -> Controlador : 20: Determinar redirección\nsegún user.tipo
+            
+            note over Controlador
+              Lógica de redirección:
+              - superusuario → 'reporte_global'
+              - integral → 'gestionar_productos'
+              - satelite → 'gestionar_solicitudes_confeccion'
+              - cliente → 'catalogo_empresas'
+              - default → 'home'
+            end note
+            
+            Controlador --> Vista : 21: redirect(página_destino)
+            deactivate Controlador
+            
+            Vista --> Usuario : 22: Redirigir al dashboard\ncorrespondiente
+            deactivate Vista
+            
+        else Usuario inactivo
+            Controlador -> Controlador : 15b: Agregar mensaje de error\n"Usuario inactivo"
+            Controlador --> Vista : 16b: render(login.html) con error
+            deactivate Controlador
+            Vista --> Usuario : 17b: Mostrar error
+            deactivate Vista
+        end
+        
+    else Credenciales incorrectas
+        Controlador -> Controlador : 14b: Agregar mensaje de error\n"Usuario o contraseña incorrectos"
+        Controlador --> Vista : 15b: render(login.html) con error
+        deactivate Controlador
+        Vista --> Usuario : 16b: Mostrar formulario con error
+        deactivate Vista
+    end
+end
+
+note over Usuario, BD
+  **Flujo completo del proceso de login:**
+  1. Usuario solicita formulario (GET)
+  2. Usuario envía credenciales (POST)
+  3. Sistema valida campos no vacíos
+  4. Sistema autentica con la base de datos
+  5. Sistema verifica hash de contraseña
+  6. Sistema crea sesión si autenticación exitosa
+  7. Sistema redirige según tipo de usuario
+  
+  **Seguridad:**
+  - Contraseñas almacenadas con hash (PBKDF2)
+  - Protección CSRF en formularios
+  - Verificación de usuario activo
+  - Mensajes de error genéricos (seguridad)
+end note
+
+@enduml

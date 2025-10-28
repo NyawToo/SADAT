@@ -1,0 +1,209 @@
+@startuml Casos de Uso - Autenticación
+left to right direction
+skinparam linetype ortho
+
+actor "Usuario No\nRegistrado" as UsuarioNoReg
+actor "Usuario\nRegistrado" as UsuarioReg
+actor "Microempresa\nIntegral" as EmpresaIntegral
+actor "Microempresa\nSatélite" as EmpresaSatelite
+actor "Super Usuario" as SuperUsuario
+
+rectangle "Sistema SADAT - Módulo de Autenticación" {
+    
+    ' === USUARIO NO REGISTRADO ===
+    UsuarioNoReg -- (Registrarse en el Sistema)
+        (Registrarse en el Sistema) --> (Registrarse como Cliente)
+            (Registrarse como Cliente) --> (Completar Datos Personales)
+            (Registrarse como Cliente) --> (Crear Credenciales)
+                (Crear Credenciales) --> (Validar Username Único)
+                (Crear Credenciales) --> (Validar Email Único)
+                (Crear Credenciales) --> (Validar Fortaleza de Contraseña)
+            (Registrarse como Cliente) --> (Enviar Email de Confirmación)
+        (Registrarse en el Sistema) --> (Registrarse como Empresa Integral)
+            (Registrarse como Empresa Integral) --> (Completar Datos Personales)
+            (Registrarse como Empresa Integral) --> (Completar Datos de Empresa)
+                (Completar Datos de Empresa) --> (Ingresar RUT Empresa)
+                    (Ingresar RUT Empresa) --> (Validar RUT Único)
+                (Completar Datos de Empresa) --> (Subir Logo de Empresa)
+            (Registrarse como Empresa Integral) --> (Crear Credenciales)
+            (Registrarse como Empresa Integral) --> (Enviar Email de Confirmación)
+        (Registrarse en el Sistema) --> (Registrarse como Empresa Satélite)
+            (Registrarse como Empresa Satélite) --> (Completar Datos Personales)
+            (Registrarse como Empresa Satélite) --> (Completar Datos de Empresa)
+            (Registrarse como Empresa Satélite) --> (Crear Credenciales)
+            (Registrarse como Empresa Satélite) --> (Enviar Email de Confirmación)
+    
+    UsuarioNoReg -- (Iniciar Sesión)
+        (Iniciar Sesión) --> (Ingresar Credenciales)
+            (Ingresar Credenciales) --> (Validar Username y Contraseña)
+            (Ingresar Credenciales) --> (Verificar Usuario Activo)
+        (Iniciar Sesión) --> (Crear Sesión)
+            (Crear Sesión) --> (Generar Session ID)
+            (Crear Sesión) --> (Establecer Cookies)
+        (Iniciar Sesión) --> (Redirigir según Tipo de Usuario)
+            (Redirigir según Tipo de Usuario) --> (Redirigir a Dashboard Cliente)
+            (Redirigir según Tipo de Usuario) --> (Redirigir a Dashboard Empresa Integral)
+            (Redirigir según Tipo de Usuario) --> (Redirigir a Dashboard Empresa Satélite)
+            (Redirigir según Tipo de Usuario) --> (Redirigir a Panel Administrador)
+    
+    UsuarioNoReg -- (Recuperar Contraseña)
+        (Recuperar Contraseña) --> (Solicitar Recuperación)
+            (Solicitar Recuperación) --> (Ingresar Email)
+            (Solicitar Recuperación) --> (Validar Email Registrado)
+        (Recuperar Contraseña) --> (Enviar Email con Token)
+        (Recuperar Contraseña) --> (Restablecer Contraseña)
+            (Restablecer Contraseña) --> (Validar Token)
+            (Restablecer Contraseña) --> (Ingresar Nueva Contraseña)
+            (Restablecer Contraseña) --> (Confirmar Cambio)
+    
+    ' === USUARIO REGISTRADO ===
+    UsuarioReg -- (Gestionar Mi Perfil)
+        (Gestionar Mi Perfil) --> (Ver Mi Perfil)
+        (Gestionar Mi Perfil) --> (Editar Datos Personales)
+            (Editar Datos Personales) --> (Actualizar Teléfono)
+            (Editar Datos Personales) --> (Actualizar Dirección)
+            (Editar Datos Personales) --> (Actualizar Email)
+                (Actualizar Email) --> (Validar Email Único)
+        (Gestionar Mi Perfil) --> (Cambiar Contraseña)
+            (Cambiar Contraseña) --> (Validar Contraseña Actual)
+            (Cambiar Contraseña) --> (Ingresar Nueva Contraseña)
+            (Cambiar Contraseña) --> (Confirmar Nueva Contraseña)
+    
+    UsuarioReg -- (Cerrar Sesión)
+        (Cerrar Sesión) --> (Destruir Sesión)
+        (Cerrar Sesión) --> (Eliminar Cookies)
+        (Cerrar Sesión) --> (Redirigir a Página de Login)
+    
+    UsuarioReg -- (Desactivar Mi Cuenta)
+        (Desactivar Mi Cuenta) --> (Confirmar Desactivación)
+        (Desactivar Mi Cuenta) --> (Marcar Usuario como Inactivo)
+    
+    ' === EMPRESA INTEGRAL ===
+    EmpresaIntegral -- (Gestionar Perfil de Empresa)
+        (Gestionar Perfil de Empresa) --> (Ver Perfil de Empresa)
+        (Gestionar Perfil de Empresa) --> (Editar Datos de Empresa)
+            (Editar Datos de Empresa) --> (Actualizar Descripción)
+            (Editar Datos de Empresa) --> (Cambiar Logo)
+            (Editar Datos de Empresa) --> (Actualizar Contacto)
+    
+    ' === EMPRESA SATÉLITE ===
+    EmpresaSatelite -- (Gestionar Perfil de Empresa)
+    
+    ' === SUPER USUARIO ===
+    SuperUsuario -- (Administrar Usuarios)
+        (Administrar Usuarios) --> (Ver Todos los Usuarios)
+            (Ver Todos los Usuarios) --> (Filtrar por Tipo)
+            (Ver Todos los Usuarios) --> (Buscar Usuario)
+        (Administrar Usuarios) --> (Crear Usuario Manualmente)
+        (Administrar Usuarios) --> (Editar Cualquier Usuario)
+        (Administrar Usuarios) --> (Activar/Desactivar Usuario)
+        (Administrar Usuarios) --> (Eliminar Usuario)
+            (Eliminar Usuario) --> (Verificar Dependencias)
+            (Eliminar Usuario) --> (Eliminar Datos Relacionados)
+        (Administrar Usuarios) --> (Restablecer Contraseña de Usuario)
+    
+    SuperUsuario -- (Configurar Sistema)
+        (Configurar Sistema) --> (Configurar IVA)
+        (Configurar Sistema) --> (Configurar Datos de Contacto)
+        (Configurar Sistema) --> (Configurar Logo del Sistema)
+        (Configurar Sistema) --> (Guardar Configuración)
+}
+
+@enduml
+
+' === ACTORES ===
+actor "Usuario\nNo Registrado" as UsuarioNoReg
+actor "Usuario\nRegistrado" as UsuarioReg
+actor "Sistema de\nEmail" as Email
+
+' === SISTEMA ===
+rectangle "Sistema SADAT - Módulo de Autenticación" {
+  
+  ' Casos de Uso de Registro
+  usecase "Registrarse como\nCliente" as UC01
+  usecase "Registrarse como\nEmpresa Integral" as UC02
+  usecase "Registrarse como\nEmpresa Satélite" as UC03
+  
+  ' Casos de Uso de Login
+  usecase "Iniciar Sesión" as UC04
+  usecase "Cerrar Sesión" as UC05
+  usecase "Recuperar\nContraseña" as UC06
+  
+  ' Casos de Uso de Perfil
+  usecase "Ver Perfil" as UC07
+  usecase "Editar Perfil" as UC08
+  
+  ' Casos de Uso Internos (Include)
+  usecase "Validar Datos\nde Registro" as UC09
+  usecase "Validar\nCredenciales" as UC10
+  usecase "Crear Sesión\nde Usuario" as UC11
+  usecase "Enviar Email de\nConfirmación" as UC12
+  usecase "Generar Token\nde Recuperación" as UC13
+}
+
+' === RELACIONES DE USUARIO NO REGISTRADO ===
+UsuarioNoReg --> UC01
+UsuarioNoReg --> UC02
+UsuarioNoReg --> UC03
+UsuarioNoReg --> UC06
+
+' === RELACIONES DE USUARIO REGISTRADO ===
+UsuarioReg --> UC04
+UsuarioReg --> UC05
+UsuarioReg --> UC07
+UsuarioReg --> UC08
+
+' === RELACIONES INCLUDE ===
+UC01 .> UC09 : <<include>>
+UC02 .> UC09 : <<include>>
+UC03 .> UC09 : <<include>>
+
+UC01 .> UC12 : <<include>>
+UC02 .> UC12 : <<include>>
+UC03 .> UC12 : <<include>>
+
+UC04 .> UC10 : <<include>>
+UC10 .> UC11 : <<include>>
+
+UC06 .> UC13 : <<include>>
+UC06 .> UC12 : <<include>>
+
+' === RELACIONES CON SISTEMA EXTERNO ===
+UC12 --> Email : envía email
+UC13 --> Email : envía token
+
+' === NOTAS EXPLICATIVAS ===
+note right of UC09
+  **Validaciones:**
+  - Username único
+  - Email único
+  - RUT válido (empresas)
+  - Contraseña segura (min 8 caracteres)
+  - Formato de imagen válido
+end note
+
+note right of UC10
+  **Proceso de validación:**
+  1. Verificar username existe
+  2. Verificar password hash
+  3. Verificar usuario activo
+  4. Verificar permisos según tipo
+end note
+
+note left of UC11
+  **Sesión de usuario:**
+  - Genera session_id
+  - Almacena en BD
+  - Establece cookie
+  - Define tiempo expiración
+end note
+
+note left of UC12
+  **Email de confirmación incluye:**
+  - Link de verificación
+  - Datos del usuario
+  - Instrucciones
+  - Soporte técnico
+end note
+
+@enduml

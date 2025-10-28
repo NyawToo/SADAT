@@ -1,0 +1,178 @@
+@startuml Clases - Módulo Core
+title Sistema SADAT - Diagrama de Clases: Módulo Core (Autenticación)
+
+package "core" {
+    
+    enum TipoUsuario {
+        INTEGRAL = 'integral'
+        SATELITE = 'satelite'
+        CLIENTE = 'cliente'
+        SUPERUSUARIO = 'superusuario'
+    }
+    
+    class Usuario {
+        {field} + id: BigAutoField <<PK>>
+        {field} + username: CharField(150) <<unique>>
+        {field} + email: EmailField(254) <<unique>>
+        {field} + password: CharField(128)
+        {field} + first_name: CharField(150)
+        {field} + last_name: CharField(150)
+        {field} + tipo: CharField(20)
+        {field} + telefono: CharField(20) <<null>>
+        {field} + direccion: TextField <<null>>
+        {field} + is_staff: BooleanField
+        {field} + is_active: BooleanField
+        {field} + is_superuser: BooleanField
+        {field} + date_joined: DateTimeField
+        {field} + last_login: DateTimeField <<null>>
+        {field} + groups: ManyToManyField
+        {field} + user_permissions: ManyToManyField
+        --
+        {method} + save(override): void
+        {method} + delete(override): void
+        {method} + __str__(): string
+        {method} + get_full_name(): string
+        {method} + has_perm(perm): boolean
+        {method} + has_module_perms(app_label): boolean
+        {method} + get_tipo_display(): string
+    }
+    
+    note right of Usuario
+      Hereda de AbstractUser
+      
+      Lógica en save():
+      - Si tipo == 'superusuario':
+        is_staff = True, is_superuser = True
+      - Si tipo == 'integral' o 'satelite':
+        is_staff = True
+      - Si tipo == 'cliente':
+        is_staff = False
+        
+      Lógica en delete():
+      - Si tipo == 'integral':
+        Elimina MicroempresaIntegral
+      - Si tipo == 'satelite':
+        Elimina MicroempresaSatelite
+    end note
+    
+    class ConfiguracionSistema {
+        {field} + id: BigAutoField <<PK>>
+        {field} + nombre_sistema: CharField(200)
+        {field} + descripcion: TextField
+        {field} + iva_porcentaje: DecimalField(5,2)
+        {field} + email_contacto: EmailField(254)
+        {field} + telefono_contacto: CharField(20)
+        {field} + direccion: TextField
+        {field} + logo: ImageField <<null>>
+        {field} + fecha_actualizacion: DateTimeField
+        --
+        {method} + __str__(): string
+        {method} + get_iva_decimal(): Decimal
+        {method} + save(override): void
+    }
+    
+    note left of ConfiguracionSistema
+      Singleton pattern
+      Solo puede existir 1 registro
+      
+      Validación en save():
+      - Si existe otro registro, lanza error
+      - iva_porcentaje debe ser > 0 y <= 100
+      - Auto-actualiza fecha_actualizacion
+    end note
+    
+    class RegistrationForm {
+        {field} + username: CharField
+        {field} + email: EmailField
+        {field} + password1: CharField
+        {field} + password2: CharField
+        {field} + telefono: CharField
+        {field} + direccion: CharField
+        --
+        {method} + clean_username(): string
+        {method} + clean_email(): string
+        {method} + clean_password2(): string
+        {method} + save(commit=True): Usuario
+    }
+    
+    class ClienteRegistrationForm {
+        --
+        {method} + save(commit=True): Usuario
+    }
+    
+    class EmpresaRegistrationForm {
+        {field} + nombre_empresa: CharField
+        {field} + rut_empresa: CharField
+        {field} + descripcion: TextField
+        {field} + imagen: ImageField
+        --
+        {method} + clean_rut_empresa(): string
+    }
+    
+    class EmpresaIntegralRegistrationForm {
+        --
+        {method} + save(commit=True): Usuario
+    }
+    
+    class EmpresaSateliteRegistrationForm {
+        --
+        {method} + save(commit=True): Usuario
+    }
+    
+    class LoginForm {
+        {field} + username: CharField
+        {field} + password: CharField
+        --
+        {method} + clean(): dict
+    }
+    
+    ' Relaciones de herencia
+    Usuario --|> "AbstractUser" : extends
+    Usuario ..> TipoUsuario : uses
+    
+    RegistrationForm --|> "ModelForm" : extends
+    ClienteRegistrationForm --|> RegistrationForm : extends
+    EmpresaRegistrationForm --|> RegistrationForm : extends
+    EmpresaIntegralRegistrationForm --|> EmpresaRegistrationForm : extends
+    EmpresaSateliteRegistrationForm --|> EmpresaRegistrationForm : extends
+    
+    LoginForm --|> "Form" : extends
+    
+    ' Relaciones de uso
+    RegistrationForm ..> Usuario : creates
+    ClienteRegistrationForm ..> Usuario : "creates\n(tipo=cliente)"
+    
+}
+
+note bottom of core
+  **Módulo Core - Funciones principales:**
+  
+  1. **Autenticación y Autorización:**
+     - Login/Logout
+     - Registro por tipo de usuario
+     - Gestión de sesiones
+     - Permisos basados en roles
+  
+  2. **Gestión de Usuarios:**
+     - CRUD de usuarios
+     - Activación/Desactivación
+     - Cambio de contraseña
+     - Recuperación de contraseña
+  
+  3. **Configuración del Sistema:**
+     - Parámetros globales (IVA)
+     - Datos de contacto
+     - Logo y branding
+  
+  **Seguridad:**
+  - Passwords hasheados con PBKDF2
+  - Protección CSRF en formularios
+  - Validación de unicidad de username/email
+  - Session timeout configurable
+  
+  **Base de datos:**
+  - Tabla principal: core_usuario
+  - Tabla configuración: core_configuracionsistema
+end note
+
+@enduml

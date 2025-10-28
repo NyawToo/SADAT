@@ -1,0 +1,114 @@
+@startuml Casos de Uso - Gestión de Pedidos
+left to right direction
+skinparam linetype ortho
+
+actor Cliente
+actor "Microempresa\nIntegral" as EmpresaIntegral
+actor "Microempresa\nSatélite" as EmpresaSatelite
+actor "Super Usuario" as SuperUsuario
+
+rectangle "Sistema SADAT - Módulo de Pedidos" {
+    
+    ' === CLIENTE ===
+    Cliente -- (Gestionar Carrito)
+        (Gestionar Carrito) --> (Agregar Producto al Carrito)
+            (Agregar Producto al Carrito) --> (Verificar Stock Disponible)
+        (Gestionar Carrito) --> (Ver Carrito)
+            (Ver Carrito) --> (Calcular Total con IVA)
+        (Gestionar Carrito) --> (Actualizar Cantidad en Carrito)
+        (Gestionar Carrito) --> (Eliminar Producto del Carrito)
+        (Gestionar Carrito) --> (Vaciar Carrito)
+    
+    Cliente -- (Realizar Pedido Estándar)
+        (Realizar Pedido Estándar) --> (Verificar Stock Disponible)
+        (Realizar Pedido Estándar) --> (Calcular Total con IVA)
+        (Realizar Pedido Estándar) --> (Procesar Pago con Stripe)
+            (Procesar Pago con Stripe) --> (Crear Transacción)
+            (Procesar Pago con Stripe) --> (Confirmar Pago)
+                (Confirmar Pago) --> (Actualizar Stock)
+                (Confirmar Pago) --> (Generar Número de Pedido)
+                (Confirmar Pago) --> (Notificar a Empresa)
+                (Confirmar Pago) --> (Enviar Confirmación a Cliente)
+    
+    Cliente -- (Solicitar Pedido Personalizado)
+        (Solicitar Pedido Personalizado) --> (Generar Número de Pedido)
+        (Solicitar Pedido Personalizado) --> (Notificar a Empresa)
+    
+    Cliente -- (Gestionar Mis Pedidos)
+        (Gestionar Mis Pedidos) --> (Ver Mis Pedidos)
+        (Gestionar Mis Pedidos) --> (Ver Detalle de Pedido)
+        (Gestionar Mis Pedidos) --> (Rastrear Envío)
+        (Gestionar Mis Pedidos) --> (Cancelar Pedido)
+            (Cancelar Pedido) --> (Solicitar Reembolso)
+        (Gestionar Mis Pedidos) --> (Confirmar Recepción)
+            (Confirmar Recepción) --> (Calificar Productos)
+    
+    Cliente -- (Ver Historial de Transacciones)
+    
+    Cliente -- (Solicitar Servicio de Confección)
+        (Solicitar Servicio de Confección) --> (Generar Número de Solicitud)
+        (Solicitar Servicio de Confección) --> (Notificar a Empresa Satélite)
+    
+    ' === MICROEMPRESA INTEGRAL ===
+    EmpresaIntegral -- (Gestionar Pedidos Recibidos)
+        (Gestionar Pedidos Recibidos) --> (Ver Pedidos Recibidos)
+        (Gestionar Pedidos Recibidos) --> (Ver Detalle de Pedido)
+        (Gestionar Pedidos Recibidos) --> (Actualizar Estado de Pedido)
+            (Actualizar Estado de Pedido) --> (Cambiar a En Preparación)
+            (Actualizar Estado de Pedido) --> (Cambiar a Enviado)
+                (Cambiar a Enviado) --> (Ingresar Datos de Envío)
+                (Cambiar a Enviado) --> (Notificar a Cliente)
+            (Actualizar Estado de Pedido) --> (Cambiar a Entregado)
+    
+    EmpresaIntegral -- (Gestionar Pedidos Personalizados)
+        (Gestionar Pedidos Personalizados) --> (Ver Solicitudes Personalizadas)
+        (Gestionar Pedidos Personalizados) --> (Cotizar Pedido Personalizado)
+            (Cotizar Pedido Personalizado) --> (Definir Precio)
+            (Cotizar Pedido Personalizado) --> (Estimar Tiempo de Producción)
+            (Cotizar Pedido Personalizado) --> (Enviar Cotización)
+                (Enviar Cotización) --> (Notificar a Cliente)
+        (Gestionar Pedidos Personalizados) --> (Aceptar Pedido Personalizado)
+        (Gestionar Pedidos Personalizados) --> (Rechazar Pedido Personalizado)
+    
+    EmpresaIntegral -- (Ver Reportes de Ventas)
+        (Ver Reportes de Ventas) --> (Ver Ventas por Período)
+        (Ver Reportes de Ventas) --> (Ver Productos Más Vendidos)
+        (Ver Reportes de Ventas) --> (Exportar Reporte)
+    
+    ' === MICROEMPRESA SATÉLITE ===
+    EmpresaSatelite -- (Gestionar Solicitudes de Confección)
+        (Gestionar Solicitudes de Confección) --> (Ver Solicitudes Pendientes)
+        (Gestionar Solicitudes de Confección) --> (Cotizar Servicio)
+            (Cotizar Servicio) --> (Calcular Presupuesto)
+            (Cotizar Servicio) --> (Enviar Cotización)
+                (Enviar Cotización) --> (Notificar a Cliente)
+        (Gestionar Solicitudes de Confección) --> (Aprobar Solicitud)
+            (Aprobar Solicitud) --> (Iniciar Trabajo)
+        (Gestionar Solicitudes de Confección) --> (Rechazar Solicitud)
+        (Gestionar Solicitudes de Confección) --> (Completar Trabajo)
+            (Completar Trabajo) --> (Notificar a Cliente)
+    
+    EmpresaSatelite -- (Ver Historial de Servicios)
+    
+    ' === SUPER USUARIO ===
+    SuperUsuario -- (Administrar Todos los Pedidos)
+        (Administrar Todos los Pedidos) --> (Ver Todos los Pedidos)
+        (Administrar Todos los Pedidos) --> (Filtrar Pedidos)
+        (Administrar Todos los Pedidos) --> (Modificar Estado de Pedido)
+        (Administrar Todos los Pedidos) --> (Cancelar Cualquier Pedido)
+            (Cancelar Cualquier Pedido) --> (Procesar Reembolso Manual)
+    
+    SuperUsuario -- (Administrar Transacciones)
+        (Administrar Transacciones) --> (Ver Todas las Transacciones)
+        (Administrar Transacciones) --> (Ver Detalles de Stripe)
+        (Administrar Transacciones) --> (Procesar Reembolso Manual)
+        (Administrar Transacciones) --> (Exportar Transacciones)
+    
+    SuperUsuario -- (Generar Reportes Globales)
+        (Generar Reportes Globales) --> (Reporte de Ventas Total)
+        (Generar Reportes Globales) --> (Reporte de Pedidos por Estado)
+        (Generar Reportes Globales) --> (Reporte de Transacciones)
+        (Generar Reportes Globales) --> (Exportar Reportes)
+}
+
+@enduml

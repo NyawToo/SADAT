@@ -15,32 +15,32 @@
         <div class="col-md-3">
             <div class="card bg-primary text-white h-100">
                 <div class="card-body">
-                    <h5 class="card-title">Total Materias Primas</h5>
-                    <h2 class="card-text">{{ total_materias_primas }}</h2>
+                    <h5 class="card-text text-black mb-0">Total Materias Primas</h5>
+                    <h2 class="card-text text-white mb-0">{{ total_materias_primas }}</h2>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
             <div class="card bg-success text-white h-100">
                 <div class="card-body">
-                    <h5 class="card-title">Total Categorías</h5>
-                    <h2 class="card-text">{{ total_categorias }}</h2>
+                    <h5 class="card-text text-black mb-0">Total Categorías</h5>
+                    <h2 class="card-text text-white mb-0">{{ total_categorias }}</h2>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
             <div class="card bg-info text-white h-100">
                 <div class="card-body">
-                    <h5 class="card-title">Valor Total Inventario</h5>
-                    <h2 class="card-text">${{ valor_total_inventario|floatformat:0 }}</h2>
+                    <h5 class="card-text text-black mb-0">Valor Total Inventario</h5>
+                    <h2 class="card-text text-white mb-0">${{ valor_total_inventario|floatformat:0 }}</h2>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
             <div class="card {% if stock_bajo > 0 %}bg-danger{% else %}bg-success{% endif %} text-white h-100">
                 <div class="card-body">
-                    <h5 class="card-title">Items con Stock Bajo</h5>
-                    <h2 class="card-text">{{ stock_bajo }}</h2>
+                    <h5 class="card-text text-black mb-0">Items con Stock Bajo</h5>
+                    <h2 class="card-text text-white mb-0">{{ stock_bajo }}</h2>
                 </div>
             </div>
         </div>

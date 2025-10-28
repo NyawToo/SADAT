@@ -1,0 +1,350 @@
+@startuml Clases - Módulo Pedidos
+title Sistema SADAT - Diagrama de Clases: Módulo Pedidos (Carrito y Órdenes)
+
+package "pedidos" {
+    
+    enum EstadoPedido {
+        PENDIENTE_PAGO = 'pendiente_pago'
+        CONFIRMADO = 'confirmado'
+        EN_PREPARACION = 'en_preparacion'
+        ENVIADO = 'enviado'
+        ENTREGADO = 'entregado'
+        CANCELADO = 'cancelado'
+    }
+    
+    enum EstadoPedidoPersonalizado {
+        PENDIENTE = 'pendiente'
+        COTIZADO = 'cotizado'
+        ACEPTADO = 'aceptado'
+        EN_PROCESO = 'en_proceso'
+        COMPLETADO = 'completado'
+        CANCELADO = 'cancelado'
+    }
+    
+    enum EstadoSolicitudConfeccion {
+        PENDIENTE = 'pendiente'
+        APROBADO = 'aprobado'
+        EN_PROCESO = 'en_proceso'
+        COMPLETADO = 'completado'
+        RECHAZADO = 'rechazado'
+    }
+    
+    class Carrito {
+        {field} + id: BigAutoField <<PK>>
+        {field} + usuario: ForeignKey(Usuario) <<FK, unique>>
+        {field} + fecha_creacion: DateTimeField
+        {field} + fecha_actualizacion: DateTimeField
+        --
+        {method} + __str__(): string
+        {method} + get_total_items(): int
+        {method} + get_subtotal(): Decimal
+        {method} + get_iva(): Decimal
+        {method} + get_total(): Decimal
+        {method} + agregar_producto(producto, cantidad): ItemCarrito
+        {method} + actualizar_cantidad(item, cantidad): void
+        {method} + eliminar_item(item): void
+        {method} + vaciar(): void
+        {method} + tiene_stock_disponible(): boolean
+    }
+    
+    note right of Carrito
+      Carrito de compras del cliente
+      Relación 1:1 con Usuario
+      
+      Cálculos:
+      - Subtotal: Σ(precio × cantidad)
+      - IVA: subtotal × 0.19
+      - Total: subtotal + IVA
+      
+      Auto-actualiza fecha_actualizacion
+    end note
+    
+    class ItemCarrito {
+        {field} + id: BigAutoField <<PK>>
+        {field} + carrito: ForeignKey(Carrito) <<FK>>
+        {field} + producto: ForeignKey(ProductoTerminado) <<FK>>
+        {field} + cantidad: IntegerField
+        {field} + fecha_agregado: DateTimeField
+        --
+        {method} + __str__(): string
+        {method} + get_subtotal(): Decimal
+        {method} + clean(): void
+    }
+    
+    note left of ItemCarrito
+      unique_together = ['carrito', 'producto']
+      
+      Validaciones en clean():
+      - cantidad > 0
+      - cantidad <= producto.stock
+      
+      get_subtotal():
+      producto.precio × cantidad
+    end note
+    
+    class Pedido {
+        {field} + id: BigAutoField <<PK>>
+        {field} + numero_pedido: CharField(20) <<unique>>
+        {field} + cliente: ForeignKey(Usuario) <<FK>>
+        {field} + empresa: ForeignKey(MicroempresaIntegral) <<FK>>
+        {field} + fecha_pedido: DateTimeField
+        {field} + fecha_actualizacion: DateTimeField
+        {field} + estado: CharField(20)
+        {field} + direccion_envio: TextField
+        {field} + subtotal: DecimalField(10,2)
+        {field} + iva: DecimalField(10,2)
+        {field} + total: DecimalField(10,2)
+        {field} + courier: CharField(100) <<null, blank>>
+        {field} + numero_seguimiento: CharField(100) <<null, blank>>
+        {field} + fecha_entrega_estimada: DateField <<null, blank>>
+        --
+        {method} + __str__(): string
+        {method} + save(override): void
+        {method} + generar_numero_pedido(): string
+        {method} + calcular_totales(): void
+        {method} + cambiar_estado(nuevo_estado): void
+        {method} + puede_cancelar(): boolean
+        {method} + reservar_stock(): void
+        {method} + liberar_stock(): void
+        {method} + confirmar_stock(): void
+    }
+    
+    note bottom of Pedido
+      Número pedido formato: PED-YYYYMMDD-####
+      Ejemplo: PED-20240115-0001
+      
+      Flujo de estados:
+      PENDIENTE_PAGO → CONFIRMADO → EN_PREPARACION
+      → ENVIADO → ENTREGADO
+      
+      Puede ir a CANCELADO desde:
+      - PENDIENTE_PAGO
+      - CONFIRMADO
+      
+      save() override:
+      - Genera número_pedido si es nuevo
+      - Auto-calcula totales
+      - Auto-actualiza fecha_actualizacion
+      
+      Reservar stock: Stock se marca como reservado
+      Liberar stock: Stock reservado vuelve a disponible
+      Confirmar stock: Stock se decrementa definitivamente
+    end note
+    
+    class DetallePedido {
+        {field} + id: BigAutoField <<PK>>
+        {field} + pedido: ForeignKey(Pedido) <<FK>>
+        {field} + producto: ForeignKey(ProductoTerminado) <<FK>>
+        {field} + cantidad: IntegerField
+        {field} + precio_unitario: DecimalField(10,2)
+        {field} + subtotal: DecimalField(10,2)
+        --
+        {method} + __str__(): string
+        {method} + save(override): void
+        {method} + calcular_subtotal(): Decimal
+    }
+    
+    note right of DetallePedido
+      Snapshot de la compra
+      
+      precio_unitario: Se guarda el precio
+      al momento de la compra (no se
+      actualiza si cambia el precio
+      del producto)
+      
+      save() override:
+      subtotal = precio_unitario × cantidad
+    end note
+    
+    class PedidoPersonalizado {
+        {field} + id: BigAutoField <<PK>>
+        {field} + numero_pedido: CharField(20) <<unique>>
+        {field} + cliente: ForeignKey(Usuario) <<FK>>
+        {field} + empresa_integral: ForeignKey(MicroempresaIntegral) <<FK>>
+        {field} + descripcion: TextField
+        {field} + cantidad: IntegerField
+        {field} + fecha_solicitud: DateTimeField
+        {field} + fecha_actualizacion: DateTimeField
+        {field} + estado: CharField(20)
+        {field} + precio_cotizado: DecimalField(10,2) <<null, blank>>
+        {field} + precio_final: DecimalField(10,2) <<null, blank>>
+        {field} + fecha_entrega_estimada: DateField <<null, blank>>
+        {field} + notas_empresa: TextField <<null, blank>>
+        --
+        {method} + __str__(): string
+        {method} + save(override): void
+        {method} + generar_numero_pedido(): string
+        {method} + cotizar(precio, notas): void
+        {method} + aceptar_cotizacion(): void
+        {method} + rechazar(): void
+    }
+    
+    note left of PedidoPersonalizado
+      Pedidos de productos personalizados
+      que no están en catálogo
+      
+      Número pedido formato: PERS-YYYYMMDD-####
+      
+      Flujo de estados:
+      PENDIENTE → COTIZADO → ACEPTADO
+      → EN_PROCESO → COMPLETADO
+      
+      Puede ir a CANCELADO desde cualquier estado
+      
+      cotizar():
+      - Establece precio_cotizado
+      - Agrega notas_empresa
+      - Cambia estado a COTIZADO
+      
+      aceptar_cotizacion():
+      - Cambia estado a ACEPTADO
+      - precio_final = precio_cotizado
+      - Genera transacción de pago
+    end note
+    
+    class SolicitudConfeccion {
+        {field} + id: BigAutoField <<PK>>
+        {field} + numero_solicitud: CharField(20) <<unique>>
+        {field} + cliente: ForeignKey(Usuario) <<FK>>
+        {field} + empresa_satelite: ForeignKey(MicroempresaSatelite) <<FK>>
+        {field} + servicio: ForeignKey(Servicio) <<FK, null, blank>>
+        {field} + descripcion: TextField
+        {field} + fecha_solicitud: DateTimeField
+        {field} + fecha_actualizacion: DateTimeField
+        {field} + estado: CharField(20)
+        {field} + presupuesto: DecimalField(10,2) <<null, blank>>
+        {field} + fecha_inicio: DateField <<null, blank>>
+        {field} + fecha_fin_estimada: DateField <<null, blank>>
+        {field} + notas_empresa: TextField <<null, blank>>
+        --
+        {method} + __str__(): string
+        {method} + save(override): void
+        {method} + generar_numero_solicitud(): string
+        {method} + aprobar(presupuesto, notas): void
+        {method} + rechazar(motivo): void
+        {method} + iniciar_trabajo(): void
+        {method} + completar(): void
+    }
+    
+    note right of SolicitudConfeccion
+      Solicitudes de servicios de confección
+      de empresas satélites
+      
+      Número solicitud formato: CONF-YYYYMMDD-####
+      
+      Flujo de estados:
+      PENDIENTE → APROBADO → EN_PROCESO
+      → COMPLETADO
+      
+      Puede ir a RECHAZADO desde PENDIENTE
+      
+      aprobar():
+      - Establece presupuesto
+      - Agrega notas_empresa
+      - Cambia estado a APROBADO
+      - Genera transacción de pago
+    end note
+    
+    ' Relaciones
+    Carrito "1" -- "0..*" ItemCarrito : contiene >
+    
+    Pedido "1" -- "1..*" DetallePedido : contiene >
+    Pedido ..> EstadoPedido : uses
+    
+    PedidoPersonalizado ..> EstadoPedidoPersonalizado : uses
+    
+    SolicitudConfeccion ..> EstadoSolicitudConfeccion : uses
+}
+
+package "core" <<external>> {
+    class Usuario {
+        + id
+        + username
+        + tipo
+    }
+}
+
+package "empresas" <<external>> {
+    class ProductoTerminado {
+        + id
+        + nombre
+        + precio
+        + stock
+    }
+    
+    class MicroempresaIntegral {
+        + id
+        + nombre_empresa
+    }
+    
+    class MicroempresaSatelite {
+        + id
+        + nombre_empresa
+    }
+    
+    class Servicio {
+        + id
+        + nombre
+        + precio_base
+    }
+}
+
+' Relaciones con módulos externos
+Usuario "1" -- "0..1" Carrito : posee >
+Usuario "1" -- "0..*" Pedido : realiza >
+Usuario "1" -- "0..*" PedidoPersonalizado : solicita >
+Usuario "1" -- "0..*" SolicitudConfeccion : solicita >
+
+ProductoTerminado "1" -- "0..*" ItemCarrito : en >
+ProductoTerminado "1" -- "0..*" DetallePedido : en >
+
+MicroempresaIntegral "1" -- "0..*" Pedido : procesa >
+MicroempresaIntegral "1" -- "0..*" PedidoPersonalizado : procesa >
+
+MicroempresaSatelite "1" -- "0..*" SolicitudConfeccion : procesa >
+
+Servicio "0..1" -- "0..*" SolicitudConfeccion : referencia >
+
+note bottom of pedidos
+  **Módulo Pedidos - Funciones principales:**
+  
+  1. **Gestión de Carrito:**
+     - Agregar/eliminar productos
+     - Actualizar cantidades
+     - Cálculo de totales con IVA
+     - Validación de stock
+  
+  2. **Pedidos Estándar:**
+     - Creación desde carrito
+     - Seguimiento de estados
+     - Reserva y confirmación de stock
+     - Información de envío
+  
+  3. **Pedidos Personalizados:**
+     - Solicitud de productos custom
+     - Sistema de cotizaciones
+     - Aceptación/rechazo de cotizaciones
+  
+  4. **Servicios de Confección:**
+     - Solicitudes a empresas satélites
+     - Aprobación con presupuesto
+     - Seguimiento de trabajo
+  
+  **Reglas de negocio:**
+  - Stock se reserva en PENDIENTE_PAGO
+  - Stock se confirma en CONFIRMADO (pago exitoso)
+  - Stock se libera si pedido CANCELADO
+  - Números de pedido únicos y secuenciales
+  - IVA = 19% del subtotal
+  - Pedidos solo cancelables antes de ENVIADO
+  
+  **Tablas en BD:**
+  - pedidos_carrito
+  - pedidos_itemcarrito
+  - pedidos_pedido
+  - pedidos_detallepedido
+  - pedidos_pedidopersonalizado
+  - pedidos_solicitudconfeccion
+end note
+
+@enduml

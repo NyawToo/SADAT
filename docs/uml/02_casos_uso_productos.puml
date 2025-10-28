@@ -1,0 +1,250 @@
+@startuml Casos de Uso - Gestión de Productos
+left to right direction
+skinparam linetype ortho
+
+actor Cliente
+actor "Microempresa\nIntegral" as EmpresaIntegral
+actor "Microempresa\nSatélite" as EmpresaSatelite
+actor "Super Usuario" as SuperUsuario
+
+rectangle "Sistema SADAT - Módulo de Productos y Servicios" {
+    
+    ' === MICROEMPRESA INTEGRAL ===
+    EmpresaIntegral -- (Gestionar Productos)
+        (Gestionar Productos) --> (Crear Producto)
+            (Crear Producto) --> (Ingresar Información del Producto)
+            (Crear Producto) --> (Subir Imagen del Producto)
+            (Crear Producto) --> (Asignar Categoría)
+                (Asignar Categoría) --> (Crear Nueva Categoría)
+            (Crear Producto) --> (Definir Stock Inicial)
+            (Crear Producto) --> (Guardar Producto)
+        (Gestionar Productos) --> (Editar Producto)
+            (Editar Producto) --> (Modificar Información)
+            (Editar Producto) --> (Cambiar Imagen)
+            (Editar Producto) --> (Actualizar Precio)
+            (Editar Producto) --> (Cambiar Categoría)
+        (Gestionar Productos) --> (Eliminar Producto)
+            (Eliminar Producto) --> (Verificar Pedidos Activos)
+        (Gestionar Productos) --> (Ver Mis Productos)
+            (Ver Mis Productos) --> (Filtrar por Categoría)
+            (Ver Mis Productos) --> (Ordenar por Ventas)
+    
+    EmpresaIntegral -- (Gestionar Stock)
+        (Gestionar Stock) --> (Aumentar Stock)
+        (Gestionar Stock) --> (Ajustar Stock)
+            (Ajustar Stock) --> (Registrar Motivo de Ajuste)
+        (Gestionar Stock) --> (Ver Historial de Stock)
+        (Gestionar Stock) --> (Ver Alertas de Stock Bajo)
+            (Ver Alertas de Stock Bajo) --> (Configurar Umbral de Alerta)
+    
+    EmpresaIntegral -- (Gestionar Categorías)
+        (Gestionar Categorías) --> (Crear Categoría)
+        (Gestionar Categorías) --> (Editar Categoría)
+        (Gestionar Categorías) --> (Eliminar Categoría)
+            (Eliminar Categoría) --> (Reasignar Productos)
+    
+    EmpresaIntegral -- (Ver Reportes de Productos)
+        (Ver Reportes de Productos) --> (Ver Productos Más Vendidos)
+        (Ver Reportes de Productos) --> (Ver Productos Sin Ventas)
+        (Ver Reportes de Productos) --> (Ver Evolución de Stock)
+        (Ver Reportes de Productos) --> (Exportar Reporte)
+    
+    ' === MICROEMPRESA SATÉLITE ===
+    EmpresaSatelite -- (Gestionar Servicios)
+        (Gestionar Servicios) --> (Crear Servicio)
+            (Crear Servicio) --> (Definir Precio Base)
+            (Crear Servicio) --> (Estimar Tiempo de Servicio)
+        (Gestionar Servicios) --> (Editar Servicio)
+        (Gestionar Servicios) --> (Desactivar Servicio)
+        (Gestionar Servicios) --> (Ver Mis Servicios)
+    
+    EmpresaSatelite -- (Gestionar Maquinaria)
+        (Gestionar Maquinaria) --> (Registrar Máquina)
+            (Registrar Máquina) --> (Subir Imagen de Máquina)
+            (Registrar Máquina) --> (Definir Precio de Alquiler)
+        (Gestionar Maquinaria) --> (Editar Máquina)
+        (Gestionar Maquinaria) --> (Marcar Disponibilidad)
+        (Gestionar Maquinaria) --> (Ver Mis Máquinas)
+    
+    EmpresaSatelite -- (Ver Reportes de Servicios)
+        (Ver Reportes de Servicios) --> (Ver Servicios Completados)
+        (Ver Reportes de Servicios) --> (Ver Ingresos por Servicio)
+        (Ver Reportes de Servicios) --> (Exportar Reporte)
+    
+    ' === CLIENTE ===
+    Cliente -- (Explorar Catálogo Público)
+        (Explorar Catálogo Público) --> (Ver Todos los Productos)
+        (Explorar Catálogo Público) --> (Buscar Productos)
+            (Buscar Productos) --> (Buscar por Nombre)
+            (Buscar Productos) --> (Buscar por Categoría)
+        (Explorar Catálogo Público) --> (Filtrar Productos)
+            (Filtrar Productos) --> (Filtrar por Precio)
+            (Filtrar Productos) --> (Filtrar por Calificación)
+            (Filtrar Productos) --> (Filtrar por Empresa)
+        (Explorar Catálogo Público) --> (Ver Detalle de Producto)
+            (Ver Detalle de Producto) --> (Ver Imágenes)
+            (Ver Detalle de Producto) --> (Ver Especificaciones)
+            (Ver Detalle de Producto) --> (Ver Stock Disponible)
+            (Ver Detalle de Producto) --> (Ver Calificaciones)
+            (Ver Detalle de Producto) --> (Ver Comentarios)
+    
+    Cliente -- (Interactuar con Productos)
+        (Interactuar con Productos) --> (Calificar Producto)
+            (Calificar Producto) --> (Seleccionar Estrellas)
+            (Calificar Producto) --> (Verificar Compra Previa)
+        (Interactuar con Productos) --> (Comentar Producto)
+            (Comentar Producto) --> (Escribir Comentario)
+        (Interactuar con Productos) --> (Agregar a Favoritos)
+    
+    Cliente -- (Explorar Servicios)
+        (Explorar Servicios) --> (Ver Servicios Disponibles)
+        (Explorar Servicios) --> (Ver Detalle de Servicio)
+        (Explorar Servicios) --> (Ver Maquinaria Disponible)
+    
+    ' === SUPER USUARIO ===
+    SuperUsuario -- (Administrar Productos Globalmente)
+        (Administrar Productos Globalmente) --> (Ver Todos los Productos)
+            (Ver Todos los Productos) --> (Filtrar por Empresa)
+            (Ver Todos los Productos) --> (Filtrar por Estado)
+        (Administrar Productos Globalmente) --> (Moderar Contenido)
+            (Moderar Contenido) --> (Revisar Producto)
+            (Moderar Contenido) --> (Desactivar Producto Inapropiado)
+            (Moderar Contenido) --> (Notificar a Empresa)
+        (Administrar Productos Globalmente) --> (Eliminar Cualquier Producto)
+    
+    SuperUsuario -- (Administrar Categorías Globales)
+        (Administrar Categorías Globales) --> (Crear Categoría Global)
+        (Administrar Categorías Globales) --> (Fusionar Categorías)
+            (Fusionar Categorías) --> (Reasignar Productos)
+        (Administrar Categorías Globales) --> (Eliminar Categoría Global)
+    
+    SuperUsuario -- (Generar Reportes Globales)
+        (Generar Reportes Globales) --> (Reporte de Productos por Empresa)
+        (Generar Reportes Globales) --> (Reporte de Inventario Total)
+        (Generar Reportes Globales) --> (Reporte de Stock Bajo)
+        (Generar Reportes Globales) --> (Exportar Reportes)
+}
+
+@enduml
+
+' === ACTORES ===
+actor "Microempresa\nIntegral" as EmpresaIntegral
+actor "Cliente" as Cliente
+actor "Sistema de\nNotificaciones" as Notificaciones
+
+' === SISTEMA ===
+rectangle "Sistema SADAT - Módulo de Productos" {
+  
+  package "CRUD de Productos" {
+    usecase "Crear Producto" as UC01
+    usecase "Editar Producto" as UC02
+    usecase "Eliminar Producto" as UC03
+    usecase "Listar Mis\nProductos" as UC04
+  }
+  
+  package "Gestión de Stock" {
+    usecase "Actualizar Stock" as UC05
+    usecase "Consultar Stock\nDisponible" as UC06
+  }
+  
+  package "Gestión de Categorías" {
+    usecase "Crear Categoría" as UC07
+    usecase "Asignar Categoría\na Producto" as UC08
+  }
+  
+  package "Catálogo Público" {
+    usecase "Ver Catálogo de\nProductos" as UC09
+    usecase "Buscar Productos" as UC10
+    usecase "Filtrar por\nCategoría" as UC11
+    usecase "Ver Detalle de\nProducto" as UC12
+  }
+  
+  package "Interacción con Productos" {
+    usecase "Comentar\nProducto" as UC13
+    usecase "Calificar\nProducto" as UC14
+  }
+  
+  ' Casos de Uso Internos
+  usecase "Validar Datos\nde Producto" as UC15
+  usecase "Subir Imagen" as UC16
+  usecase "Verificar Stock\nMínimo" as UC17
+  usecase "Notificar Stock\nBajo" as UC18
+}
+
+' === RELACIONES MICROEMPRESA INTEGRAL ===
+EmpresaIntegral --> UC01
+EmpresaIntegral --> UC02
+EmpresaIntegral --> UC03
+EmpresaIntegral --> UC04
+EmpresaIntegral --> UC05
+EmpresaIntegral --> UC06
+EmpresaIntegral --> UC07
+
+' === RELACIONES CLIENTE ===
+Cliente --> UC09
+Cliente --> UC10
+Cliente --> UC11
+Cliente --> UC12
+Cliente --> UC13
+Cliente --> UC14
+
+' === RELACIONES INCLUDE ===
+UC01 .> UC15 : <<include>>
+UC01 .> UC08 : <<include>>
+UC01 .> UC16 : <<include>>
+
+UC02 .> UC15 : <<include>>
+
+UC05 .> UC06 : <<include>>
+UC05 .> UC17 : <<include>>
+
+UC17 .> UC18 : <<include>>
+
+UC10 .> UC09 : <<include>>
+UC11 .> UC09 : <<include>>
+
+' === RELACIONES EXTEND ===
+UC02 .> UC16 : <<extend>>
+UC12 .> UC13 : <<extend>>
+UC12 .> UC14 : <<extend>>
+
+' === RELACIONES CON SISTEMAS EXTERNOS ===
+UC18 --> Notificaciones : alerta empresa
+
+' === NOTAS EXPLICATIVAS ===
+note right of UC15
+  **Validaciones de producto:**
+  - Nombre no vacío (max 100 caracteres)
+  - Descripción válida
+  - Precio > 0
+  - Stock >= 0
+  - Imagen formato válido (jpg, png)
+  - Imagen tamaño máximo 5MB
+end note
+
+note right of UC17
+  **Verificación de stock:**
+  - Si stock < 10 unidades
+  - Generar alerta
+  - Notificar a empresa
+  - Sugerir reabastecimiento
+end note
+
+note left of UC10
+  **Criterios de búsqueda:**
+  - Por nombre de producto
+  - Por descripción
+  - Por rango de precio
+  - Por empresa
+  - Ordenar por: precio, fecha, nombre
+end note
+
+note left of UC14
+  **Sistema de calificación:**
+  - Escala de 1 a 5 estrellas
+  - Solo clientes con pedidos
+  - Una calificación por producto
+  - Cálculo promedio automático
+end note
+
+@enduml

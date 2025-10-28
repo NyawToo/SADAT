@@ -1,0 +1,281 @@
+@startuml Clases - Módulo Pagos
+title Sistema SADAT - Diagrama de Clases: Módulo Pagos (Transacciones con Stripe)
+
+package "pagos" {
+    
+    enum EstadoTransaccion {
+        PENDIENTE = 'pendiente'
+        PROCESANDO = 'procesando'
+        COMPLETADO = 'completado'
+        FALLIDO = 'fallido'
+        REEMBOLSADO = 'reembolsado'
+    }
+    
+    enum MetodoPago {
+        TARJETA_CREDITO = 'tarjeta_credito'
+        TARJETA_DEBITO = 'tarjeta_debito'
+        TRANSFERENCIA = 'transferencia'
+    }
+    
+    class Transaccion {
+        {field} + id: BigAutoField <<PK>>
+        {field} + usuario: ForeignKey(Usuario) <<FK>>
+        {field} + pedido: OneToOneField(Pedido) <<FK, null, blank>>
+        {field} + pedido_personalizado: OneToOneField(PedidoPersonalizado) <<FK, null, blank>>
+        {field} + solicitud_confeccion: OneToOneField(SolicitudConfeccion) <<FK, null, blank>>
+        {field} + monto: DecimalField(10,2)
+        {field} + metodo_pago: CharField(20)
+        {field} + estado: CharField(20)
+        {field} + fecha_transaccion: DateTimeField
+        {field} + fecha_actualizacion: DateTimeField
+        {field} + stripe_payment_intent_id: CharField(255) <<null, blank>>
+        {field} + stripe_customer_id: CharField(255) <<null, blank>>
+        {field} + stripe_charge_id: CharField(255) <<null, blank>>
+        {field} + detalles_pago: JSONField <<null, blank>>
+        {field} + mensaje_error: TextField <<null, blank>>
+        --
+        {method} + __str__(): string
+        {method} + save(override): void
+        {method} + crear_payment_intent(): dict
+        {method} + confirmar_pago(): void
+        {method} + marcar_fallido(error): void
+        {method} + procesar_reembolso(): dict
+        {method} + get_tipo_pedido(): string
+        {method} + get_pedido_relacionado(): Model
+    }
+    
+    note right of Transaccion
+      Maneja todas las transacciones de pago
+      Integración con Stripe API
+      
+      Relaciones mutuamente excluyentes:
+      - UNA transacción se relaciona con:
+        * Pedido estándar ó
+        * Pedido personalizado ó
+        * Solicitud de confección
+      
+      Estados del flujo:
+      PENDIENTE → PROCESANDO → COMPLETADO
+                              ↓
+                           FALLIDO
+      
+      COMPLETADO puede ir a REEMBOLSADO
+      
+      save() override:
+      - Auto-actualiza fecha_actualizacion
+      - Valida que solo tenga 1 tipo de pedido
+    end note
+    
+    note left of Transaccion::crear_payment_intent
+      Crea PaymentIntent en Stripe:
+      
+      1. Llama a stripe.PaymentIntent.create()
+      2. Pasa monto en centavos (monto × 100)
+      3. Currency: 'clp' (peso chileno)
+      4. metadata: {
+           'usuario_id': usuario.id,
+           'pedido_tipo': tipo,
+           'pedido_id': id
+         }
+      5. Guarda stripe_payment_intent_id
+      6. Cambia estado a PROCESANDO
+      7. Retorna client_secret para frontend
+    end note
+    
+    note left of Transaccion::confirmar_pago
+      Confirma pago exitoso (llamado por webhook):
+      
+      1. Cambia estado a COMPLETADO
+      2. Actualiza stripe_charge_id
+      3. Guarda detalles_pago (JSON de Stripe)
+      4. Actualiza pedido relacionado:
+         - Pedido → estado CONFIRMADO
+         - PedidoPersonalizado → precio_final
+         - SolicitudConfeccion → presupuesto aprobado
+      5. Confirma descuento de stock (Pedido)
+      6. Envía notificación al cliente
+      7. Envía notificación a la empresa
+    end note
+    
+    note right of Transaccion::marcar_fallido
+      Marca transacción como fallida:
+      
+      1. Cambia estado a FALLIDO
+      2. Guarda mensaje_error
+      3. Libera stock reservado (si aplica)
+      4. Actualiza pedido a CANCELADO
+      5. Envía notificación al cliente
+    end note
+    
+    note right of Transaccion::procesar_reembolso
+      Procesa reembolso en Stripe:
+      
+      1. Verifica estado == COMPLETADO
+      2. Llama a stripe.Refund.create()
+      3. Pasa payment_intent_id
+      4. Cambia estado a REEMBOLSADO
+      5. Restaura stock (si es Pedido)
+      6. Actualiza pedido a CANCELADO
+      7. Envía notificación al cliente
+      8. Retorna detalles del reembolso
+    end note
+    
+    class StripeWebhookEvent {
+        {field} + id: BigAutoField <<PK>>
+        {field} + event_id: CharField(255) <<unique>>
+        {field} + event_type: CharField(100)
+        {field} + payload: JSONField
+        {field} + fecha_recepcion: DateTimeField
+        {field} + procesado: BooleanField
+        {field} + fecha_procesamiento: DateTimeField <<null, blank>>
+        --
+        {method} + __str__(): string
+        {method} + procesar(): void
+        {method} + marcar_procesado(): void
+    }
+    
+    note left of StripeWebhookEvent
+      Registro de webhooks de Stripe
+      Para idempotencia y auditoría
+      
+      event_id: Único de Stripe (evt_xxx)
+      Evita procesar eventos duplicados
+      
+      Tipos de eventos manejados:
+      - payment_intent.succeeded
+      - payment_intent.payment_failed
+      - charge.refunded
+      - customer.created
+      
+      procesar():
+      1. Verifica si ya fue procesado
+      2. Según event_type, ejecuta lógica:
+         - succeeded: confirmar_pago()
+         - failed: marcar_fallido()
+         - refunded: actualizar reembolso
+      3. Marca como procesado
+    end note
+    
+    class ConfiguracionStripe {
+        {field} + id: BigAutoField <<PK>>
+        {field} + stripe_public_key: CharField(255)
+        {field} + stripe_secret_key: CharField(255)
+        {field} + stripe_webhook_secret: CharField(255)
+        {field} + modo_prueba: BooleanField
+        {field} + fecha_actualizacion: DateTimeField
+        --
+        {method} + __str__(): string
+        {method} + get_stripe_keys(): dict
+    }
+    
+    note right of ConfiguracionStripe
+      Singleton pattern
+      Solo puede existir 1 registro
+      
+      Llaves de Stripe:
+      - Public key: Para frontend (pk_xxx)
+      - Secret key: Para backend (sk_xxx)
+      - Webhook secret: Para validar webhooks
+      
+      modo_prueba:
+      True = Usa llaves de test
+      False = Usa llaves de producción
+      
+      IMPORTANTE: Secret keys nunca
+      se envían al frontend
+    end note
+    
+    ' Relaciones internas
+    Transaccion ..> EstadoTransaccion : uses
+    Transaccion ..> MetodoPago : uses
+    Transaccion "0..*" -- "1" Usuario : realizada por >
+}
+
+package "pedidos" <<external>> {
+    class Pedido {
+        + id
+        + numero_pedido
+        + estado
+    }
+    
+    class PedidoPersonalizado {
+        + id
+        + numero_pedido
+        + estado
+    }
+    
+    class SolicitudConfeccion {
+        + id
+        + numero_solicitud
+        + estado
+    }
+}
+
+package "core" <<external>> {
+    class Usuario {
+        + id
+        + username
+        + email
+    }
+}
+
+' Relaciones con módulos externos
+Transaccion "0..1" -- "0..1" Pedido : paga >
+Transaccion "0..1" -- "0..1" PedidoPersonalizado : paga >
+Transaccion "0..1" -- "0..1" SolicitudConfeccion : paga >
+
+note bottom of pagos
+  **Módulo Pagos - Funciones principales:**
+  
+  1. **Procesamiento de Pagos:**
+     - Integración completa con Stripe
+     - Creación de PaymentIntents
+     - Manejo de client_secret
+     - Confirmación de pagos
+  
+  2. **Webhooks de Stripe:**
+     - Escucha eventos de Stripe
+     - Verificación de firma (webhook_secret)
+     - Procesamiento idempotente
+     - Actualización automática de estados
+  
+  3. **Gestión de Reembolsos:**
+     - Crear reembolsos en Stripe
+     - Restaurar stock
+     - Cancelar pedidos
+     - Notificar a clientes
+  
+  4. **Auditoría:**
+     - Registro de todas las transacciones
+     - Historial de webhooks
+     - Detalles JSON de Stripe
+     - Mensajes de error
+  
+  **Flujo completo de pago:**
+  
+  1. Cliente confirma compra en carrito
+  2. Sistema crea Transaccion (PENDIENTE)
+  3. Sistema crea PaymentIntent en Stripe
+  4. Cliente completa pago en formulario Stripe
+  5. Stripe envía webhook (payment_intent.succeeded)
+  6. Sistema procesa webhook:
+     - Actualiza Transaccion a COMPLETADO
+     - Actualiza Pedido a CONFIRMADO
+     - Descuenta stock
+     - Envía notificaciones
+  7. Cliente recibe confirmación
+  
+  **Seguridad:**
+  - Secret keys en variables de entorno
+  - Validación de firma de webhooks
+  - Idempotencia de webhooks (event_id)
+  - Montos siempre validados server-side
+  - No se almacenan datos de tarjetas
+  
+  **Tablas en BD:**
+  - pagos_transaccion
+  - pagos_stripewebhookevent
+  - pagos_configuracionstripe
+end note
+
+@enduml

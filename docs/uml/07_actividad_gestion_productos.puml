@@ -1,0 +1,558 @@
+@startuml Actividad - Gestión de Productos
+title Sistema SADAT - Diagrama de Actividad: Gestión de Productos por Rol
+
+|#LightBlue|Cliente|
+start
+:Acceder al sistema;
+:Navegar al catálogo público;
+
+if (¿Acción?) then (Ver producto)
+    :Seleccionar producto;
+    :Ver detalles completos;
+    :Ver calificaciones;
+    
+    if (¿Usuario registrado?) then (Sí)
+        if (¿Acción?) then (Calificar)
+            :Seleccionar estrellas (1-5);
+            :Escribir comentario;
+            :Enviar calificación;
+            
+            |#Yellow|Sistema|
+            :Guardar calificación;
+            :Recalcular promedio;
+            :Notificar a empresa;
+            
+            |#LightBlue|Cliente|
+            :Ver confirmación;
+            stop
+        elseif (¿Acción?) then (Agregar al carrito)
+            :Seleccionar cantidad;
+            :Agregar al carrito;
+            stop
+        else (Solo ver)
+            stop
+        endif
+    else (No)
+        :Mostrar información\npública;
+        stop
+    endif
+    
+elseif (¿Acción?) then (Buscar)
+    :Ingresar criterios\nde búsqueda;
+    
+    |#Yellow|Sistema|
+    :Buscar productos;
+    :Mostrar resultados;
+    
+    |#LightBlue|Cliente|
+    :Ver resultados;
+    stop
+    
+elseif (¿Acción?) then (Filtrar)
+    :Seleccionar categoría;
+    :Aplicar filtros\n(precio, calificación);
+    
+    |#Yellow|Sistema|
+    :Filtrar productos;
+    :Mostrar resultados;
+    
+    |#LightBlue|Cliente|
+    :Ver productos filtrados;
+    stop
+else (Navegar)
+    :Ver todos los productos;
+    stop
+endif
+
+|#LightGreen|Microempresa Integral|
+start
+:Iniciar sesión;
+:Acceder a panel\nde gestión;
+:Ver dashboard\nde productos;
+
+note right
+  Dashboard muestra:
+  - Lista de productos activos
+  - Stock de cada producto
+  - Productos con stock bajo
+  - Productos más vendidos
+  - Categorías disponibles
+end note
+
+if (¿Acción a realizar?) then (Crear producto)
+
+    == Proceso de Creación de Producto ==
+    
+    :Hacer clic en\n"Nuevo Producto";
+    
+    |#Yellow|Sistema|
+    :Mostrar formulario\nde creación;
+    
+    |#LightGreen|Microempresa Integral|
+    :Completar datos del producto;
+    
+    note right
+      Datos requeridos:
+      - Nombre (max 200 caracteres)
+      - Descripción
+      - Precio (decimal)
+      - Stock inicial (entero)
+      - Categoría
+      - Imagen (opcional, max 5MB)
+      - Materiales usados
+    end note
+    
+    :Seleccionar categoría;
+    
+    if (¿Categoría existe?) then (No)
+        :Crear nueva categoría;
+        
+        |#Yellow|Sistema|
+        :Guardar categoría en BD;
+        
+        |#LightGreen|Microempresa Integral|
+    endif
+    
+    :Subir imagen del producto;
+    :Enviar formulario;
+    
+    |#Yellow|Sistema|
+    :Validar datos del formulario;
+    
+    if (¿Datos válidos?) then (Sí)
+        :Procesar imagen;
+        
+        note left
+          Procesamiento de imagen:
+          - Validar formato (JPG/PNG)
+          - Validar tamaño (max 5MB)
+          - Guardar en /media/productos/
+          - Generar thumbnail (opcional)
+        end note
+        
+        :Crear registro ProductoTerminado;
+        :Guardar en base de datos;
+        :Mostrar mensaje\n"Producto creado exitosamente";
+        
+        |#LightGreen|Microempresa Integral|
+        :Ver dashboard actualizado;
+        stop
+        
+    else (No)
+        :Mostrar errores\nde validación;
+        
+        note left
+          Errores comunes:
+          - Nombre vacío o muy largo
+          - Precio <= 0
+          - Stock < 0
+          - Imagen muy grande
+          - Formato de imagen inválido
+        end note
+        
+        |#LightGreen|Microempresa Integral|
+        :Corregir datos;
+        :Enviar formulario;
+        detach
+    endif
+
+elseif (¿Acción a realizar?) then (Editar producto)
+
+    == Proceso de Edición de Producto ==
+    
+    :Seleccionar producto\na editar;
+    
+    |#Yellow|Sistema|
+    :Cargar datos actuales\nen formulario;
+    
+    |#LightGreen|Microempresa Integral|
+    :Ver formulario pre-llenado;
+    :Modificar campos deseados;
+    
+    if (¿Cambiar imagen?) then (Sí)
+        :Subir nueva imagen;
+        
+        |#Yellow|Sistema|
+        :Eliminar imagen anterior;
+        :Guardar nueva imagen;
+    endif
+    
+    |#LightGreen|Microempresa Integral|
+    :Guardar cambios;
+    
+    |#Yellow|Sistema|
+    :Validar datos modificados;
+    
+    if (¿Datos válidos?) then (Sí)
+        :Actualizar registro en BD;
+        :Mostrar mensaje\n"Producto actualizado";
+        
+        |#LightGreen|Microempresa Integral|
+        :Ver dashboard actualizado;
+        stop
+        
+    else (No)
+        :Mostrar errores;
+        
+        |#LightGreen|Microempresa Integral|
+        :Corregir datos;
+        :Guardar cambios;
+        detach
+    endif
+
+elseif (¿Acción a realizar?) then (Gestionar stock)
+
+    == Proceso de Gestión de Stock ==
+    
+    :Seleccionar producto;
+    :Ver stock actual;
+    
+    if (¿Tipo de operación?) then (Aumentar stock)
+        :Ingresar cantidad\na añadir;
+        
+        |#Yellow|Sistema|
+        :Calcular nuevo stock\n(stock_actual + cantidad);
+        :Actualizar registro;
+        
+        if (¿Stock bajo antes?) then (Sí)
+            :Desactivar alerta\nde stock bajo;
+        endif
+        
+    elseif (¿Tipo de operación?) then (Ajustar stock)
+        :Ingresar motivo del ajuste;
+        
+        note right
+          Motivos de ajuste:
+          - Inventario físico
+          - Producto dañado
+          - Devolución
+          - Corrección de error
+        end note
+        
+        :Ingresar nuevo stock;
+        
+        |#Yellow|Sistema|
+        :Guardar stock anterior\nen historial;
+        :Actualizar a nuevo stock;
+    endif
+    
+    |#Yellow|Sistema|
+    
+    if (¿Stock < 10?) then (Sí)
+        :Activar alerta\nde stock bajo;
+        :Enviar notificación\na la empresa;
+        
+        note left
+          Notificación incluye:
+          - Nombre del producto
+          - Stock actual
+          - Sugerencia de reposición
+        end note
+    endif
+    
+    :Mostrar stock actualizado;
+    
+    |#LightGreen|Microempresa Integral|
+    :Ver confirmación;
+    stop
+
+elseif (¿Acción a realizar?) then (Eliminar producto)
+
+    == Proceso de Eliminación de Producto ==
+    
+    :Seleccionar producto\na eliminar;
+    
+    |#Yellow|Sistema|
+    :Verificar si tiene\npedidos pendientes;
+    
+    if (¿Tiene pedidos activos?) then (Sí)
+        :Mostrar advertencia\n"Producto tiene pedidos activos";
+        :Sugerir desactivar\nen vez de eliminar;
+        
+        |#LightGreen|Microempresa Integral|
+        
+        if (¿Confirmar eliminación?) then (No)
+            :Cancelar operación;
+            stop
+        else (Sí)
+        endif
+    endif
+    
+    |#Yellow|Sistema|
+    :Mostrar diálogo confirmación\n"¿Está seguro?";
+    
+    |#LightGreen|Microempresa Integral|
+    
+    if (¿Confirmar?) then (Sí)
+        |#Yellow|Sistema|
+        :Eliminar imagen del servidor;
+        :Eliminar registro de BD;
+        :Mostrar mensaje\n"Producto eliminado";
+        
+        |#LightGreen|Microempresa Integral|
+        :Ver dashboard actualizado;
+        stop
+        
+    else (No)
+        :Cancelar eliminación;
+        stop
+    endif
+
+elseif (¿Acción a realizar?) then (Ver reportes)
+
+    == Visualización de Reportes ==
+    
+    :Acceder a reportes\nde productos;
+    
+    |#Yellow|Sistema|
+    :Generar estadísticas;
+    
+    note left
+      Estadísticas incluyen:
+      - Productos más vendidos
+      - Productos con menos stock
+      - Ingresos por producto
+      - Productos nunca vendidos
+      - Evolución de ventas
+    end note
+    
+    :Mostrar gráficos\ny tablas;
+    
+    |#LightGreen|Microempresa Integral|
+    :Analizar información;
+    
+    if (¿Exportar reporte?) then (Sí)
+        :Seleccionar formato\n(PDF/Excel);
+        
+        |#Yellow|Sistema|
+        :Generar archivo;
+        :Descargar reporte;
+    endif
+    
+    stop
+
+elseif (¿Acción a realizar?) then (Gestionar categorías)
+    :Ver lista de categorías;
+    
+    if (¿Acción?) then (Crear)
+        :Ingresar nombre\ny descripción;
+        
+        |#Yellow|Sistema|
+        :Validar unicidad;
+        :Guardar categoría;
+        
+        |#LightGreen|Microempresa Integral|
+        :Ver confirmación;
+        stop
+    elseif (¿Acción?) then (Editar)
+        :Modificar datos;
+        
+        |#Yellow|Sistema|
+        :Actualizar categoría;
+        
+        |#LightGreen|Microempresa Integral|
+        stop
+    else (Eliminar)
+        |#Yellow|Sistema|
+        :Verificar productos\ncon esta categoría;
+        
+        if (¿Tiene productos?) then (Sí)
+            :Mostrar advertencia;
+            
+            |#LightGreen|Microempresa Integral|
+            :Cancelar o reasignar;
+            stop
+        else (No)
+            :Eliminar categoría;
+            stop
+        endif
+    endif
+
+else (Salir)
+    stop
+endif
+
+|#LightCoral|Microempresa Satélite|
+start
+:Iniciar sesión;
+:Acceder a panel\nde servicios;
+
+if (¿Qué gestionar?) then (Servicios)
+    :Ver lista de servicios;
+    
+    if (¿Acción?) then (Crear servicio)
+        :Ingresar datos del servicio;
+        
+        note right
+          Datos del servicio:
+          - Nombre
+          - Descripción
+          - Precio base
+          - Tiempo estimado
+        end note
+        
+        :Enviar formulario;
+        
+        |#Yellow|Sistema|
+        :Validar datos;
+        :Guardar servicio;
+        
+        |#LightCoral|Microempresa Satélite|
+        :Ver confirmación;
+        stop
+        
+    elseif (¿Acción?) then (Editar servicio)
+        :Modificar datos;
+        :Guardar cambios;
+        stop
+        
+    elseif (¿Acción?) then (Desactivar servicio)
+        :Marcar como no disponible;
+        stop
+        
+    else (Ver reportes)
+        :Ver servicios completados;
+        :Ver ingresos;
+        stop
+    endif
+    
+elseif (¿Qué gestionar?) then (Maquinaria)
+    :Ver lista de maquinaria;
+    
+    if (¿Acción?) then (Registrar maquina)
+        :Ingresar datos de la máquina;
+        :Subir imagen;
+        :Establecer precio alquiler;
+        
+        |#Yellow|Sistema|
+        :Guardar maquina;
+        
+        |#LightCoral|Microempresa Satélite|
+        :Ver confirmación;
+        stop
+        
+    elseif (¿Acción?) then (Editar maquina)
+        :Modificar datos;
+        :Actualizar precio;
+        stop
+        
+    else (Marcar disponibilidad)
+        :Cambiar estado\n(disponible/ocupada);
+        stop
+    endif
+    
+else (Ver solicitudes)
+    :Ver solicitudes de confección;
+    :Gestionar cotizaciones;
+    stop
+endif
+
+|#Red|Super Usuario|
+start
+:Iniciar sesión;
+:Acceder a panel admin;
+
+if (¿Qué gestionar?) then (Productos globales)
+    :Ver todos los productos\nde todas las empresas;
+    :Filtrar por empresa;
+    :Seleccionar producto;
+    
+    if (¿Acción?) then (Moderar)
+        :Revisar contenido;
+        
+        if (¿Apropiado?) then (No)
+            :Desactivar producto;
+            :Notificar a empresa;
+            stop
+        else (Sí)
+            :Aprobar;
+            stop
+        endif
+        
+    elseif (¿Acción?) then (Eliminar)
+        :Eliminar producto;
+        :Notificar a empresa;
+        stop
+        
+    else (Ver detalles)
+        :Ver información completa;
+        stop
+    endif
+    
+elseif (¿Qué gestionar?) then (Categorías)
+    :Ver todas las categorías;
+    
+    if (¿Acción?) then (Crear global)
+        :Crear categoría\npara todo el sistema;
+        stop
+    elseif (¿Acción?) then (Fusionar)
+        :Seleccionar categorías\na fusionar;
+        :Reasignar productos;
+        :Eliminar categoría antigua;
+        stop
+    else (Eliminar)
+        :Verificar productos;
+        :Eliminar categoría;
+        stop
+    endif
+    
+elseif (¿Qué gestionar?) then (Reportes)
+    :Seleccionar tipo de reporte;
+    
+    if (¿Tipo?) then (Productos)
+        :Generar reporte\nde productos por empresa;
+        :Exportar;
+        stop
+    elseif (¿Tipo?) then (Ventas)
+        :Generar reporte\nde ventas global;
+        :Exportar;
+        stop
+    else (Inventario)
+        :Generar reporte\nde stock total;
+        :Identificar stock bajo;
+        :Exportar;
+        stop
+    endif
+    
+else (Configuración)
+    :Configurar IVA;
+    :Configurar categorías\npredeterminadas;
+    :Guardar cambios;
+    stop
+endif
+
+note bottom
+  **Roles y Responsabilidades en Gestión de Productos:**
+  
+  **Cliente:**
+  - Ver catálogo público
+  - Buscar y filtrar productos
+  - Ver detalles y calificaciones
+  - Calificar productos comprados
+  - Comentar productos
+  
+  **Microempresa Integral:**
+  - CRUD completo de sus productos
+  - Gestión de stock (aumentar, ajustar)
+  - Gestión de categorías propias
+  - Ver reportes de ventas
+  - Recibir alertas de stock bajo
+  - Gestionar imágenes de productos
+  
+  **Microempresa Satélite:**
+  - CRUD de servicios de confección
+  - Gestión de maquinaria para arriendo
+  - Establecer precios y disponibilidad
+  - Ver reportes de servicios
+  - Gestionar solicitudes de confección
+  
+  **Super Usuario:**
+  - Ver todos los productos del sistema
+  - Moderar contenido inapropiado
+  - Gestión global de categorías
+  - Generar reportes globales
+  - Configurar parámetros del sistema
+  - Eliminar productos de cualquier empresa
+end note
+
+@enduml
