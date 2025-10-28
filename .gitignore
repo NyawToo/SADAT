@@ -8,8 +8,6 @@ __pycache__/
 *.pot
 *.pyc
 local_settings.py
-db.sqlite3
-db.sqlite3-journal
 media
 
 # Static files
@@ -37,4 +35,3 @@ pip-log.txt
 *.pyd
 .Python
 pip-log.txt
-*.sqlite3

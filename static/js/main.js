@@ -88,7 +88,7 @@ document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => {
                 const bsAlert = new bootstrap.Alert(alert);
                 bsAlert.close();
-            }, 1000); // 1 segundo
+            }, 900); // 1.5 segundos
         }
     });
 });

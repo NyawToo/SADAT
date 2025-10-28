@@ -30,7 +30,7 @@ function showNotification(message, type = 'success') {
             // Remover la notificación del conjunto de activas
             activeNotifications.delete(message);
         }, 100);
-    }, 500);
+    }, 900);
 }
 
 // Función para mostrar notificaciones de éxito
