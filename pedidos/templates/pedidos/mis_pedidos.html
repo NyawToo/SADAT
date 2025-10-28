@@ -74,7 +74,7 @@
                                                     </div>
                                                     <div class="col-md-6">
                                                         <h6>Detalles de la Empresa</h6>
-                                                        <p><strong>Nombre:</strong> {{ pedido.empresa.nombre }}</p>
+                                                        <p><strong>Nombre:</strong> {{ pedido.empresa.nombre_empresa }}</p>
                                                         <p><strong>Email:</strong> {{ pedido.empresa.usuario.email }}</p>
                                                         <p><strong>Teléfono:</strong> {{ pedido.empresa.telefono }}</p>
                                                     </div>
@@ -100,7 +100,7 @@
                     {% for pedido in pedidos_personalizados %}
                     <div class="card mb-3">
                         <div class="card-header d-flex justify-content-between align-items-center">
-                            <h5 class="mb-0">Solicitud #{{ pedido.numero_solicitud }}</h5>
+                            <h5 class="mb-0">Solicitud #{{ pedido.id }}</h5>
                             <span class="badge {% if pedido.estado == 'solicitado' %}bg-warning
                                                      {% elif pedido.estado == 'cotizado' %}bg-info
                                                      {% elif pedido.estado == 'aceptado' %}bg-success
@@ -113,10 +113,10 @@
                         <div class="card-body">
                             <div class="row">
                                 <div class="col-md-8">
-                                    <p><strong>Empresa:</strong> {{ pedido.empresa.nombre }}</p>
-                                    <p><strong>Tipo de Prenda:</strong> {{ pedido.tipo_prenda }}</p>
+                                    <p><strong>Empresa:</strong> {{ pedido.empresa.nombre_empresa }}</p>
+                                    <!-- <p><strong>Tipo de Prenda:</strong> {{ pedido.tipo_prenda }}</p> -->
                                     <p><strong>Fecha Solicitada:</strong> {{ pedido.fecha_solicitud|date:"d/m/Y" }}</p>
-                                    <p><strong>Presupuesto Inicial:</strong> ${{ pedido.presupuesto }}</p>
+                                    <!-- <p><strong>Presupuesto Inicial:</strong> ${{ pedido.presupuesto }}</p> -->
                                     {% if pedido.cotizacion %}
                                     <p><strong>Precio Cotizado:</strong> ${{ pedido.cotizacion }}</p>
                                     <p><strong>Fecha Cotización:</strong> {{ pedido.fecha_cotizacion|date:"d/m/Y" }}</p>
@@ -175,8 +175,16 @@
                     {% for solicitud in solicitudes_confeccion %}
                     <div class="card mb-3">
                         <div class="card-header d-flex justify-content-between align-items-center">
-                            <h5 class="mb-0">Solicitud #{{ solicitud.numero_solicitud }}</h5>
-                            <span class="badge bg-{{ solicitud.get_estado_color }}">{{ solicitud.get_estado_display }}</span>
+                            <h5 class="mb-0">Solicitud #{{ solicitud.id }}</h5>
+                            <span class="badge {% if solicitud.estado == 'pendiente' %}bg-warning
+                                                     {% elif solicitud.estado == 'cotizada' %}bg-info
+                                                     {% elif solicitud.estado == 'aceptada' %}bg-success
+                                                     {% elif solicitud.estado == 'rechazada' %}bg-danger
+                                                     {% elif solicitud.estado == 'en_proceso' %}bg-primary
+                                                     {% elif solicitud.estado == 'completada' %}bg-success
+                                                     {% else %}bg-secondary{% endif %}">
+                                {{ solicitud.get_estado_display }}
+                            </span>
                         </div>
                         <div class="card-body">
                             <div class="row">

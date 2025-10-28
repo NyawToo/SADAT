@@ -3,6 +3,7 @@
   /* Colores principales */
   --primary-color: #60a5fa;
   --primary-dark: #3b82f6;
+  --primary-darks: #08090c;
   --primary-light: #93c5fd;
   --primary-ultra-light: #dbeafe;
   
@@ -850,7 +851,7 @@ h1 {
 
 h2 {
   font-size: 2rem;
-  color: var(--primary-dark);
+  color: var(--primary-darks);
 }
 
 h3 {

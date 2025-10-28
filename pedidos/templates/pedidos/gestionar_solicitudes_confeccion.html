@@ -19,8 +19,8 @@
                             <option value="cotizada" {% if estado_filtro == 'cotizada' %}selected{% endif %}>Cotizados</option>
                             <option value="aceptado" {% if estado_filtro == 'aceptado' %}selected{% endif %}>Aceptados</option>
                             <option value="en_proceso" {% if estado_filtro == 'en_proceso' %}selected{% endif %}>En Proceso</option>
-                            <option value="completado" {% if estado_filtro == 'completado' %}selected{% endif %}>Completados</option>
-                            <option value="rechazado" {% if estado_filtro == 'rechazado' %}selected{% endif %}>Rechazados</option>
+                            <option value="completada" {% if estado_filtro == 'completada' %}selected{% endif %}>Completados</option>
+                            <option value="rechazada" {% if estado_filtro == 'rechazada' %}selected{% endif %}>Rechazados</option>
                         </select>
                         <input type="date" class="form-control" id="filtroFecha" name="fecha" value="{{ fecha_filtro|default:'' }}">
 
@@ -49,7 +49,15 @@
                                     <td>{{ solicitud.cantidad_prendas }}</td>
                                     <td class="fw-bold">{{ solicitud.fecha_entrega_requerida }}</td>
                                     <td>
-                                        <span class="badge bg-{{ solicitud.get_estado_color }} text-dark">{{ solicitud.get_estado_display }}</span>
+                                        <span class="badge {% if solicitud.estado == 'pendiente' %}bg-warning
+                                                     {% elif solicitud.estado == 'cotizada' %}bg-info
+                                                     {% elif solicitud.estado == 'aceptada' %}bg-success
+                                                     {% elif solicitud.estado == 'rechazada' %}bg-danger
+                                                     {% elif solicitud.estado == 'en_proceso' %}bg-primary
+                                                     {% elif solicitud.estado == 'completada' %}bg-success
+                                                     {% else %}bg-secondary{% endif %} text-white">
+                                            {{ solicitud.get_estado_display }}
+                                        </span>
                                     </td>
                                     <td>
                                         <button class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#detallesSolicitud{{ solicitud.id }}">
@@ -60,11 +68,11 @@
                                             <i class="fas fa-dollar-sign"></i> Cotizar
                                         </button>
                                         {% elif solicitud.estado == 'aceptado' %}
-                                        <button class="btn btn-sm btn-primary" onclick="actualizarEstado({{ solicitud.id }}, 'en_proceso')">
+                                        <button class="btn btn-sm btn-primary" onclick='actualizarEstado({{ solicitud.id }}, "en_proceso")'>
                                             <i class="fas fa-play"></i> Iniciar
                                         </button>
                                         {% elif solicitud.estado == 'en_proceso' %}
-                                        <button class="btn btn-sm btn-success" onclick="actualizarEstado({{ solicitud.id }}, 'completado')">
+                                        <button class="btn btn-sm btn-success" onclick='actualizarEstado({{ solicitud.id }}, "completada")'>
                                             <i class="fas fa-check"></i> Completar
                                         </button>
                                         {% endif %}
@@ -72,7 +80,7 @@
                                 </tr>
 
                                 <!-- Modal Detalles Solicitud -->
-                                <div class="modal fade" id="detallesSolicitud{{ solicitud.id }}" tabindex="-1">
+                                <div class="modal fade" id="detallesSolicitud{{ solicitud.id }}" tabindex="-1" data-bs-backdrop="false">
                                     <div class="modal-dialog modal-lg">
                                         <div class="modal-content">
                                             <div class="modal-header">
@@ -120,7 +128,7 @@
                                                     <ul class="list-group">
                                                         {% for estado in solicitud.historial_estados.all %}
                                                         <li class="list-group-item">
-                                                            <span class="badge bg-{{ estado.get_estado_color }} me-2">{{ estado.get_estado_display }}</span>
+                                                            <span class="badge bg-info me-2">{{ estado.get_estado_display }}</span>
                                                             {{ estado.fecha }} - {{ estado.comentario|default:"Sin comentarios" }}
                                                         </li>
                                                         {% endfor %}
@@ -129,8 +137,8 @@
                                             </div>
                                             <div class="modal-footer">
                                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                                                {% if solicitud.estado != 'completado' and solicitud.estado != 'rechazado' %}
-                                                <button type="button" class="btn btn-danger" onclick="actualizarEstado({{ solicitud.id }}, 'rechazado')">
+                                                {% if solicitud.estado != 'completada' and solicitud.estado != 'rechazada' %}
+                                                <button type="button" class="btn btn-danger" onclick='actualizarEstado({{ solicitud.id }}, "rechazada")'>
                                                     Rechazar Solicitud
                                                 </button>
                                                 {% endif %}
@@ -140,7 +148,7 @@
                                 </div>
 
                                 <!-- Modal Cotizar Solicitud -->
-                                <div class="modal fade" id="cotizarSolicitud{{ solicitud.id }}" tabindex="-1">
+                                <div class="modal fade" id="cotizarSolicitud{{ solicitud.id }}" tabindex="-1" data-bs-backdrop="false">
                                     <div class="modal-dialog">
                                         <div class="modal-content">
                                             <div class="modal-header">
@@ -168,7 +176,7 @@
                                             </div>
                                             <div class="modal-footer">
                                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                                                <button type="button" class="btn btn-primary" onclick="enviarCotizacion({{ solicitud.id }})">
+                                                <button type="button" class="btn btn-primary" onclick='enviarCotizacion({{ solicitud.id }})'>
                                                     Enviar Cotización
                                                 </button>
                                             </div>
@@ -220,6 +228,9 @@ function enviarCotizacion(solicitudId) {
         return;
     }
 
+    console.log('Enviando cotización para solicitud ID:', solicitudId);
+    console.log('Datos:', { precio, tiempo, comentarios });
+
     fetch(`/pedidos/confeccion/cotizar/${solicitudId}/`, {
         method: 'POST',
         headers: {
@@ -227,27 +238,32 @@ function enviarCotizacion(solicitudId) {
             'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
         },
         body: JSON.stringify({
-            precio_por_prenda: precio,
-            tiempo_estimado: tiempo,
+            precio_por_prenda: parseFloat(precio),
+            tiempo_estimado: parseInt(tiempo),
             comentarios: comentarios
         })
     })
     .then(response => {
+        console.log('Status:', response.status);
         if (!response.ok) {
-            throw new Error('Error en la respuesta del servidor');
+            return response.json().then(data => {
+                throw new Error(data.error || 'Error en el servidor');
+            });
         }
         return response.json();
     })
     .then(data => {
+        console.log('Respuesta:', data);
         if (data.success) {
+            alert('Cotización enviada exitosamente');
             location.reload();
         } else {
             alert(data.error || 'Error al enviar la cotización');
         }
     })
     .catch(error => {
-        console.error('Error:', error);
-        alert('Error al procesar la solicitud');
+        console.error('Error completo:', error);
+        alert('Error al procesar la solicitud: ' + error.message);
     });
 }
 

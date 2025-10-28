@@ -52,7 +52,7 @@
                             </select>
                         </div>
 
-                        <div class="mb-3" id="detalles_material" style="display: {% if form_data.material_cliente == 'si' %}block{% else %}none{% endif %};">
+                        <div class="mb-3" id="detalles_material" {% if form_data.material_cliente == 'si' %}style="display:block;"{% else %}style="display:none;"{% endif %}>
                             <label for="descripcion_material" class="form-label">Descripción del material</label>
                             <textarea class="form-control" id="descripcion_material" name="descripcion_material" rows="4"
                                       {% if form_data.material_cliente == 'si' %}required{% endif %}>{{ form_data.descripcion_material|default_if_none:'' }}</textarea>

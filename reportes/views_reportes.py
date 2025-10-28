@@ -60,7 +60,7 @@ def reporte_cliente(request):
             'total_pedidos': compra['total_compras'],
             'ultima_compra': ultimo_pedido.fecha_pedido if ultimo_pedido else None,
             'estado_ultimo_pedido': ultimo_pedido.get_estado_display() if ultimo_pedido else 'N/A',
-            'estado_color': 'success' if ultimo_pedido and ultimo_pedido.estado == 'completado' else 'warning',
+            'estado_color': 'success' if ultimo_pedido and ultimo_pedido.estado == 'entregado' else 'warning',
             'monto_total': compra['monto_total']
         })
 
@@ -127,7 +127,7 @@ def reporte_empresa(request, empresa_id=None):
         'nombre': Pedido.ESTADOS_DICT.get(estado['estado'], estado['estado']),
         'cantidad': estado['cantidad'],
         'porcentaje': round((estado['cantidad'] / total_pedidos) * 100 if total_pedidos > 0 else 0, 2),
-        'color': 'success' if estado['estado'] == 'completado' else 'warning'
+        'color': 'success' if estado['estado'] == 'entregado' else 'warning'
     } for estado in estados_pedidos]
 
     # Preparar datos para gráficos
@@ -135,7 +135,7 @@ def reporte_empresa(request, empresa_id=None):
     productos_cantidades = [p['cantidad_vendida'] for p in productos_vendidos[:5]] if es_integral else []
     estados_labels = [estado['nombre'] for estado in estados_data]
     estados_cantidades = [estado['cantidad'] for estado in estados_data]
-    estados_colores = ['#28a745' if estado['nombre'] == 'Completado' else '#ffc107' for estado in estados_data]
+    estados_colores = ['#28a745' if estado['nombre'] == 'Entregado' else '#ffc107' for estado in estados_data]
 
     # Obtener pedidos recientes con sus relaciones
     pedidos = Pedido.objects.select_related('cliente').prefetch_related(
@@ -190,7 +190,7 @@ def reporte_empresa(request, empresa_id=None):
                 'productos_detalles': productos_detalles,
                 'fecha': pedido.fecha_pedido,
                 'estado': pedido.get_estado_display(),
-                'estado_color': 'success' if pedido.estado == 'completado' else 'warning',
+                'estado_color': 'success' if pedido.estado == 'entregado' else 'warning',
                 'total': pedido.total
             })
         except Exception as e:
@@ -264,7 +264,9 @@ def panel_admin_reportes(request):
 
 def exportar_reporte(request, tipo_reporte, formato, **kwargs):
     if tipo_reporte == 'cliente':
-        data = generar_datos_reporte_cliente(request.user)
+        # Generar datos para reporte de cliente
+        data = {}
+        # TODO: Implementar generación de datos para cliente
     elif tipo_reporte == 'empresa':
         empresa_id = kwargs.get('empresa_id')
         empresa = get_object_or_404(MicroempresaIntegral, id=empresa_id)

@@ -196,9 +196,9 @@ const ctxEmpresas = document.getElementById('graficoDistribucionEmpresas').getCo
 const graficoEmpresas = new Chart(ctxEmpresas, {
     type: 'pie',
     data: {
-        labels: {{ labels_empresas|safe }},
+        labels: {{ distribucion_empresas_labels|safe }},
         datasets: [{
-            data: {{ datos_empresas }},
+            data: {{ distribucion_empresas_data|safe }},
             backgroundColor: [
                 'rgb(255, 99, 132)',
                 'rgb(54, 162, 235)',

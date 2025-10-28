@@ -43,18 +43,18 @@
                                     <td>
                                         <div class="d-flex align-items-center">
                                             {% if empresa.imagen %}
-                                            <img src="{{ empresa.imagen.url }}" alt="{{ empresa.nombre }}" class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;">
+                                            <img src="{{ empresa.imagen.url }}" alt="{{ empresa.nombre_empresa }}" class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;">
                                             {% endif %}
                                             <div>
-                                                <h6 class="mb-0">{{ empresa.nombre }}</h6>
-                                                <small class="text-muted">{{ empresa.ciudad }}</small>
+                                                <h6 class="mb-0">{{ empresa.nombre_empresa }}</h6>
+                                                <small class="text-muted">{{ empresa.direccion|default:"Sin dirección" }}</small>
                                             </div>
                                         </div>
                                     </td>
-                                    <td>${{ empresa.total_ventas_anual|floatformat:2 }}</td>
-                                    <td>{{ empresa.productos_activos }}</td>
-                                    <td>{{ empresa.pedidos_pendientes }}</td>
-                                    <td>{{ empresa.ultima_actualizacion|date:"d/m/Y H:i" }}</td>
+                                    <td>${{ empresa.total_ventas_anual|floatformat:2|default:"0.00" }}</td>
+                                    <td>{{ empresa.productos_activos|default:0 }}</td>
+                                    <td>{{ empresa.pedidos_pendientes|default:0 }}</td>
+                                    <td>{{ empresa.usuario.last_login|date:"d/m/Y H:i"|default:"Nunca" }}</td>
                                     <td>
                                         <a href="{% url 'reporte_empresa' empresa.id %}" class="btn btn-primary btn-sm">
                                             <i class="fas fa-chart-bar me-1"></i>Ver Reportes
@@ -87,18 +87,18 @@
                                     <td>
                                         <div class="d-flex align-items-center">
                                             {% if empresa.imagen %}
-                                            <img src="{{ empresa.imagen.url }}" alt="{{ empresa.nombre }}" class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;">
+                                            <img src="{{ empresa.imagen.url }}" alt="{{ empresa.nombre_empresa }}" class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;">
                                             {% endif %}
                                             <div>
-                                                <h6 class="mb-0">{{ empresa.nombre }}</h6>
-                                                <small class="text-muted">{{ empresa.ciudad }}</small>
+                                                <h6 class="mb-0">{{ empresa.nombre_empresa }}</h6>
+                                                <small class="text-muted">{{ empresa.direccion|default:"Sin dirección" }}</small>
                                             </div>
                                         </div>
                                     </td>
-                                    <td>{{ empresa.total_pedidos_anual }}</td>
-                                    <td>{{ empresa.pedidos_en_proceso }}</td>
-                                    <td>{{ empresa.pedidos_completados }}</td>
-                                    <td>{{ empresa.ultima_actualizacion|date:"d/m/Y H:i" }}</td>
+                                    <td>{{ empresa.total_pedidos_anual|default:0 }}</td>
+                                    <td>{{ empresa.pedidos_en_proceso|default:0 }}</td>
+                                    <td>{{ empresa.pedidos_completados|default:0 }}</td>
+                                    <td>{{ empresa.usuario.last_login|date:"d/m/Y H:i"|default:"Nunca" }}</td>
                                     <td>
                                         <a href="{% url 'reporte_empresa' empresa.id %}" class="btn btn-primary btn-sm">
                                             <i class="fas fa-chart-bar me-1"></i>Ver Reportes

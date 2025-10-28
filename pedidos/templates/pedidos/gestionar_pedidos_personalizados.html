@@ -3,7 +3,7 @@
 
 {% block content %}
 <div class="container mt-4">
-    <h2 class="mb-4">Gestionar Pedidos Personalizados</h2>
+    <h2 class="mb-4 text-black">Gestionar Pedidos Personalizados</h2>
     
     <!-- Filtros -->
     <div class="card mb-4">
@@ -63,7 +63,7 @@
                                     <td>{{ pedido.fecha_solicitud|date:"d/m/Y H:i" }}</td>
                                     <td>{{ pedido.fecha_entrega_estimada|date:"d/m/Y"|default:"--" }}</td>
                                     <td>
-                                        <span class="badge bg-{{ pedido.estado|lower }}-subtle text-{{ pedido.estado|lower }}">
+                                        <span class="text-black bg-{{ pedido.estado|lower }}-subtle text-{{ pedido.estado|lower }}">
                                             {{ pedido.get_estado_display }}
                                         </span>
                                     </td>
@@ -76,7 +76,7 @@
                                 </tr>
                                 
                                 <!-- Modal de Detalles -->
-                                <div class="modal fade" id="detalleModal{{ pedido.id }}" tabindex="-1">
+                                <div class="modal fade" id="detalleModal{{ pedido.id }}" tabindex="-1" data-bs-backdrop="false">
                                     <div class="modal-dialog modal-lg">
                                         <div class="modal-content">
                                             <div class="modal-header">
