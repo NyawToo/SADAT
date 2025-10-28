@@ -228,9 +228,6 @@ function enviarCotizacion(solicitudId) {
         return;
     }
 
-    console.log('Enviando cotización para solicitud ID:', solicitudId);
-    console.log('Datos:', { precio, tiempo, comentarios });
-
     fetch(`/pedidos/confeccion/cotizar/${solicitudId}/`, {
         method: 'POST',
         headers: {
@@ -244,7 +241,6 @@ function enviarCotizacion(solicitudId) {
         })
     })
     .then(response => {
-        console.log('Status:', response.status);
         if (!response.ok) {
             return response.json().then(data => {
                 throw new Error(data.error || 'Error en el servidor');
@@ -253,7 +249,6 @@ function enviarCotizacion(solicitudId) {
         return response.json();
     })
     .then(data => {
-        console.log('Respuesta:', data);
         if (data.success) {
             alert('Cotización enviada exitosamente');
             location.reload();

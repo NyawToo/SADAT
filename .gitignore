@@ -35,3 +35,5 @@ pip-log.txt
 *.pyd
 .Python
 pip-log.txt
+poblar_bd.py
+poblar_pagos.py

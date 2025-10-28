@@ -30,8 +30,13 @@
             <div class="tab-content" id="empresasTabContent">
                 <!-- Empresas Integrales -->
                 <div class="tab-pane fade show active" id="integrales" role="tabpanel" aria-labelledby="integrales-tab">
+                    <!-- Buscador -->
+                    <div class="mb-3">
+                        <input type="text" class="form-control" id="buscarIntegrales" placeholder="🔍 Buscar empresa integral por nombre...">
+                    </div>
+                    
                     <div class="table-responsive">
-                        <table class="table table-hover">
+                        <table class="table table-hover" id="tablaIntegrales">
                             <thead>
                                 <tr>
                                     <th>Empresa</th>
@@ -78,12 +83,55 @@
                             </tbody>
                         </table>
                     </div>
+                    
+                    <!-- Paginación para Empresas Integrales -->
+                    {% if empresas_integrales.has_other_pages %}
+                    <nav aria-label="Paginación de empresas integrales">
+                        <ul class="pagination justify-content-center mt-3">
+                            {% if empresas_integrales.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page_integrales={{ empresas_integrales.previous_page_number }}">Anterior</a>
+                            </li>
+                            {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">Anterior</span>
+                            </li>
+                            {% endif %}
+                            
+                            {% for num in empresas_integrales.paginator.page_range %}
+                                {% if empresas_integrales.number == num %}
+                                <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                                {% elif num > empresas_integrales.number|add:'-3' and num < empresas_integrales.number|add:'3' %}
+                                <li class="page-item"><a class="page-link" href="?page_integrales={{ num }}">{{ num }}</a></li>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if empresas_integrales.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page_integrales={{ empresas_integrales.next_page_number }}">Siguiente</a>
+                            </li>
+                            {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">Siguiente</span>
+                            </li>
+                            {% endif %}
+                        </ul>
+                        <p class="text-center text-muted">
+                            Mostrando {{ empresas_integrales.start_index }} - {{ empresas_integrales.end_index }} de {{ empresas_integrales.paginator.count }} empresas
+                        </p>
+                    </nav>
+                    {% endif %}
                 </div>
 
                 <!-- Empresas Satélites -->
                 <div class="tab-pane fade" id="satelites" role="tabpanel" aria-labelledby="satelites-tab">
+                    <!-- Buscador -->
+                    <div class="mb-3">
+                        <input type="text" class="form-control" id="buscarSatelites" placeholder="🔍 Buscar empresa satélite por nombre...">
+                    </div>
+                    
                     <div class="table-responsive">
-                        <table class="table table-hover">
+                        <table class="table table-hover" id="tablaSatelites">
                             <thead>
                                 <tr>
                                     <th>Empresa</th>
@@ -130,9 +178,142 @@
                             </tbody>
                         </table>
                     </div>
+                    
+                    <!-- Paginación para Empresas Satélites -->
+                    {% if empresas_satelites.has_other_pages %}
+                    <nav aria-label="Paginación de empresas satélites">
+                        <ul class="pagination justify-content-center mt-3">
+                            {% if empresas_satelites.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page_satelites={{ empresas_satelites.previous_page_number }}#satelites">Anterior</a>
+                            </li>
+                            {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">Anterior</span>
+                            </li>
+                            {% endif %}
+                            
+                            {% for num in empresas_satelites.paginator.page_range %}
+                                {% if empresas_satelites.number == num %}
+                                <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                                {% elif num > empresas_satelites.number|add:'-3' and num < empresas_satelites.number|add:'3' %}
+                                <li class="page-item"><a class="page-link" href="?page_satelites={{ num }}#satelites">{{ num }}</a></li>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if empresas_satelites.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page_satelites={{ empresas_satelites.next_page_number }}#satelites">Siguiente</a>
+                            </li>
+                            {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">Siguiente</span>
+                            </li>
+                            {% endif %}
+                        </ul>
+                        <p class="text-center text-muted">
+                            Mostrando {{ empresas_satelites.start_index }} - {{ empresas_satelites.end_index }} de {{ empresas_satelites.paginator.count }} empresas
+                        </p>
+                    </nav>
+                    {% endif %}
                 </div>
             </div>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Esperar a que el DOM esté completamente cargado
+    document.addEventListener('DOMContentLoaded', function() {
+        // Buscador para empresas integrales
+        const buscarIntegrales = document.getElementById('buscarIntegrales');
+        
+        if (buscarIntegrales) {
+            buscarIntegrales.addEventListener('keyup', function() {
+                const searchValue = this.value.toLowerCase();
+                const table = document.getElementById('tablaIntegrales');
+                
+                if (!table) return;
+                
+                const tbody = table.getElementsByTagName('tbody')[0];
+                const rows = tbody.getElementsByTagName('tr');
+                
+                let visibleCount = 0;
+                let emptyRow = null;
+                
+                for (let i = 0; i < rows.length; i++) {
+                    const row = rows[i];
+                    
+                    // Detectar fila vacía (empty state)
+                    if (row.cells.length === 1 && row.cells[0].colSpan > 1) {
+                        emptyRow = row;
+                        continue;
+                    }
+                    
+                    // Buscar en el nombre de la empresa (primera celda)
+                    const empresaCell = row.cells[0];
+                    const empresaName = empresaCell ? empresaCell.textContent.toLowerCase().trim() : '';
+                    
+                    if (empresaName.includes(searchValue)) {
+                        row.style.display = '';
+                        visibleCount++;
+                    } else {
+                        row.style.display = 'none';
+                    }
+                }
+                
+                // Manejar mensaje de "no encontrado"
+                if (emptyRow) {
+                    emptyRow.style.display = visibleCount === 0 ? '' : 'none';
+                }
+            });
+        }
+        
+        // Buscador para empresas satélites
+        const buscarSatelites = document.getElementById('buscarSatelites');
+        
+        if (buscarSatelites) {
+            buscarSatelites.addEventListener('keyup', function() {
+                const searchValue = this.value.toLowerCase();
+                const table = document.getElementById('tablaSatelites');
+                
+                if (!table) return;
+                
+                const tbody = table.getElementsByTagName('tbody')[0];
+                const rows = tbody.getElementsByTagName('tr');
+                
+                let visibleCount = 0;
+                let emptyRow = null;
+                
+                for (let i = 0; i < rows.length; i++) {
+                    const row = rows[i];
+                    
+                    // Detectar fila vacía (empty state)
+                    if (row.cells.length === 1 && row.cells[0].colSpan > 1) {
+                        emptyRow = row;
+                        continue;
+                    }
+                    
+                    // Buscar en el nombre de la empresa (primera celda)
+                    const empresaCell = row.cells[0];
+                    const empresaName = empresaCell ? empresaCell.textContent.toLowerCase().trim() : '';
+                    
+                    if (empresaName.includes(searchValue)) {
+                        row.style.display = '';
+                        visibleCount++;
+                    } else {
+                        row.style.display = 'none';
+                    }
+                }
+                
+                // Manejar mensaje de "no encontrado"
+                if (emptyRow) {
+                    emptyRow.style.display = visibleCount === 0 ? '' : 'none';
+                }
+            });
+        }
+    });
+</script>
 {% endblock %}

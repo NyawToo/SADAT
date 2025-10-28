@@ -193,30 +193,126 @@
     </div>
 
     <!-- Footer -->
-    <footer class="footer-custom">
-        <div class="container">
-            <div class="row align-items-center">
-                <!-- Iconos de redes sociales -->
-                <div class="col-md-4 text-center text-md-start mb-3 mb-md-0">
-                    <a href="https://facebook.com" class="social-icon" target="_blank">
-                        <i class="bi bi-facebook"></i>
-                    </a>
-                    <a href="https://instagram.com" class="social-icon" target="_blank">
-                        <i class="bi bi-instagram"></i>
-                    </a>
-                    <a href="https://wa.me/1234567890" class="social-icon" target="_blank">
-                        <i class="bi bi-whatsapp"></i>
-                    </a>
+    <footer class="footer-custom mt-5">
+        <!-- Burbujas animadas de fondo -->
+        <div class="bubbles">
+            <span style="--i:11;"></span>
+            <span style="--i:12;"></span>
+            <span style="--i:24;"></span>
+            <span style="--i:10;"></span>
+            <span style="--i:14;"></span>
+            <span style="--i:23;"></span>
+            <span style="--i:18;"></span>
+            <span style="--i:16;"></span>
+            <span style="--i:19;"></span>
+            <span style="--i:20;"></span>
+            <span style="--i:22;"></span>
+            <span style="--i:25;"></span>
+            <span style="--i:18;"></span>
+            <span style="--i:21;"></span>
+            <span style="--i:15;"></span>
+            <span style="--i:13;"></span>
+            <span style="--i:26;"></span>
+            <span style="--i:17;"></span>
+            <span style="--i:13;"></span>
+            <span style="--i:28;"></span>
+        </div>
+        
+        <div class="container-fluid px-4 py-4 position-relative">
+            <div class="row g-4">
+                <!-- Sobre SADAT -->
+                <div class="col-lg-3 col-md-6">
+                    <h5 class="footer-title mb-3">
+                        <i class="bi bi-award-fill me-2"></i>SADAT
+                    </h5>
+                    <p class="footer-text mb-3">
+                        Plataforma líder en la conexión de microempresas textiles en Colombia.
+                    </p>
+                    <p class="footer-text mb-0">
+                        <i class="bi bi-geo-alt-fill me-2"></i>Colombia
+                    </p>
                 </div>
-                <!-- Enlaces -->
-                <div class="col-md-4 text-center mb-3 mb-md-0">
-                    <a href="#">Términos y condiciones</a>
-                    <a href="#">Política de cookies</a>
-                    <a href="#">Política de privacidad</a>
+
+                <!-- Contacto -->
+                <div class="col-lg-3 col-md-6">
+                    <h5 class="footer-title mb-3">
+                        <i class="bi bi-telephone-fill me-2"></i>Contacto
+                    </h5>
+                    <p class="footer-text mb-2">
+                        <i class="bi bi-envelope-fill me-2"></i>
+                        <a href="mailto:contacto@sadat.co">contacto@sadat.co</a>
+                    </p>
+                    <p class="footer-text mb-2">
+                        <i class="bi bi-phone-fill me-2"></i>
+                        <a href="tel:+573001234567">+57 300 123 4567</a>
+                    </p>
+                    <p class="footer-text mb-0">
+                        <i class="bi bi-clock-fill me-2"></i>Lun - Vie: 8:00 - 18:00
+                    </p>
                 </div>
-                <!-- Derechos reservados -->
-                <div class="col-md-4 text-center text-md-end">
-                    <p>© 2025 SADAT. Todos los derechos reservados.</p>
+
+                <!-- Enlaces Rápidos -->
+                <div class="col-lg-3 col-md-6">
+                    <h5 class="footer-title mb-3">
+                        <i class="bi bi-link-45deg me-2"></i>Enlaces
+                    </h5>
+                    <ul class="footer-links list-unstyled mb-0">
+                        <li><a href="{% url 'home' %}">Inicio</a></li>
+                        {% if user.is_authenticated %}
+                            {% if user.tipo == 'cliente' %}
+                            <li><a href="{% url 'catalogo_integrales' %}">Catálogo Integrales</a></li>
+                            <li><a href="{% url 'catalogo_satelites' %}">Catálogo Satélites</a></li>
+                            {% elif user.tipo == 'integral' %}
+                            <li><a href="{% url 'gestionar_productos' %}">Mis Productos</a></li>
+                            <li><a href="{% url 'gestionar_pedidos' %}">Mis Pedidos</a></li>
+                            {% elif user.tipo == 'satelite' %}
+                            <li><a href="{% url 'agregar_servicios' %}">Mis Servicios</a></li>
+                            {% endif %}
+                        {% endif %}
+                        <li><a href="#">Términos y Condiciones</a></li>
+                        <li><a href="#">Política de Privacidad</a></li>
+                    </ul>
+                </div>
+
+                <!-- Redes Sociales -->
+                <div class="col-lg-3 col-md-6">
+                    <h5 class="footer-title mb-3">
+                        <i class="bi bi-share-fill me-2"></i>Síguenos
+                    </h5>
+                    <div class="social-links mb-3">
+                        <a href="https://facebook.com" class="social-icon" target="_blank" aria-label="Facebook">
+                            <i class="bi bi-facebook"></i>
+                        </a>
+                        <a href="https://instagram.com" class="social-icon" target="_blank" aria-label="Instagram">
+                            <i class="bi bi-instagram"></i>
+                        </a>
+                        <a href="https://wa.me/573001234567" class="social-icon" target="_blank" aria-label="WhatsApp">
+                            <i class="bi bi-whatsapp"></i>
+                        </a>
+                        <a href="https://twitter.com" class="social-icon" target="_blank" aria-label="Twitter">
+                            <i class="bi bi-twitter"></i>
+                        </a>
+                    </div>
+                    <p class="footer-text mb-0">
+                        <i class="bi text-danger me-2"></i>
+                        Conectando microempresas
+                    </p>
+                </div>
+            </div>
+
+            <!-- Copyright -->
+            <div class="footer-bottom mt-4 pt-3 border-top border-secondary">
+                <div class="row">
+                    <div class="col-md-6 text-center text-md-start">
+                        <p class="footer-text mb-0">
+                            © {{ "now"|date:"Y" }} SADAT -  Colombia. Todos los derechos reservados.
+                        </p>
+                    </div>
+                    <div class="col-md-6 text-center text-md-end">
+                        <p class="footer-text mb-0">
+                            Versión 1.0 | Hecho con todo el corazón en Colombia
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -290,5 +386,8 @@
             observer.observe(el);
         });
     </script>
+    
+    {% block extra_js %}
+    {% endblock %}
 </body>
 </html>

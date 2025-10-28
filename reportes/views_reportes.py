@@ -135,7 +135,27 @@ def reporte_empresa(request, empresa_id=None):
     productos_cantidades = [p['cantidad_vendida'] for p in productos_vendidos[:5]] if es_integral else []
     estados_labels = [estado['nombre'] for estado in estados_data]
     estados_cantidades = [estado['cantidad'] for estado in estados_data]
-    estados_colores = ['#28a745' if estado['nombre'] == 'Entregado' else '#ffc107' for estado in estados_data]
+    
+    # Colores brillantes para cada estado
+    colores_estados = {
+        'Pendiente': '#FF6B35',      # Naranja brillante
+        'En Producción': '#FFB800',  # Amarillo dorado
+        'En Produccion': '#FFB800',  # Amarillo dorado (alternativa)
+        'Terminado': '#00D9FF',      # Cian brillante
+        'Enviado': '#7B68EE',        # Azul violeta
+        'Entregado': '#00E676',      # Verde brillante
+        'Solicitado': '#FF6B35',     # Naranja brillante
+        'Cotizado': '#FFB800',       # Amarillo dorado
+        'Aceptado': '#00D9FF',       # Cian brillante
+        'En Proceso': '#7B68EE',     # Azul violeta
+        'Completado': '#00E676',     # Verde brillante
+        'Completada': '#00E676',     # Verde brillante
+        'Rechazado': '#FF1744',      # Rojo brillante
+        'Rechazada': '#FF1744',      # Rojo brillante
+        'Cancelado': '#9E9E9E',      # Gris
+    }
+    
+    estados_colores = [colores_estados.get(estado['nombre'], '#FF6B35') for estado in estados_data]
 
     # Obtener pedidos recientes con sus relaciones
     pedidos = Pedido.objects.select_related('cliente').prefetch_related(
@@ -217,14 +237,15 @@ def reporte_empresa(request, empresa_id=None):
 @role_required(['superusuario'])
 def panel_admin_reportes(request):
     from django.db.models import Q
+    from django.core.paginator import Paginator
     
     # Obtener el primer y último día del año actual
     año_actual = timezone.now().year
     primer_dia_año = datetime(año_actual, 1, 1, tzinfo=ZoneInfo("UTC"))
     ultimo_dia_año = datetime(año_actual, 12, 31, 23, 59, 59, tzinfo=ZoneInfo("UTC"))
     
-    # Empresas Integrales
-    empresas_integrales = MicroempresaIntegral.objects.all().annotate(
+    # Empresas Integrales con anotaciones
+    empresas_integrales_query = MicroempresaIntegral.objects.all().annotate(
         total_ventas_anual=Sum(
             'pedidos__total',
             filter=Q(pedidos__fecha_pedido__gte=primer_dia_año, pedidos__fecha_pedido__lte=ultimo_dia_año)
@@ -239,10 +260,15 @@ def panel_admin_reportes(request):
             filter=Q(pedidos__fecha_pedido__gte=primer_dia_año, pedidos__fecha_pedido__lte=ultimo_dia_año),
             distinct=True
         )
-    )
+    ).order_by('-total_ventas_anual')
+    
+    # Paginación para empresas integrales
+    paginator_integrales = Paginator(empresas_integrales_query, 20)  # 20 por página
+    page_integrales = request.GET.get('page_integrales', 1)
+    empresas_integrales = paginator_integrales.get_page(page_integrales)
 
-    # Empresas Satélites
-    empresas_satelites = MicroempresaSatelite.objects.all().annotate(
+    # Empresas Satélites con anotaciones
+    empresas_satelites_query = MicroempresaSatelite.objects.all().annotate(
         total_pedidos_anual=Count(
             'solicitudconfeccion',
             filter=Q(solicitudconfeccion__fecha_solicitud__year=timezone.now().year)
@@ -255,7 +281,12 @@ def panel_admin_reportes(request):
             'solicitudconfeccion',
             filter=Q(solicitudconfeccion__estado='completada')
         )
-    )
+    ).order_by('-total_pedidos_anual')
+    
+    # Paginación para empresas satélites
+    paginator_satelites = Paginator(empresas_satelites_query, 20)  # 20 por página
+    page_satelites = request.GET.get('page_satelites', 1)
+    empresas_satelites = paginator_satelites.get_page(page_satelites)
 
     return render(request, 'reportes/panel_admin_reportes.html', {
         'empresas_integrales': empresas_integrales,

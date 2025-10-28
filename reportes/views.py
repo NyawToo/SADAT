@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Count, Sum, Q, F
 from django.utils import timezone
+from django.core.paginator import Paginator
 from datetime import datetime, timedelta
 from core.decorators import role_required
 from core.models import Usuario
@@ -130,6 +131,11 @@ def reporte_global(request):
     # Ordenar ranking por valoración (descendente), luego por pedidos completados
     ranking_empresas = sorted(ranking_empresas, key=lambda x: (x['valoracion'], x['pedidos_completados']), reverse=True)
     
+    # Aplicar paginación al ranking
+    paginator = Paginator(ranking_empresas, 15)  # 15 empresas por página
+    page_number = request.GET.get('page', 1)
+    ranking_empresas_paginado = paginator.get_page(page_number)
+    
     # Datos para gráficos
     # Tendencia de ventas (últimos 6 meses)
     ventas_por_mes = []
@@ -215,7 +221,7 @@ def reporte_global(request):
     
     context = {
         'estadisticas': estadisticas,
-        'ranking_empresas': ranking_empresas,
+        'ranking_empresas': ranking_empresas_paginado,
         'labels_ventas': json.dumps(meses_labels),
         'datos_ventas': json.dumps(ventas_por_mes),
         'distribucion_empresas_labels': json.dumps(distribucion_empresas['labels']),

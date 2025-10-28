@@ -3,6 +3,31 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/reportes.css' %}">
+<style>
+    .productos-list {
+        max-height: 150px;
+        overflow-y: auto;
+    }
+    .producto-item {
+        padding: 4px 0;
+        border-bottom: 1px solid #eee;
+    }
+    .producto-item:last-child {
+        border-bottom: none;
+    }
+    .cantidad {
+        font-weight: bold;
+        margin-right: 5px;
+    }
+    .nombre {
+        color: #333;
+    }
+    .precio {
+        color: #666;
+        margin-left: 5px;
+        font-size: 0.9em;
+    }
+</style>
 {% endblock %}
 
 {% block content %}
@@ -177,34 +202,6 @@
         </div>
     </div>
 </div>
-
-{% block extra_css %}
-<style>
-    .productos-list {
-        max-height: 150px;
-        overflow-y: auto;
-    }
-    .producto-item {
-        padding: 4px 0;
-        border-bottom: 1px solid #eee;
-    }
-    .producto-item:last-child {
-        border-bottom: none;
-    }
-    .cantidad {
-        font-weight: bold;
-        margin-right: 5px;
-    }
-    .nombre {
-        color: #333;
-    }
-    .precio {
-        color: #666;
-        margin-left: 5px;
-        font-size: 0.9em;
-    }
-</style>
-{% endblock %}
 
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>

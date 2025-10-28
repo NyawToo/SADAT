@@ -1,6 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.core.paginator import Paginator
 from .models import MicroempresaIntegral, MicroempresaSatelite, ProductoTerminado, CategoriaProducto, Servicio
 from .models_materia_prima import MateriaPrima
 from core.decorators import role_required
@@ -11,16 +12,44 @@ def catalogo_empresas(request):
 
 @login_required
 def catalogo_integrales(request):
+    # Obtener búsqueda si existe
+    search_query = request.GET.get('search', '')
+    
     empresas = MicroempresaIntegral.objects.all()
+    
+    # Aplicar búsqueda si existe
+    if search_query:
+        empresas = empresas.filter(nombre_empresa__icontains=search_query)
+    
+    # Aplicar paginación
+    paginator = Paginator(empresas, 12)  # 12 empresas por página
+    page_number = request.GET.get('page', 1)
+    empresas_paginadas = paginator.get_page(page_number)
+    
     return render(request, 'empresas/catalogo_integrales.html', {
-        'empresas': empresas
+        'empresas': empresas_paginadas,
+        'search_query': search_query
     })
 
 @login_required
 def catalogo_satelites(request):
+    # Obtener búsqueda si existe
+    search_query = request.GET.get('search', '')
+    
     empresas = MicroempresaSatelite.objects.all()
+    
+    # Aplicar búsqueda si existe
+    if search_query:
+        empresas = empresas.filter(nombre_empresa__icontains=search_query)
+    
+    # Aplicar paginación
+    paginator = Paginator(empresas, 12)  # 12 empresas por página
+    page_number = request.GET.get('page', 1)
+    empresas_paginadas = paginator.get_page(page_number)
+    
     return render(request, 'empresas/catalogo_satelites.html', {
-        'empresas': empresas
+        'empresas': empresas_paginadas,
+        'search_query': search_query
     })
 
 @login_required

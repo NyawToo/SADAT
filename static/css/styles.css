@@ -599,68 +599,224 @@ main {
   margin-top: auto;
 }
 
-/* Footer - Diseño moderno y simétrico */
-footer {
-  background: var(--footer-bg);
-  color: var(--footer-text);
-  padding: 3rem 0 1.5rem;
-  margin-top: auto;
-  border-top: 2px solid rgba(96, 165, 250, 0.2);
-}
+/* ===================================
+   FOOTER - Diseño Negro con Burbujas
+   =================================== */
 
 .footer-custom {
-  background: var(--footer-bg);
-  color: var(--footer-text);
-}
-
-.footer-custom .container {
-  max-width: 1200px;
-}
-
-.footer-custom p {
+  background: #000000;
+  color: #ffffff;
+  padding: 1rem 0;
+  position: relative;
+  overflow: hidden;
+  width: 100%;
   margin: 0;
-  font-size: 0.95rem;
-  opacity: 0.9;
+  left: 0;
+  right: 0;
 }
 
-.footer-custom a {
-  color: var(--footer-text);
-  text-decoration: none;
-  transition: all var(--transition-speed);
-  opacity: 0.9;
-  padding: 0.5rem;
-  border-radius: var(--border-radius-sm);
+/* Burbujas animadas de fondo */
+.bubbles {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  overflow: hidden;
+  z-index: 0;
 }
 
-.footer-custom a:hover {
-  color: var(--primary-light);
-  opacity: 1;
-  transform: translateY(-2px);
+.bubbles span {
+  position: absolute;
+  bottom: -150px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 50%;
+  animation: bubbleFloat 25s infinite;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.05);
 }
 
-.footer-custom .bi {
-  font-size: 1.75rem;
-  margin: 0 0.75rem;
-  transition: all var(--transition-speed);
+.bubbles span:nth-child(1) { width: 80px; height: 80px; left: 10%; animation-delay: 0s; }
+.bubbles span:nth-child(2) { width: 50px; height: 50px; left: 20%; animation-delay: 2s; animation-duration: 20s; }
+.bubbles span:nth-child(3) { width: 100px; height: 100px; left: 25%; animation-delay: 4s; }
+.bubbles span:nth-child(4) { width: 70px; height: 70px; left: 40%; animation-delay: 0s; animation-duration: 22s; }
+.bubbles span:nth-child(5) { width: 60px; height: 60px; left: 50%; animation-delay: 3s; }
+.bubbles span:nth-child(6) { width: 90px; height: 90px; left: 55%; animation-delay: 7s; animation-duration: 23s; }
+.bubbles span:nth-child(7) { width: 75px; height: 75px; left: 65%; animation-delay: 1s; animation-duration: 21s; }
+.bubbles span:nth-child(8) { width: 55px; height: 55px; left: 70%; animation-delay: 5s; }
+.bubbles span:nth-child(9) { width: 85px; height: 85px; left: 80%; animation-delay: 3s; animation-duration: 24s; }
+.bubbles span:nth-child(10) { width: 65px; height: 65px; left: 90%; animation-delay: 0s; }
+.bubbles span:nth-child(11) { width: 95px; height: 95px; left: 5%; animation-delay: 6s; animation-duration: 26s; }
+.bubbles span:nth-child(12) { width: 45px; height: 45px; left: 15%; animation-delay: 4s; animation-duration: 19s; }
+.bubbles span:nth-child(13) { width: 110px; height: 110px; left: 30%; animation-delay: 8s; }
+.bubbles span:nth-child(14) { width: 58px; height: 58px; left: 35%; animation-delay: 2s; animation-duration: 20s; }
+.bubbles span:nth-child(15) { width: 78px; height: 78px; left: 45%; animation-delay: 5s; animation-duration: 22s; }
+.bubbles span:nth-child(16) { width: 68px; height: 68px; left: 60%; animation-delay: 1s; }
+.bubbles span:nth-child(17) { width: 88px; height: 88px; left: 75%; animation-delay: 7s; animation-duration: 23s; }
+.bubbles span:nth-child(18) { width: 52px; height: 52px; left: 85%; animation-delay: 3s; animation-duration: 21s; }
+.bubbles span:nth-child(19) { width: 72px; height: 72px; left: 92%; animation-delay: 6s; }
+.bubbles span:nth-child(20) { width: 62px; height: 62px; left: 12%; animation-delay: 4s; animation-duration: 24s; }
+
+@keyframes bubbleFloat {
+  0% {
+    transform: translateY(0) translateX(0) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-1000px) translateX(100px) rotate(720deg);
+    opacity: 0;
+  }
 }
 
-.footer-custom .bi:hover {
-  transform: scale(1.2);
-  color: var(--primary-light);
+/* Contenido del footer sobre las burbujas */
+.footer-custom .container {
+  position: relative;
+  z-index: 1;
 }
 
-.footer-custom .row {
+/* Títulos del footer */
+.footer-title {
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: #ffffff;
+  margin-bottom: 1rem;
+  display: flex;
   align-items: center;
-  gap: 1.5rem;
 }
 
-.footer-custom .col-md-4 {
-  margin-bottom: 1.5rem;
+.footer-title i {
+  color: #60a5fa;
 }
 
-.footer-custom .text-md-end,
-.footer-custom .text-md-start {
-  font-size: 0.95rem;
+/* Texto del footer */
+.footer-text {
+  color: #ffffff;
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.footer-text i {
+  color: #60a5fa;
+  margin-right: 0.5rem;
+}
+
+.footer-text a {
+  color: #ffffff;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.footer-text a:hover {
+  color: #60a5fa;
+}
+
+/* Enlaces del footer */
+.footer-links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.footer-links li {
+  margin-bottom: 0.5rem;
+}
+
+.footer-links a {
+  color: #ffffff;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  display: inline-block;
+}
+
+.footer-links a:hover {
+  color: #60a5fa;
+  transform: translateX(5px);
+}
+
+/* Redes sociales */
+.social-links {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.social-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  color: #ffffff;
+  font-size: 1.2rem;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.social-icon:hover {
+  background: #60a5fa;
+  color: #000000;
+  transform: translateY(-5px) scale(1.1);
+  box-shadow: 0 5px 15px rgba(96, 165, 250, 0.4);
+  border-color: #60a5fa;
+}
+
+/* Footer bottom - Copyright */
+.footer-bottom {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.footer-bottom .footer-text {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .footer-custom {
+    padding: 2rem 0;
+  }
+  
+  .footer-custom .col-lg-3,
+  .footer-custom .col-md-6 {
+    margin-bottom: 2rem;
+    text-align: center;
+  }
+  
+  .footer-custom .col-lg-3:last-child,
+  .footer-custom .col-md-6:last-child {
+    margin-bottom: 0;
+  }
+  
+  .social-links {
+    justify-content: center;
+  }
+  
+  .footer-links {
+    text-align: center;
+  }
+  
+  .footer-title {
+    justify-content: center;
+  }
+  
+  .footer-bottom .col-md-6 {
+    text-align: center !important;
+    margin-bottom: 0.5rem;
+  }
+  
+  /* Ajustar burbujas en móvil */
+  .bubbles span {
+    width: 40px !important;
+    height: 40px !important;
+  }
 }
 
 /* Estilo para botones centrados - Simetría perfecta */

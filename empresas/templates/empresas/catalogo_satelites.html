@@ -4,22 +4,34 @@
 <div class="container mt-5">
     <div class="card">
         <div class="card-header">
-            <h2 class="text-center">Catálogo de Microempresas Satélites</h2>
+            <h2 class="text-center text-white">Catálogo de Microempresas Satélites</h2>
         </div>
         <div class="card-body">
+            <!-- Buscador -->
+            <div class="mb-4">
+                <form method="get" class="row g-3">
+                    <div class="col-md-10">
+                        <input type="text" class="form-control" name="search" id="searchInput" 
+                               placeholder="🔍 Buscar empresa por nombre..." value="{{ search_query }}">
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary w-100">Buscar</button>
+                    </div>
+                </form>
+            </div>
+
             <div class="row" id="listaEmpresas">
                 {% for empresa in empresas %}
                 <div class="col-md-4 mb-4">
                     <div class="card h-100">
                         {% if empresa.imagen %}
-                        <img src="{{ empresa.imagen.url }}" class="card-img-top" alt="Logo de {{ empresa.nombre }}" style="height: 200px; object-fit: contain; padding: 15px;">
+                        <img src="{{ empresa.imagen.url }}" class="card-img-top" alt="Logo de {{ empresa.nombre_empresa }}" style="height: 200px; object-fit: contain; padding: 15px;">
                         {% endif %}
                         <div class="card-body">
                             <h5 class="card-title">{{ empresa.nombre_empresa }}</h5>
                             <p class="card-text">
-                                {{ empresa.descripcion }}<br>
+                                {{ empresa.descripcion|truncatewords:20 }}<br>
                                 <strong>RUT:</strong> {{ empresa.rut_empresa }}<br>
-                                
                             </p>
                             <a href="{% url 'detalle_empresa_satelite' empresa.id %}" class="btn btn-primary">Ver Detalles</a>
                         </div>
@@ -27,12 +39,57 @@
                 </div>
                 {% empty %}
                 <div class="col-12">
-                    <div class="alert alert-info" role="alert">
-                        No hay microempresas satélites registradas en el sistema.
+                    <div class="alert alert-info text-center" role="alert">
+                        <i class="fas fa-search fa-3x mb-3"></i>
+                        <h5>No se encontraron empresas</h5>
+                        {% if search_query %}
+                        <p>No hay resultados para "{{ search_query }}"</p>
+                        <a href="{% url 'catalogo_satelites' %}" class="btn btn-primary">Ver todas las empresas</a>
+                        {% else %}
+                        <p>No hay microempresas satélites registradas en el sistema.</p>
+                        {% endif %}
                     </div>
                 </div>
                 {% endfor %}
             </div>
+
+            <!-- Paginación -->
+            {% if empresas.has_other_pages %}
+            <nav aria-label="Paginación de empresas satélites">
+                <ul class="pagination justify-content-center mt-4">
+                    {% if empresas.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ empresas.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}">Anterior</a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">Anterior</span>
+                    </li>
+                    {% endif %}
+                    
+                    {% for num in empresas.paginator.page_range %}
+                        {% if empresas.number == num %}
+                        <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                        {% elif num > empresas.number|add:'-3' and num < empresas.number|add:'3' %}
+                        <li class="page-item"><a class="page-link" href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}">{{ num }}</a></li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if empresas.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ empresas.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}">Siguiente</a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">Siguiente</span>
+                    </li>
+                    {% endif %}
+                </ul>
+                <p class="text-center text-muted">
+                    Mostrando {{ empresas.start_index }} - {{ empresas.end_index }} de {{ empresas.paginator.count }} empresas
+                </p>
+            </nav>
+            {% endif %}
         </div>
     </div>
 </div>

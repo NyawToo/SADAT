@@ -1,3 +1,1 @@
-Fix Notificaciones (Todos Los Roles)
-Filtros (Revicion y Asignacion)
-Hacer que en pedidos/producto/id  arreglar todo... (estrellas ,likes y dislikes)
+Revisar codigo

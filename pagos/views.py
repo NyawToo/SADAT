@@ -222,12 +222,31 @@ def supervisar_pagos(request):
         query &= Q(estado=filtros['estado'])
     if filtros['metodo_pago']:
         query &= Q(metodo_pago=filtros['metodo_pago'])
+    if filtros['monto_min']:
+        query &= Q(monto__gte=filtros['monto_min'])
+    if filtros['monto_max']:
+        query &= Q(monto__lte=filtros['monto_max'])
     
-    transacciones = Transaccion.objects.filter(query).order_by('-fecha_creacion')
+    transacciones = Transaccion.objects.filter(query).select_related('usuario').order_by('-fecha_creacion')
+    
+    # Calcular estadísticas
+    total_transacciones = Transaccion.objects.count()
+    pagos_exitosos = Transaccion.objects.filter(estado=PAYMENT_STATUS['COMPLETED']).count()
+    pagos_pendientes = Transaccion.objects.filter(estado=PAYMENT_STATUS['PENDING']).count()
+    pagos_cancelados = Transaccion.objects.filter(estado=PAYMENT_STATUS['FAILED']).count()
+    
+    estadisticas = {
+        'total_pagos': total_transacciones,
+        'pagos_exitosos': pagos_exitosos,
+        'pagos_pendientes': pagos_pendientes,
+        'pagos_cancelados': pagos_cancelados
+    }
     
     return render(request, 'pagos/supervisar_pagos.html', {
+        'pagos': transacciones,
         'transacciones': transacciones,
-        'filtros': filtros
+        'filtros': filtros,
+        'estadisticas': estadisticas
     })
 
 @login_required
