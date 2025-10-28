@@ -6,7 +6,7 @@
 
     <div class="row mb-4">
         <div class="col-md-3">
-            <div class="card bg-primary text-white">
+            <div class="card bg-primary text-dark">
                 <div class="card-body">
                     <h5 class="card-title">Total Empresas</h5>
                     <h3>{{ estadisticas.total_empresas }}</h3>
@@ -15,16 +15,16 @@
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card bg-success text-white">
+            <div class="card bg-success text-dark">
                 <div class="card-body">
                     <h5 class="card-title">Ventas Totales</h5>
-                    <h3>${{ estadisticas.ventas_totales }}</h3>
+                    <h3>{{ estadisticas.ventas_totales }}</h3>
                     <p class="mb-0">Este mes: ${{ estadisticas.ventas_mes }}</p>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card bg-info text-white">
+            <div class="card bg-info text-dark">
                 <div class="card-body">
                     <h5 class="card-title">Pedidos Totales</h5>
                     <h3>{{ estadisticas.pedidos_totales }}</h3>
