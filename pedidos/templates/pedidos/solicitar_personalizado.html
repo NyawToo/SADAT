@@ -12,13 +12,6 @@
                 <div class="card-body p-4">
                     <form method="post" enctype="multipart/form-data">
                         {% csrf_token %}
-                        {% if messages %}
-                            {% for message in messages %}
-                                <div class="alert alert-{{ message.tags }} rounded-2">
-                                    {{ message }}
-                                </div>
-                            {% endfor %}
-                        {% endif %}
 
                         <div class="mb-3">
                             <label for="descripcion" class="form-label fw-medium">Descripción del Pedido</label>

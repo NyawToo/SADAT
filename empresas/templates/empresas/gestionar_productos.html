@@ -12,13 +12,6 @@
                 <div class="card-body">
                     <form method="post" enctype="multipart/form-data" action="{% if editing %}{% url 'editar_producto' producto.id %}{% else %}{% url 'crear_producto' %}{% endif %}">
                         {% csrf_token %}
-                        {% if messages %}
-                            {% for message in messages %}
-                                <div class="alert alert-{{ message.tags }}">
-                                    {{ message }}
-                                </div>
-                            {% endfor %}
-                        {% endif %}
                         <div class="form-group mb-3">
                             <label for="nombre">Nombre</label>
                             <input type="text" class="form-control" id="nombre" name="nombre" value="{% if editing %}{{ producto.nombre }}{% endif %}" required>

@@ -81,14 +81,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
     popoverTriggerList.map(popoverTriggerEl => new bootstrap.Popover(popoverTriggerEl));
 
-    // Alertas automáticas (excepto las del carrito)
-    const alertList = document.querySelectorAll('.alert:not(.alert-cart)');
+    // Alertas automáticas (excepto las del carrito y las auto-dismiss)
+    const alertList = document.querySelectorAll('.alert:not(.alert-cart):not(.auto-dismiss-alert)');
     alertList.forEach(alert => {
         if (alert) {
             setTimeout(() => {
                 const bsAlert = new bootstrap.Alert(alert);
                 bsAlert.close();
-            }, 600000); // 10 minutos
+            }, 1000); // 1 segundo
         }
     });
 });

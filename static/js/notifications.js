@@ -13,7 +13,7 @@ function showNotification(message, type = 'success') {
     // Crear el elemento de notificación
     const notification = document.createElement('div');
     notification.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
-    notification.style.cssText = 'top: 20px; right: 20px; z-index: 1050; max-width: 300px;';
+    notification.style.cssText = 'bottom: 200px; right: 20px; z-index: 1050; max-width: 300px;';
     notification.innerHTML = `
         ${message}
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
@@ -30,7 +30,7 @@ function showNotification(message, type = 'success') {
             // Remover la notificación del conjunto de activas
             activeNotifications.delete(message);
         }, 100);
-    }, 1800);
+    }, 500);
 }
 
 // Función para mostrar notificaciones de éxito

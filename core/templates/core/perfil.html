@@ -6,16 +6,9 @@
         <div class="col-md-8">
             <div class="card">
                 <div class="card-header">
-                    <h2 class="text-center">Mi Perfil</h2>
+                    <h2 class="text-center text-white">Mi Perfil</h2>
                 </div>
                 <div class="card-body">
-                    {% if messages %}
-                        {% for message in messages %}
-                            <div class="alert alert-{{ message.tags }}">
-                                {{ message }}
-                            </div>
-                        {% endfor %}
-                    {% endif %}
                     <form method="post">
                         {% csrf_token %}
                         <div class="row">
