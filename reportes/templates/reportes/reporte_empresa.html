@@ -1,4 +1,9 @@
 {% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/reportes.css' %}">
+{% endblock %}
 
 {% block content %}
 <div class="container-fluid mt-4">
@@ -35,6 +40,13 @@
                                     <td>{{ producto.producto__nombre }}</td>
                                     <td>{{ producto.cantidad_vendida }}</td>
                                     <td>${{ producto.ingresos|floatformat:2 }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="3" class="text-center text-muted">
+                                        <i class="fas fa-box-open fa-2x mb-2"></i>
+                                        <p>No hay productos vendidos este mes</p>
+                                    </td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
@@ -93,6 +105,13 @@
                                             <td>{{ estado.cantidad }}</td>
                                             <td>{{ estado.porcentaje }}%</td>
                                         </tr>
+                                        {% empty %}
+                                        <tr>
+                                            <td colspan="3" class="text-center text-muted py-4">
+                                                <i class="fas fa-chart-pie fa-2x mb-2"></i>
+                                                <p>No hay pedidos registrados este mes</p>
+                                            </td>
+                                        </tr>
                                         {% endfor %}
                                     </tbody>
                                 </table>
@@ -140,6 +159,14 @@
                                         <span class="badge bg-{{ pedido.estado_color }}">{{ pedido.estado }}</span>
                                     </td>
                                     <td>${{ pedido.total|floatformat:2 }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted py-5">
+                                        <i class="fas fa-shopping-cart fa-3x mb-3"></i>
+                                        <h5>No hay pedidos recientes</h5>
+                                        <p>Los pedidos aparecerán aquí cuando se realicen compras</p>
+                                    </td>
                                 </tr>
                                 {% endfor %}
                             </tbody>

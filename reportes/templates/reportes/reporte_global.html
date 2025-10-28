@@ -1,4 +1,9 @@
 {% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/reportes.css' %}">
+{% endblock %}
 
 {% block content %}
 <div class="container-fluid mt-4">
@@ -84,21 +89,46 @@
                             <tbody>
                                 {% for empresa in ranking_empresas %}
                                 <tr>
-                                    <td>{{ forloop.counter }}</td>
-                                    <td>{{ empresa.nombre }}</td>
-                                    <td>{{ empresa.tipo }}</td>
-                                    <td>${{ empresa.ventas_totales }}</td>
-                                    <td>{{ empresa.pedidos_completados }}</td>
                                     <td>
-                                        <div class="progress">
-                                            <div class="progress-bar bg-success" role="progressbar" 
-                                                 style="width: {{ empresa.valoracion }}%" 
-                                                 aria-valuenow="{{ empresa.valoracion }}" 
-                                                 aria-valuemin="0" 
-                                                 aria-valuemax="100">
+                                        <span class="badge bg-primary rounded-pill">{{ forloop.counter }}</span>
+                                    </td>
+                                    <td><strong>{{ empresa.nombre }}</strong></td>
+                                    <td>
+                                        <span class="badge {% if empresa.tipo == 'Integral' %}bg-info{% else %}bg-warning{% endif %}">
+                                            {{ empresa.tipo }}
+                                        </span>
+                                    </td>
+                                    <td><strong>${{ empresa.ventas_totales }}</strong></td>
+                                    <td>
+                                        <span class="badge bg-secondary">{{ empresa.pedidos_completados }}</span>
+                                    </td>
+                                    <td>
+                                        <div class="progress" style="min-width: 150px;">
+                                            <div class="progress-bar 
+                                                {% if empresa.valoracion >= 70 %}bg-success
+                                                {% elif empresa.valoracion >= 40 %}bg-warning
+                                                {% else %}bg-danger{% endif %}" 
+                                                role="progressbar" 
+                                                style="width: {{ empresa.valoracion }}%" 
+                                                aria-valuenow="{{ empresa.valoracion }}" 
+                                                aria-valuemin="0" 
+                                                aria-valuemax="100">
                                                 {{ empresa.valoracion }}%
                                             </div>
                                         </div>
+                                        <small class="text-muted">
+                                            {% if empresa.valoracion >= 70 %}Excelente
+                                            {% elif empresa.valoracion >= 40 %}Regular
+                                            {% else %}Necesita mejorar{% endif %}
+                                        </small>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted py-5">
+                                        <i class="fas fa-building fa-3x mb-3"></i>
+                                        <h5>No hay empresas registradas</h5>
+                                        <p>Las empresas aparecerán aquí cuando se registren en el sistema</p>
                                     </td>
                                 </tr>
                                 {% endfor %}
@@ -156,6 +186,12 @@
                                 <small>{{ alerta.fecha }}</small>
                             </div>
                             <p class="mb-1">{{ alerta.mensaje }}</p>
+                        </div>
+                        {% empty %}
+                        <div class="text-center text-muted py-4">
+                            <i class="fas fa-bell-slash fa-2x mb-2"></i>
+                            <p>No hay alertas en este momento</p>
+                            <small>Todo funciona correctamente</small>
                         </div>
                         {% endfor %}
                     </div>

@@ -1,4 +1,9 @@
 {% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/reportes.css' %}">
+{% endblock %}
 
 {% block content %}
 <div class="container-fluid mt-4">
@@ -61,6 +66,14 @@
                                         </a>
                                     </td>
                                 </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted py-5">
+                                        <i class="fas fa-industry fa-3x mb-3"></i>
+                                        <h5>No hay empresas integrales registradas</h5>
+                                        <p>Las empresas integrales aparecerán aquí cuando se registren</p>
+                                    </td>
+                                </tr>
                                 {% endfor %}
                             </tbody>
                         </table>
@@ -103,6 +116,14 @@
                                         <a href="{% url 'reporte_empresa' empresa.id %}" class="btn btn-primary btn-sm">
                                             <i class="fas fa-chart-bar me-1"></i>Ver Reportes
                                         </a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted py-5">
+                                        <i class="fas fa-satellite fa-3x mb-3"></i>
+                                        <h5>No hay empresas satélites registradas</h5>
+                                        <p>Las empresas satélites aparecerán aquí cuando se registren</p>
                                     </td>
                                 </tr>
                                 {% endfor %}

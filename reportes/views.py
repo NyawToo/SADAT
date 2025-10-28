@@ -62,35 +62,73 @@ def reporte_global(request):
     
     empresas_integrales = MicroempresaIntegral.objects.annotate(
         ventas_totales=Sum('pedidos__total', filter=Q(pedidos__estado='entregado')),
-        pedidos_completados=Count('pedidos', filter=Q(pedidos__estado='entregado'))
+        pedidos_completados=Count('pedidos', filter=Q(pedidos__estado='entregado')),
+        total_pedidos=Count('pedidos'),
+        productos_activos=Count('productoterminado', distinct=True)
     ).order_by('-ventas_totales')
     
     for empresa in empresas_integrales:
+        # Calcular valoración basada en múltiples factores
+        pedidos_completados = empresa.pedidos_completados or 0
+        total_pedidos = empresa.total_pedidos or 1  # Evitar división por cero
+        productos_activos = empresa.productos_activos or 0
+        ventas = float(empresa.ventas_totales or 0)
+        
+        # Factores de valoración:
+        # - Tasa de completación de pedidos (40%)
+        # - Cantidad de productos activos (30%)
+        # - Cantidad de pedidos completados (30%)
+        tasa_completacion = (pedidos_completados / total_pedidos) * 40 if total_pedidos > 0 else 0
+        factor_productos = min(30, productos_activos * 5)  # Máximo 30 puntos
+        factor_pedidos = min(30, pedidos_completados * 3)  # Máximo 30 puntos
+        
+        # Valoración final (mínimo 10 si la empresa está activa)
+        valoracion = max(10, int(tasa_completacion + factor_productos + factor_pedidos))
+        
         ranking_empresas.append({
             'nombre': empresa.nombre_empresa,
             'tipo': 'Integral',
-            'ventas_totales': f'{empresa.ventas_totales or 0:,.2f}',
-            'pedidos_completados': empresa.pedidos_completados,
-            'valoracion': min(100, (empresa.pedidos_completados * 10))  # Valoración basada en pedidos
+            'ventas_totales': f'{ventas:,.2f}',
+            'pedidos_completados': pedidos_completados,
+            'valoracion': valoracion
         })
     
     # Agregar empresas satélites al ranking
     empresas_satelites = MicroempresaSatelite.objects.annotate(
         total_solicitudes=Count('solicitudconfeccion'),
-        solicitudes_completadas=Count('solicitudconfeccion', filter=Q(solicitudconfeccion__estado='completada'))
+        solicitudes_completadas=Count('solicitudconfeccion', filter=Q(solicitudconfeccion__estado='completada')),
+        solicitudes_en_proceso=Count('solicitudconfeccion', filter=Q(solicitudconfeccion__estado='en_proceso')),
+        ingresos_totales=Sum('solicitudconfeccion__cotizacion', filter=Q(solicitudconfeccion__estado='completada'))
     ).order_by('-solicitudes_completadas')
     
     for empresa in empresas_satelites:
+        # Calcular valoración para satélites
+        total_solicitudes = empresa.total_solicitudes or 1
+        completadas = empresa.solicitudes_completadas or 0
+        en_proceso = empresa.solicitudes_en_proceso or 0
+        ingresos = float(empresa.ingresos_totales or 0)
+        
+        # Factores:
+        # - Tasa de completación (50%)
+        # - Solicitudes completadas (30%)
+        # - Solicitudes en proceso (20%)
+        tasa_completacion = (completadas / total_solicitudes) * 50 if total_solicitudes > 0 else 0
+        factor_completadas = min(30, completadas * 3)
+        factor_en_proceso = min(20, en_proceso * 2)
+        
+        # Valoración final (mínimo 10 si la empresa está activa)
+        valoracion = max(10, int(tasa_completacion + factor_completadas + factor_en_proceso))
+        
         ranking_empresas.append({
             'nombre': empresa.nombre_empresa,
             'tipo': 'Satélite',
-            'ventas_totales': 'N/A',
-            'pedidos_completados': empresa.solicitudes_completadas,
-            'valoracion': min(100, (empresa.solicitudes_completadas * 10))
+            'ventas_totales': f'{ingresos:,.2f}',
+            'pedidos_completados': completadas,
+            'valoracion': valoracion
         })
     
-    # Ordenar ranking por pedidos completados
-    ranking_empresas = sorted(ranking_empresas, key=lambda x: x['pedidos_completados'], reverse=True)
+    # Ordenar ranking por valoración (descendente), luego por pedidos completados
+    ranking_empresas = sorted(ranking_empresas, key=lambda x: (x['valoracion'], x['pedidos_completados']), reverse=True)
     
     # Datos para gráficos
     # Tendencia de ventas (últimos 6 meses)
