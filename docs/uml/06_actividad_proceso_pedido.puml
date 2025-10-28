@@ -240,6 +240,25 @@ if (¿Puede preparar pedido?) then (Sí)
         stop
     endif
     
+elseif (Cancelación) then (Cancelación)
+    :Solicitar cancelación;
+    
+    |#Yellow|Sistema|
+    :Verificar estado\ndel pedido;
+    
+    if (¿Puede cancelarse?) then (Sí)
+        :Cancelar pedido;
+        :Procesar reembolso;
+        :Notificar a empresa;
+        
+        |#LightBlue|Cliente|
+        :Recibir confirmación\nde cancelación;
+        stop
+    else (No)
+        :Mostrar mensaje\n"Pedido no puede cancelarse";
+        stop
+    endif
+
 else (No)
     :Contactar al cliente;
     :Negociar solución;
@@ -259,25 +278,6 @@ else (No)
         |#LightBlue|Cliente|
         :Recibir notificación\nde reembolso;
         :Ver confirmación\nen sistema;
-        stop
-    endif
-    
-else (Cancelación)
-    :Solicitar cancelación;
-    
-    |#Yellow|Sistema|
-    :Verificar estado\ndel pedido;
-    
-    if (¿Puede cancelarse?) then (Sí)
-        :Cancelar pedido;
-        :Procesar reembolso;
-        :Notificar a empresa;
-        
-        |#LightBlue|Cliente|
-        :Recibir confirmación\nde cancelación;
-        stop
-    else (No)
-        :Mostrar mensaje\n"Pedido no puede cancelarse";
         stop
     endif
 endif
@@ -370,6 +370,7 @@ if (¿Qué gestionar?) then (Pedidos)
         :Notificar partes;
         stop
     endif
+    stop
     
 elseif (¿Qué gestionar?) then (Transacciones)
     :Ver todas las transacciones;
@@ -386,6 +387,7 @@ elseif (¿Qué gestionar?) then (Transacciones)
         :Exportar información;
         stop
     endif
+    stop
     
 elseif (¿Qué gestionar?) then (Reportes)
     :Seleccionar tipo de reporte;

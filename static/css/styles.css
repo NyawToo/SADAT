@@ -83,6 +83,8 @@ main {
   border-bottom: 1px solid rgba(96, 165, 250, 0.1);
   padding: 1rem 0;
   transition: all var(--transition-speed);
+  position: relative;
+  z-index: 9999;
 }
 
 .navbar:hover {
