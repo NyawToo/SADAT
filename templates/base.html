@@ -17,12 +17,86 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- CSS personalizado -->
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <style>
+        /* Transiciones para el navbar mobile */
+        #navbarNav {
+            transition: all 0.35s ease-in-out;
+            max-height: 0;
+            overflow: hidden;
+        }
+        
+        #navbarNav.show {
+            max-height: 1000px;
+        }
+        
+        #navbarNav.collapsing {
+            transition: all 0.35s ease-in-out;
+        }
+        
+        @media (min-width: 992px) {
+            #navbarNav {
+                max-height: none !important;
+                overflow: visible !important;
+            }
+        }
+        
+        /* Centrar items del navbar en móvil */
+        @media (max-width: 991px) {
+            /* Anular el ms-auto en móvil */
+            #navbarNav .navbar-nav.ms-auto {
+                margin-left: 0 !important;
+                margin-right: 0 !important;
+            }
+            
+            #navbarNav .navbar-nav {
+                align-items: center;
+                text-align: center;
+                padding-left: 0;
+                padding-right: 0;
+            }
+            
+            #navbarNav .nav-item {
+                width: 100%;
+                display: flex;
+                justify-content: center;
+                margin-bottom: 0.5rem;
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+            
+            #navbarNav .nav-link {
+                width: auto;
+                min-width: 200px;
+                max-width: 85%;
+                text-align: center;
+                margin-left: auto;
+                margin-right: auto;
+            }
+            
+            #navbarNav .dropdown-menu {
+                text-align: center;
+                width: auto;
+                min-width: 200px;
+                max-width: 85%;
+                left: 50% !important;
+                transform: translateX(-50%);
+                margin: 0;
+            }
+            
+            /* Centrar el contenedor completo */
+            .navbar-collapse {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm">
         <div class="container-fluid">
             <a class="navbar-brand fw-bold" href="{% url 'home' %}">SADAT</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <button class="navbar-toggler" type="button" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
@@ -384,6 +458,69 @@
             el.style.transform = 'translateY(20px)';
             el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
             observer.observe(el);
+        });
+
+        // Cerrar navbar en modo móvil al hacer clic en un enlace
+        document.addEventListener('DOMContentLoaded', function() {
+            const navbarCollapse = document.getElementById('navbarNav');
+            const navbarToggler = document.querySelector('.navbar-toggler');
+            
+            if (navbarCollapse && navbarToggler) {
+                let isAnimating = false;
+                
+                // Manejar el click del botón toggler manualmente
+                navbarToggler.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    if (isAnimating) return;
+                    
+                    const isOpen = navbarCollapse.classList.contains('show');
+                    
+                    if (isOpen) {
+                        // Cerrar
+                        isAnimating = true;
+                        navbarCollapse.classList.add('collapsing');
+                        navbarCollapse.classList.remove('show');
+                        
+                        setTimeout(() => {
+                            navbarCollapse.classList.remove('collapsing');
+                            navbarToggler.setAttribute('aria-expanded', 'false');
+                            isAnimating = false;
+                        }, 350);
+                    } else {
+                        // Abrir
+                        isAnimating = true;
+                        navbarCollapse.classList.add('collapsing');
+                        
+                        setTimeout(() => {
+                            navbarCollapse.classList.add('show');
+                            navbarCollapse.classList.remove('collapsing');
+                            navbarToggler.setAttribute('aria-expanded', 'true');
+                            isAnimating = false;
+                        }, 10);
+                    }
+                });
+                
+                // Cerrar al hacer clic en enlaces dentro del navbar
+                const allLinks = navbarCollapse.querySelectorAll('a');
+                
+                allLinks.forEach(link => {
+                    link.addEventListener('click', function(e) {
+                        if (window.innerWidth < 992 && navbarCollapse.classList.contains('show')) {
+                            setTimeout(() => {
+                                navbarCollapse.classList.add('collapsing');
+                                navbarCollapse.classList.remove('show');
+                                
+                                setTimeout(() => {
+                                    navbarCollapse.classList.remove('collapsing');
+                                    navbarToggler.setAttribute('aria-expanded', 'false');
+                                }, 350);
+                            }, 100);
+                        }
+                    });
+                });
+            }
         });
     </script>
     
